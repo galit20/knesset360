@@ -1,48 +1,22 @@
-import { useState } from 'react'
-import Countdown from 'react-countdown';
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-import buildingLogo from './assets/building.svg'
-import innerRingLogo from './assets/inner-ring.svg';
-import outerRingLogo from './assets/outer-ring.svg';
+// import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
+import NavBar from './components/NavBar' // <-- Import your new component!
+import Home from './pages/Home' // <-- Import your new Home page!
 import './App.css'
 
 
-// Helper to format election countdown display
-const renderer = ({ days, hours, minutes, seconds, completed }) => {
-  if (completed) {
-    // What to show when the election starts!
-    return <span className="election-started">Elections are live! 🗳️</span>;
-  } else {
-    // The actual countdown display
-    return (
-      <div className="countdown-display">
-        <div className="time-block"><span>{days}</span><small>Days</small></div>
-        <div className="time-block"><span>{hours}</span><small>Hrs</small></div>
-        <div className="time-block"><span>{minutes}</span><small>Min</small></div>
-        <div className="time-block"><span>{seconds}</span><small>Sec</small></div>
-      </div>
-    );
-  }
-};
-
 function App() {
-  const [count, setCount] = useState(0)
-  const electionDate = new Date('2026-10-27T00:00:00');
-  console.log(electionDate)
-
   return (
     <>
-      <div>
-        <div className="logo-container">
-          <img src={buildingLogo} className="logo-layer static " alt="Logo Center" />
-          <img src={innerRingLogo} className="logo-layer spin-counter" alt="Inner Ring" />
-          <img src={outerRingLogo} className="logo-layer spin-clock" alt="Outer Ring" />
-        </div>
+    <BrowserRouter>
+      <div className="app-container">
+        <NavBar />
+        <Routes>
+            <Route path="/" element= {<Home />} />
+        </Routes>
       </div>
-      <h1>KNESSET360°</h1>
-      <h2>Next Elections in...</h2>
-      <Countdown date={electionDate} renderer={renderer} />
+    </BrowserRouter>
     </>
   )
 }
