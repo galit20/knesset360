@@ -1,5 +1,9 @@
 """
+<<<<<<< HEAD
 pipeline for extracting quotes from Knesset committee protocol documents.
+=======
+Pipeline for extracting quotes from Knesset committee protocol documents.
+>>>>>>> fce70b4b3ba7a56bb51a7bb536547edd648f5dd3
 
 Steps:
 1. Download protocol documents from URL
