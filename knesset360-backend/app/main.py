@@ -18,7 +18,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Knesset360 API! hiiiiii"}
+    return {"message": "Welcome to the Knesset360 API! hello"}
 
 @app.get("/api/timeline")
 def get_timeline():
