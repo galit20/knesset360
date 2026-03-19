@@ -1,0 +1,55 @@
+/* Top Navigation Bar */
+.top-nav {
+  position: fixed;
+  top: 0;          /* Glues it to the top */
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb; /* Border is now on the bottom */
+  display: flex;
+  justify-content: center; /* Centers the links in the middle of the screen */
+  gap: 15px;       /* Adds spacing between the buttons */
+  padding: 12px 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Shadow drops downward now */
+  z-index: 1000;   /* Ensures the navbar stays on top of scrolling content */
+}
+
+/* Base button styling */
+.nav-button {
+  display: flex;
+  flex-direction: row; /* Places icon and text side-by-side horizontally */
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  opacity: 0.6;
+  padding: 8px 16px;
+  border-radius: 8px; /* Slightly rounded corners for the buttons */
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover effect so it feels interactive */
+.nav-button:hover {
+  background-color: #f3f4f6;
+  opacity: 0.8;
+}
+
+/* Active button styling */
+.nav-button.active {
+  color: #3b82f6;
+  opacity: 1;
+  background-color: #eff6ff; /* Gives a nice light blue background to the active tab */
+}
+
+/* Icon and Text styling */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-text {
+  font-size: 14px;
+  font-weight: 500;
+}
