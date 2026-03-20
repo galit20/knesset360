@@ -28,17 +28,33 @@ def get_timeline():
     
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)  # read as JSON for better react functionallity
-        
         cursor.execute("""
-            
+            SELECT 
+                B.id,
+                B.knessetnum,
+                B.name,
+                array_agg(P.firstname || ' ' || P.lastname) AS initiators,
+                ROW_NUMBER() OVER(PARTITION BY B.knessetnum ORDER BY B.lastupdateddate ASC) as stack_position
+            FROM kns_bill as B 
+            JOIN kns_billinitiator as BI on BI.billid = B.id
+            JOIN kns_person as P on P.id = BI.personid
+            WHERE name LIKE '%חוק הדרכים%' 
+                or name LIKE '%תאונות דרכים%' 
+                or name LIKE '%בטיחות בדרכים%'
+                or name LIKE '%תעבורה%'
+            GROUP BY 
+                B.id,
+                B.knessetnum,
+                B.name
+            ORDER BY id ASC;
         """)
         
         timeline_data = cursor.fetchall()
         
-        # 4. Clean up and return the data!
+        # Clean up and return the data!
         cursor.close()
         conn.close()
-        
+    
         return timeline_data
 
     except Exception as e:
