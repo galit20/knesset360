@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import NavBar from './components/NavBar' // <-- Import your new component!
 import Home from './pages/Home' // <-- Import your new Home page!
+import Timeline from './pages/Timeline'
 import './App.css'
 
 
@@ -14,6 +15,7 @@ function App() {
         <NavBar />
         <Routes>
             <Route path="/" element= {<Home />} />
+            <Route path="/timeline" element= {<Timeline />} />
         </Routes>
       </div>
     </BrowserRouter>
