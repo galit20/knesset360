@@ -8,18 +8,18 @@ import './Home.css'
 
 // Helper to format election countdown display
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
-  if (completed) {
+    if (completed) {
     // What to show when the election starts!
-    return <span className="election-started">Elections are live! 🗳️</span>;
-  } else {
+        return <span className="election-started">Elections are live! 🗳️</span>;
+    } else {
     // The actual countdown display
     return (
-      <div className="countdown-display">
-        <div className="time-block"><span>{days}</span><small>Days</small></div>
-        <div className="time-block"><span>{hours}</span><small>Hrs</small></div>
-        <div className="time-block"><span>{minutes}</span><small>Min</small></div>
-        <div className="time-block"><span>{seconds}</span><small>Sec</small></div>
-      </div>
+        <div className="countdown-display">
+            <div className="time-block"><span>{days}</span><small>Days</small></div>
+            <div className="time-block"><span>{hours}</span><small>Hrs</small></div>
+            <div className="time-block"><span>{minutes}</span><small>Min</small></div>
+            <div className="time-block"><span>{seconds}</span><small>Sec</small></div>
+        </div>
     );
   }
 };
