@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import { 
     ScatterChart, 
@@ -7,7 +7,11 @@ import {
     YAxis, 
     CartesianGrid, 
     Tooltip, 
-    ResponsiveContainer 
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Label,
+    Legend
 } from 'recharts';
 
 
@@ -145,6 +149,54 @@ export default function TimelinePage() {
                     <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
                         <Scatter name="Bills" data={billsData} shape={<NewDot />}></Scatter>
                 </ScatterChart>
+                </ResponsiveContainer>
+            </div>
+            <div style={{ 
+                        width: '50%',
+                        height: 450,
+                        marginBottom: '20px',
+                        direction: 'rtl',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        padding: '20px',          
+                        backgroundColor: '#ffffff', 
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
+                    }}>
+                <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
+                התפלגות סטטוס הצעות חוק
+                </h2>
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={pieData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={70}  // Creates the donut hole
+                            outerRadius={130}
+                            paddingAngle={2}  // Visual gap between slices
+                        >
+                        <Label 
+                            value={totalBills} 
+                            position="center" 
+                            fill="#111827"
+                            style={{ fontSize: '40px', fontWeight: 'bold' }}
+                        />
+                        </Pie>
+                        <Tooltip 
+                            formatter={(value) => [`${value} הצעות`]}
+                            contentStyle={{ borderRadius: '8px', direction: 'rtl', textAlign: 'center' }}
+                        />       
+                        <Legend 
+                            layout="vertical" 
+                            verticalAlign="middle" 
+                            align="right" 
+                            content={renderHebrewLegend}
+                        />       
+                    </PieChart>
                 </ResponsiveContainer>
             </div>
         </div>
