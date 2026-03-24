@@ -78,7 +78,7 @@ const renderHebrewLegend = (props) => {
         ))}
       </ul>
     );
-};
+  };
 
 
 export default function TimelinePage() {
@@ -127,9 +127,9 @@ export default function TimelinePage() {
                 <div style={{ margin: 0, fontSize: '14px', color: '#3b82f6', fontWeight: '500' }}>
                     👤 יוזמים:
                     <ul style={{ margin: '5px 0 0 0', paddingLeft: '20px', color: '#4b5563', fontSize: '13px', fontWeight: 'normal' }}>
-                    {bill.initiators.map((name, index) => (
-                        <li key={index}>{name}</li>
-                    ))}
+                        {bill.initiators.map((name, index) => (
+                            <li key={index}>{name}</li>
+                        ))}
                     </ul>
                 </div>
             </div>
@@ -158,23 +158,23 @@ export default function TimelinePage() {
             <p style={{ color: '#6b7280' }}>Hover over any point to see the bill details.</p>
             <div style={{ width: '100%', height: 500, marginTop: '40px' }}>
                 <ResponsiveContainer>
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
-                    <XAxis 
-                        dataKey="knessetnum" 
-                        type="category" 
-                        name="Knesset Number"
-                        tick={{ fontSize: 14, fill: '#6b7280', fontWeight: 'bold' }} 
-                    />
-                    <YAxis 
-                        dataKey="stack_position" 
-                        type="number" 
-                        tick={false} 
-                        axisLine={false} 
-                    />
-                    <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
+                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
+                        <XAxis 
+                            dataKey="knessetnum" 
+                            type="category" 
+                            name="Knesset Number"
+                            tick={{ fontSize: 14, fill: '#6b7280', fontWeight: 'bold' }} 
+                        />
+                        <YAxis 
+                            dataKey="stack_position" 
+                            type="number" 
+                            tick={false} 
+                            axisLine={false} 
+                        />
+                        <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3' }} />
                         <Scatter name="Bills" data={billsData} shape={<NewDot />}></Scatter>
-                </ScatterChart>
+                    </ScatterChart>
                 </ResponsiveContainer>
             </div>
             <div style={{ 
@@ -221,7 +221,7 @@ export default function TimelinePage() {
                             verticalAlign="middle" 
                             align="right" 
                             content={renderHebrewLegend}
-                        />       
+                        />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
