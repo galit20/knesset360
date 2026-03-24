@@ -108,6 +108,20 @@ export default function TimelinePage() {
         return null;
     };
 
+    const totalBills = billsData.length;
+
+    const pieData = useMemo(() => {
+        if (!billsData || billsData.length === 0) return [];
+        const accumulator = Object.keys(STATUS_DESC).reduce((acc, key) => {
+            acc[key] = { name: STATUS_DESC[key], value: 0, statusId: key, fill: STATUS_COLORS[key] };
+            return acc;
+        }, {});
+        for (const bill of billsData) {
+            accumulator[bill.statusid].value += 1;
+        }
+        return Object.values(accumulator);
+    }, [billsData]); 
+
     return (
         <div style={{ padding: '20px', width: '95vw', margin: '0 auto'}}>
             <h1>Timeline - data check</h1>
