@@ -33,20 +33,22 @@ def get_timeline():
                 B.id,
                 B.knessetnum,
                 B.name,
+                B.statusid,
                 array_agg(P.firstname || ' ' || P.lastname) AS initiators,
                 ROW_NUMBER() OVER(PARTITION BY B.knessetnum ORDER BY B.lastupdateddate ASC) as stack_position
             FROM kns_bill as B 
             JOIN kns_billinitiator as BI on BI.billid = B.id
             JOIN kns_person as P on P.id = BI.personid
-            WHERE name LIKE '%חוק הדרכים%' 
+            JOIN kns_status as S on S.id = B.statusid
+            WHERE (name LIKE '%חוק הדרכים%' 
                 or name LIKE '%תאונות דרכים%' 
                 or name LIKE '%בטיחות בדרכים%'
-                or name LIKE '%תעבורה%'
+                or name LIKE '%תעבורה%')
             GROUP BY 
                 B.id,
                 B.knessetnum,
                 B.name
-            ORDER BY id ASC;
+            ORDER BY B.id ASC;
         """)
         
         timeline_data = cursor.fetchall()
