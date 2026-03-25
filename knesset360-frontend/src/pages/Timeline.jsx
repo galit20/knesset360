@@ -159,7 +159,7 @@ export default function TimelinePage() {
             pie_accumulator[sId].value += 1; // update the pie chart data - count by status of bill
 
             if (!barMap[kNum]) {
-                barMap[kNum] = { knessetNum: kNum };
+                barMap[kNum] = { knessetnum: kNum };
             }
             barMap[kNum][sId] = (barMap[kNum][sId] || 0) + 1;
         }
@@ -169,6 +169,20 @@ export default function TimelinePage() {
         };
     }, [billsData]); 
 
+
+    const [selectedKnesset, setSelectedKnesset] = useState(null);
+    // Filter bills for the table based on bar selection
+    const billsForTable = useMemo(() => {
+    if (!selectedKnesset) return [];
+        return billsData.filter(b => b.knessetnum === selectedKnesset);
+    }, [selectedKnesset, billsData]);
+
+    const [selectedStatus, setSelectedStatus] = useState(null);
+    // Filter bills for the table based on pie selection
+    const billsForTableByStatus = useMemo(() => {
+    if (!selectedStatus) return [];
+        return billsData.filter(b => b.statusid === selectedStatus);
+    }, [selectedStatus, billsData]);
 
     return (
         <div style={{ padding: '20px', width: '95vw', margin: '0 auto'}}>
@@ -229,6 +243,12 @@ export default function TimelinePage() {
                                 innerRadius={70}  // Creates the donut hole
                                 outerRadius={130}
                                 paddingAngle={2}  // Visual gap between slices
+                                onClick={(data) => {
+                                    if (data) {
+                                        setSelectedStatus(Number(data.payload.statusId));
+                                        setSelectedKnesset(null);
+                                    }
+                                }}
                             >
                             <Label 
                                 value={totalBills} 
@@ -263,10 +283,13 @@ export default function TimelinePage() {
                             backgroundColor: '#ffffff', 
                             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
                         }}>
+                    <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
+                    התפלגות הצעות חוק על פי כנסות
+                    </h2>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={barData} >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="knessetNum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -5 }} />
+                        <XAxis dataKey="knessetnum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -5 }} />
                         <YAxis label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft' }} />
                         <Tooltip />
                         {Object.keys(STATUS_DESC).map((statusId) => (
@@ -277,12 +300,138 @@ export default function TimelinePage() {
                                 stackId="a" 
                                 fill={STATUS_COLORS[statusId]} 
                                 cursor="pointer"
+                                onClick={(data) => {
+                                    if (data) {
+                                        setSelectedKnesset(data.payload.knessetnum);
+                                        setSelectedStatus(null);
+                                    }
+                                }}
                             />
                         ))}
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
             </div>
+            {selectedKnesset && (
+            <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'row-reverse',
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    marginBottom: '20px',
+                    padding: '16px 20px',
+                    backgroundColor: '#f9fafb',
+                    borderBottom: '1px solid #e5e7eb',
+                    borderRadius: '12px',
+                    position: 'sticky',        
+                    top: 0,                     
+                    zIndex: 10                  
+                }}>
+                    <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בכנסת ה-{selectedKnesset}</h3>
+                    <button 
+                        onClick={() => setSelectedKnesset(null)} 
+                        style={{ 
+                            backgroundColor: '#3b82f6', // Bright blue
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',                // Space between the text and the X
+                            transition: 'background-color 0.2s'
+                        }}
+                    >
+                        <span style={{ fontSize: '16px' }}>✕</span>
+                        <span>סגור</span>
+                    </button>
+                </div>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <table style={{ width: '100%', textAlign: 'right', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '2px solid #eee' }}>
+                            <th>מספר הצעה</th>
+                            <th>שם הצעה</th>
+                            <th>סטטוס</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {billsForTable.map(bill => (
+                            <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
+                                <td style={{ padding: '10px' }}>{bill.id}</td>
+                                <td>{bill.name}</td>
+                                <td>{STATUS_DESC[bill.statusid]}</td>
+                            </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            )}
+
+            {selectedStatus && (
+            <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'row-reverse',
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    marginBottom: '20px',
+                    padding: '16px 20px',
+                    backgroundColor: '#f9fafb',
+                    borderBottom: '1px solid #e5e7eb',
+                    borderRadius: '12px',
+                    position: 'sticky',        
+                    top: 0,                     
+                    zIndex: 10                  
+                }}>
+                    <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בסטטוס - {STATUS_DESC[selectedStatus]}</h3>
+                    <button 
+                        onClick={() => setSelectedStatus(null)} 
+                        style={{ 
+                            backgroundColor: '#3b82f6', // Bright blue
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px 12px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',                // Space between the text and the X
+                            transition: 'background-color 0.2s'
+                        }}
+                    >
+                        <span style={{ fontSize: '16px' }}>✕</span>
+                        <span>סגור</span>
+                    </button>
+                </div>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <table style={{ width: '100%', textAlign: 'right', borderCollapse: 'collapse', direction: 'rtl'}}>
+                        <thead style={{ position: 'sticky', top: 0, backgroundColor: '#ffffff', zIndex: 9 }}>
+                            <tr style={{ borderBottom: '2px solid #eee' }}>
+                                <th>מספר הצעה</th>
+                                <th>שם הצעה</th>
+                                <th>יוזמים</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {billsForTableByStatus.map(bill => (
+                            <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
+                                <td style={{ padding: '10px' }}>{bill.id}</td>
+                                <td>{bill.name}</td>
+                            </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            )}
         </div>
     );
 }
