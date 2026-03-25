@@ -11,7 +11,9 @@ import {
     PieChart,
     Pie,
     Label,
-    Legend
+    Legend,
+    BarChart,
+    Bar
 } from 'recharts';
 
 
@@ -194,52 +196,92 @@ export default function TimelinePage() {
                 </ResponsiveContainer>
             </div>
             <div style={{ 
-                        width: '50%',
-                        height: 450,
-                        marginBottom: '20px',
-                        direction: 'rtl',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        border: '2px solid #e5e7eb',
-                        borderRadius: '12px',
-                        padding: '20px',          
-                        backgroundColor: '#ffffff', 
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
-                    }}>
-                <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
-                התפלגות סטטוס הצעות חוק
-                </h2>
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            data={pieData}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}  // Creates the donut hole
-                            outerRadius={130}
-                            paddingAngle={2}  // Visual gap between slices
-                        >
-                        <Label 
-                            value={totalBills} 
-                            position="center" 
-                            fill="#111827"
-                            style={{ fontSize: '40px', fontWeight: 'bold' }}
-                        />
-                        </Pie>
-                        <Tooltip 
-                            formatter={(value) => [`${value} הצעות`]}
-                            contentStyle={{ borderRadius: '8px', direction: 'rtl', textAlign: 'center' }}
-                        />       
-                        <Legend 
-                            layout="vertical" 
-                            verticalAlign="middle" 
-                            align="right" 
-                            content={renderHebrewLegend}
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
+                    display: 'flex', 
+                    gap: '20px',
+                    width: '100%', 
+                    direction: 'rtl',
+                    marginBottom: '40px' 
+                }}>
+                <div style={{ 
+                            width: '50%',
+                            height: 450,
+                            marginBottom: '20px',
+                            direction: 'rtl',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '12px',
+                            padding: '20px',          
+                            backgroundColor: '#ffffff', 
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
+                        }}>
+                    <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
+                    התפלגות סטטוס הצעות חוק
+                    </h2>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={pieData}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={70}  // Creates the donut hole
+                                outerRadius={130}
+                                paddingAngle={2}  // Visual gap between slices
+                            >
+                            <Label 
+                                value={totalBills} 
+                                position="center" 
+                                fill="#111827"
+                                style={{ fontSize: '40px', fontWeight: 'bold' }}
+                            />
+                            </Pie>
+                            <Tooltip 
+                                formatter={(value) => [`${value} הצעות`]}
+                                contentStyle={{ borderRadius: '8px', direction: 'rtl', textAlign: 'center' }}
+                            />       
+                            <Legend 
+                                layout="vertical" 
+                                verticalAlign="middle" 
+                                align="right" 
+                                content={renderHebrewLegend}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+                <div style={{ 
+                            width: '50%',
+                            height: 450,
+                            marginBottom: '20px',
+                            direction: 'rtl',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '12px',
+                            padding: '20px',          
+                            backgroundColor: '#ffffff', 
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
+                        }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={barData} >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="knessetNum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -5 }} />
+                        <YAxis label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft' }} />
+                        <Tooltip />
+                        {Object.keys(STATUS_DESC).map((statusId) => (
+                            <Bar 
+                                key={statusId}
+                                dataKey={statusId} 
+                                name={STATUS_DESC[statusId]} 
+                                stackId="a" 
+                                fill={STATUS_COLORS[statusId]} 
+                                cursor="pointer"
+                            />
+                        ))}
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
         </div>
     );
