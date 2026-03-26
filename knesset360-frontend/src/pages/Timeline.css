@@ -1,0 +1,7 @@
+.box-chart-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    direction: rtl;
+    margin-bottom: 40px;
+}
