@@ -1,5 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 
+import StatusPieChart from '../components/PieChartBill'
+import './Timeline.css'
+
+
 import { 
     ScatterChart, 
     Scatter,
@@ -8,36 +12,12 @@ import {
     CartesianGrid, 
     Tooltip, 
     ResponsiveContainer,
-    PieChart,
-    Pie,
-    Label,
-    Legend,
     BarChart,
     Bar
 } from 'recharts';
 
+import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
 
-const STATUS_COLORS = {
-    104: '#3b82f6', // (Started - הונחה על שולחן הכנסת לדיון מוקדם)            = Blue
-    108: '#f59e0b', // (Passed first step - הכנה לקריאה ראשונה)                 = Orange
-    113: '#40c320', // (Passed second step - הכנה לקריאה שנייה ושלישית)         = Green
-    118: '#106b31', // (Passed - התקבלה בקריאה שלישית)                          = Forest Green
-    122: '#640cca', // (Merged with another bill - מוזגה עם הצעת חוק אחרת)      = Purple
-    124: '#b71adb', // (Moved to daily meeting - הוסבה להצעה לסדר היום)         = Pink
-    150: '#0bbfbf', // (In Committee for the first step - במליאה לדיון מוקדם)   = Light Blue
-    177: '#d62a2a', // (Stopped - נעצרה)                                         = Red
-};
-
-const STATUS_DESC = {
-    104: "הונחה על שולחן הכנסת לדיון מוקדם",
-    108: "הכנה לקריאה ראשונה",
-    113: "הכנה לקריאה שנייה ושלישית",
-    118: "התקבלה בקריאה שלישית",
-    122: "מוזגה עם הצעת חוק אחרת",
-    124: "הוסבה להצעה לסדר היום",
-    150: "במליאה לדיון מוקדם",
-    177: "נעצרה"
-};
 
 // Return a custom dot according to bill status by colors up top.
 const NewDot = (props) => {
@@ -52,35 +32,6 @@ const NewDot = (props) => {
         />
     );
 };
-
-
-// Custom Recharts Legend for Hebrew (RTL) alignment
-const renderHebrewLegend = (props) => {
-    const { payload } = props;
-    return (
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        {payload.map((entry, index) => (
-            <li 
-                key={`item-${index}`} 
-                style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'flex-start', // Keeps everything aligned to the right edge
-                marginBottom: '10px'
-                }}
-            >
-            <svg width="12" height="12" style={{ marginLeft: '10px', flexShrink: 0 }}>
-                <circle cx="6" cy="6" r="6" fill={entry.color} />
-            </svg>
-                
-            <span style={{ color: '#374151', fontSize: '18px', textAlign: 'right' }}>
-                {entry.value}
-            </span>
-          </li>
-        ))}
-      </ul>
-    );
-  };
 
 
 export default function TimelinePage() {
@@ -209,80 +160,20 @@ export default function TimelinePage() {
                     </ScatterChart>
                 </ResponsiveContainer>
             </div>
-            <div style={{ 
-                    display: 'flex', 
-                    gap: '20px',
-                    width: '100%', 
-                    direction: 'rtl',
-                    marginBottom: '40px' 
-                }}>
-                <div style={{ 
-                            width: '50%',
-                            height: 450,
-                            marginBottom: '20px',
-                            direction: 'rtl',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '12px',
-                            padding: '20px',          
-                            backgroundColor: '#ffffff', 
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
-                        }}>
-                    <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
-                    התפלגות סטטוס הצעות חוק
-                    </h2>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={pieData}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={70}  // Creates the donut hole
-                                outerRadius={130}
-                                paddingAngle={2}  // Visual gap between slices
-                                onClick={(data) => {
-                                    if (data) {
-                                        setSelectedStatus(Number(data.payload.statusId));
-                                        setSelectedKnesset(null);
-                                    }
-                                }}
-                            >
-                            <Label 
-                                value={totalBills} 
-                                position="center" 
-                                fill="#111827"
-                                style={{ fontSize: '40px', fontWeight: 'bold' }}
-                            />
-                            </Pie>
-                            <Tooltip 
-                                formatter={(value) => [`${value} הצעות`]}
-                                contentStyle={{ borderRadius: '8px', direction: 'rtl', textAlign: 'center' }}
-                            />       
-                            <Legend 
-                                layout="vertical" 
-                                verticalAlign="middle" 
-                                align="right" 
-                                content={renderHebrewLegend}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                <div style={{ 
-                            width: '50%',
-                            height: 450,
-                            marginBottom: '20px',
-                            direction: 'rtl',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '12px',
-                            padding: '20px',          
-                            backgroundColor: '#ffffff', 
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
-                        }}>
+
+            <div className="box-chart-container">
+                <StatusPieChart 
+                    pieData={pieData}
+                    total={totalBills}
+                    title="התפלגות סטטוס הצעות חוק"
+                    onSliceClick={(data) => {
+                        if (data) {
+                            setSelectedStatus(Number(data.payload.statusId));
+                            setSelectedKnesset(null);
+                        }
+                    }} 
+                />
+                <div className="chart-container">
                     <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
                     התפלגות הצעות חוק על פי כנסות
                     </h2>
@@ -312,6 +203,7 @@ export default function TimelinePage() {
                     </ResponsiveContainer>
                 </div>
             </div>
+
             {selectedKnesset && (
             <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
                 <div style={{ 
