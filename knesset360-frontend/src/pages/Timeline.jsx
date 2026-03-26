@@ -205,45 +205,18 @@ export default function TimelinePage() {
             </div>
 
             {selectedKnesset && (
-            <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                <div style={{ 
-                    display: 'flex', 
-                    flexDirection: 'row-reverse',
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    marginBottom: '20px',
-                    padding: '16px 20px',
-                    backgroundColor: '#f9fafb',
-                    borderBottom: '1px solid #e5e7eb',
-                    borderRadius: '12px',
-                    position: 'sticky',        
-                    top: 0,                     
-                    zIndex: 10                  
-                }}>
+            <div className="table-container">
+                <div className="table-top-container">
                     <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בכנסת ה-{selectedKnesset}</h3>
-                    <button 
-                        onClick={() => setSelectedKnesset(null)} 
-                        style={{ 
-                            backgroundColor: '#3b82f6', // Bright blue
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '6px 12px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',                // Space between the text and the X
-                            transition: 'background-color 0.2s'
-                        }}
-                    >
+                    <button
+                        className="close-button-style"
+                        onClick={() => setSelectedKnesset(null)} >
                         <span style={{ fontSize: '16px' }}>✕</span>
                         <span>סגור</span>
                     </button>
                 </div>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <table style={{ width: '100%', textAlign: 'right', borderCollapse: 'collapse' }}>
+                <div className="table-div-scroll">
+                    <table className="table-content">
                         <thead>
                             <tr style={{ borderBottom: '2px solid #eee' }}>
                             <th>מספר הצעה</th>
@@ -254,7 +227,7 @@ export default function TimelinePage() {
                         <tbody>
                             {billsForTable.map(bill => (
                             <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '10px' }}>{bill.id}</td>
+                                <td style={{ padding: '15px' }}>{bill.id}</td>
                                 <td>{bill.name}</td>
                                 <td>{STATUS_DESC[bill.statusid]}</td>
                             </tr>
@@ -266,45 +239,18 @@ export default function TimelinePage() {
             )}
 
             {selectedStatus && (
-            <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                <div style={{ 
-                    display: 'flex', 
-                    flexDirection: 'row-reverse',
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    marginBottom: '20px',
-                    padding: '16px 20px',
-                    backgroundColor: '#f9fafb',
-                    borderBottom: '1px solid #e5e7eb',
-                    borderRadius: '12px',
-                    position: 'sticky',        
-                    top: 0,                     
-                    zIndex: 10                  
-                }}>
+            <div className="table-container">
+                <div className="table-top-container">
                     <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בסטטוס - {STATUS_DESC[selectedStatus]}</h3>
                     <button 
-                        onClick={() => setSelectedStatus(null)} 
-                        style={{ 
-                            backgroundColor: '#3b82f6', // Bright blue
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '6px 12px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',                // Space between the text and the X
-                            transition: 'background-color 0.2s'
-                        }}
-                    >
+                        className="close-button-style"
+                        onClick={() => setSelectedStatus(null)} >
                         <span style={{ fontSize: '16px' }}>✕</span>
                         <span>סגור</span>
                     </button>
                 </div>
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <table style={{ width: '100%', textAlign: 'right', borderCollapse: 'collapse', direction: 'rtl'}}>
+                <div className="table-div-scroll">
+                    <table className="table-content">
                         <thead style={{ position: 'sticky', top: 0, backgroundColor: '#ffffff', zIndex: 9 }}>
                             <tr style={{ borderBottom: '2px solid #eee' }}>
                                 <th>מספר הצעה</th>
@@ -315,8 +261,9 @@ export default function TimelinePage() {
                         <tbody>
                             {billsForTableByStatus.map(bill => (
                             <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '10px' }}>{bill.id}</td>
+                                <td style={{ padding: '15px' }}>{bill.id}</td>
                                 <td>{bill.name}</td>
+                                <td></td>
                             </tr>
                             ))}
                         </tbody>
