@@ -41,7 +41,7 @@ const renderHebrewLegend = (props) => {
 export default function StatusPieChart ({ pieData, total, title, onSliceClick }) {
     return (
         <div className="chart-container">
-            <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}> {title} </h2>
+            <h2 className="title-content"> {title} </h2>
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                     <Pie

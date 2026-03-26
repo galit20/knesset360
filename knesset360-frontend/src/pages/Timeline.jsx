@@ -1,21 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 
-import StatusPieChart from '../components/PieChartBill'
 import ScatterChartBills from '../components/ScatterChartBill'
+import StatusPieChart from '../components/PieChartBill'
+import StatusBarChart from '../components/BarChartBill'
+
 import './Timeline.css'
-
-
-import { 
-    ScatterChart, 
-    Scatter,
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
-    ResponsiveContainer,
-    BarChart,
-    Bar
-} from 'recharts';
 
 import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
 
@@ -95,35 +84,16 @@ export default function TimelinePage() {
                         }
                     }} 
                 />
-                <div className="chart-container">
-                    <h2 style={{ textAlign: 'center', color: '#374151', marginBottom: '20px' }}>
-                    התפלגות הצעות חוק על פי כנסות
-                    </h2>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={barData} >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="knessetnum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -5 }} />
-                        <YAxis label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft' }} />
-                        <Tooltip />
-                        {Object.keys(STATUS_DESC).map((statusId) => (
-                            <Bar 
-                                key={statusId}
-                                dataKey={statusId} 
-                                name={STATUS_DESC[statusId]} 
-                                stackId="a" 
-                                fill={STATUS_COLORS[statusId]} 
-                                cursor="pointer"
-                                onClick={(data) => {
-                                    if (data) {
-                                        setSelectedKnesset(data.payload.knessetnum);
-                                        setSelectedStatus(null);
-                                    }
-                                }}
-                            />
-                        ))}
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+                <StatusBarChart 
+                    barData={barData}
+                    title="התפלגות הצעות חוק על פי כנסות"
+                    onSliceClick={(data) => {
+                        if (data) {
+                            setSelectedKnesset(data.payload.knessetnum);
+                            setSelectedStatus(null);
+                        }
+                    }} 
+                />
             </div>
 
             {selectedKnesset && (
