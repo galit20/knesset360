@@ -61,8 +61,8 @@ const CustomTooltip = ({ active, payload }) => {
             <div style={{ margin: 0, fontSize: '14px', color: '#3b82f6', fontWeight: '500' }}>
                 👤 יוזמים:
                 <ul style={{ margin: '5px 0 0 0', paddingLeft: '20px', color: '#4b5563', fontSize: '13px', fontWeight: 'normal' }}>
-                    {bill.initiators.map((name, index) => (
-                        <li key={index}>{name}</li>
+                    {bill.initiators_info.map((person, index) => (
+                        <li key={index}>{person.name}</li>
                     ))}
                 </ul>
             </div>

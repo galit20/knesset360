@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import ScatterChartBills from '../components/ScatterChartBill'
 import StatusPieChart from '../components/PieChartBill'
 import StatusBarChart from '../components/BarChartBill'
+import InitiatorCard from '../components/InitiatorCard'
 
 import './Timeline.css'
 
@@ -23,16 +24,18 @@ export default function TimelinePage() {
 
     const totalBills = billsData.length;
 
-    const { pieData, barData } = useMemo(() => {
+    const { pieData, barData, topInitiators } = useMemo(() => {
         if (!billsData || billsData.length === 0) 
-            return { pieData: [], barData: [] };
+            return { pieData: [], barData: [] , topInitiators: []};
 
         const pie_accumulator = Object.keys(STATUS_DESC).reduce((acc, key) => {
             acc[key] = { name: STATUS_DESC[key], value: 0, statusId: key, fill: STATUS_COLORS[key] };
             return acc;
         }, {});
-        const barMap = {};
 
+        const barMap = {};
+        const initiator_counts = {};
+        
         for (const bill of billsData) {
             const sId = bill.statusid;
             const kNum = bill.knessetnum;
@@ -43,17 +46,25 @@ export default function TimelinePage() {
                 barMap[kNum] = { knessetnum: kNum };
             }
             barMap[kNum][sId] = (barMap[kNum][sId] || 0) + 1;
+
+            bill.initiators_info.forEach(person => {
+                if (!initiator_counts[person.id]) {
+                    initiator_counts[person.id] = { ...person, count: 0 };
+                }
+                initiator_counts[person.id].count += 1;
+            });
         }
         return {
             pieData: Object.values(pie_accumulator),
-            barData: Object.values(barMap)
+            barData: Object.values(barMap),
+            topInitiators: Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 10)
         };
     }, [billsData]); 
 
 
     const [selectedKnesset, setSelectedKnesset] = useState(null);
     // Filter bills for the table based on bar selection
-    const billsForTable = useMemo(() => {
+    const billsForTableByKnesset = useMemo(() => {
     if (!selectedKnesset) return [];
         return billsData.filter(b => b.knessetnum === selectedKnesset);
     }, [selectedKnesset, billsData]);
@@ -64,6 +75,15 @@ export default function TimelinePage() {
     if (!selectedStatus) return [];
         return billsData.filter(b => b.statusid === selectedStatus);
     }, [selectedStatus, billsData]);
+
+    const [selectedInitiatorId, setSelectedInitiatorId] = useState(null);
+    // Filter bills for selected top initiator
+    const billsForTableByInitiatorId = useMemo(() => {
+        if (!selectedInitiatorId) return [];
+            return billsData.filter(b => 
+                    b.initiators_info.some(p => p.id === selectedInitiatorId)
+                );
+    }, [selectedInitiatorId, billsData]);
 
     return (
         <div style={{ padding: '20px', width: '95vw', margin: '0 auto'}}>
@@ -117,7 +137,7 @@ export default function TimelinePage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {billsForTable.map(bill => (
+                            {billsForTableByKnesset.map(bill => (
                             <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '15px' }}>{bill.id}</td>
                                 <td>{bill.name}</td>
@@ -163,6 +183,62 @@ export default function TimelinePage() {
                 </div>
             </div>
             )}
+
+            <div className="initiator-section">
+                <h2 className="title-content">חברי הכנסת היוזמים המובילים</h2>
+                
+                <div className="initiator-grid">
+                    {topInitiators.map((initiator) => (
+                        <InitiatorCard 
+                            key={initiator.id} // Essential for React to track items
+                            initiator={initiator}
+                            isSelected={selectedInitiatorId === initiator.id}
+                            onClick={(id) => {
+                                // Toggle selection: if already selected, clear it; otherwise, set it.
+                                setSelectedInitiatorId(prevId => prevId === id ? null : id);
+                                
+                                // Clear other filters to focus only on this person
+                                setSelectedStatus(null);
+                                setSelectedKnesset(null);
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {selectedInitiatorId && (
+                <div className="table-container">
+                    <div className="table-top-container">
+                        <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות החוק של {topInitiators.find(i => i.id === selectedInitiatorId).name}</h3>
+                        <button 
+                            className="close-button-style"
+                            onClick={() => setSelectedInitiatorId(null)} >
+                            <span style={{ fontSize: '16px' }}>✕</span>
+                            <span>סגור</span>
+                        </button>
+                    </div>
+                    <div className="table-div-scroll">
+                        <table className="table-content">
+                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#ffffff', zIndex: 9 }}>
+                                <tr style={{ borderBottom: '2px solid #eee' }}>
+                                    <th>מספר הצעה</th>
+                                    <th>שם הצעה</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {billsForTableByInitiatorId.map(bill => (
+                                <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
+                                    <td style={{ padding: '15px' }}>{bill.id}</td>
+                                    <td>{bill.name}</td>
+                                    <td></td>
+                                </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                )}
+
+            </div>
         </div>
     );
 }
