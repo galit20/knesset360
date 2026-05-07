@@ -18,7 +18,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Knesset360 API! hiiiiii"}
+    return {"message": "Welcome to the Knesset360 API!"}
 
 @app.get("/api/timeline")
 def get_timeline():
@@ -34,7 +34,11 @@ def get_timeline():
                 B.knessetnum,
                 B.name,
                 B.statusid,
-                array_agg(P.firstname || ' ' || P.lastname) AS initiators,
+                json_agg(
+                    json_build_object(
+                        'id', P.id, 
+                        'name', P.firstname || ' ' || P.lastname)
+                    ) AS initiators_info,
                 ROW_NUMBER() OVER(PARTITION BY B.knessetnum ORDER BY B.lastupdateddate ASC) as stack_position
             FROM kns_bill as B 
             JOIN kns_billinitiator as BI on BI.billid = B.id
