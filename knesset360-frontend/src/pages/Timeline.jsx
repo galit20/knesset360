@@ -4,6 +4,8 @@ import ScatterChartBills from '../components/ScatterChartBill'
 import StatusPieChart from '../components/PieChartBill'
 import StatusBarChart from '../components/BarChartBill'
 import InitiatorCard from '../components/InitiatorCard'
+import ScoreChart from '../components/ScoreChart'
+
 
 import './Timeline.css'
 
@@ -13,12 +15,22 @@ import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
 export default function TimelinePage() {
     // hold the data from the server
     const [billsData, setBillData] = useState([]);
+    const [scoreData, setScoreData] = useState([]);
+
 
     // fetch the data from FastAPI when the page loads
     useEffect(() => {
         fetch('http://localhost:8000/api/timeline')
             .then(response => response.json())      // convert the server response to JSON
             .then(data => setBillData(data))        // save to your react state
+            .catch(error => console.error("Error fetching data:", error));
+    },  []); // [] - only run this once when the page loads
+
+    // fetch the data from FastAPI when the page loads
+    useEffect(() => {
+        fetch('http://localhost:8000/api/traffic_score')
+            .then(response => response.json())      // convert the server response to JSON
+            .then(data => setScoreData(data))        // save to your react state
             .catch(error => console.error("Error fetching data:", error));
     },  []); // [] - only run this once when the page loads
 
@@ -89,6 +101,8 @@ export default function TimelinePage() {
         <div style={{ padding: '20px', width: '95vw', margin: '0 auto'}}>
             <h1>Timeline - data check</h1>
             <p style={{ color: '#6b7280' }}>Hover over any point to see the bill details.</p>
+
+            <ScoreChart data={scoreData} />
 
             <ScatterChartBills billsData={billsData} />
 
