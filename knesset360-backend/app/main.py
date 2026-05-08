@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from psycopg2.extras import RealDictCursor
 from db import get_db_connection
 
+import pandas as pd
+
 app = FastAPI()
 
 # --- CORS SETUP ---
@@ -67,3 +69,15 @@ def get_timeline():
         if conn:
             conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+@app.get("/api/traffic_score")
+def get_scores():
+    df = pd.read_csv("../static_data/population.csv") # using static data before API integration to the DB
+    df['weighted_points'] = (df['fatal'] * 15) + (df['severe'] * 8) + (df['light'] * 2) # weights for each severity
+    df['ratio'] = (df['weighted_points'] / df['population_thousands']) * 100  #calculating accidents for 100,000 people
+    df['score'] = 100 - (df['ratio'] * 2) # Calibration factoring
+    df['score'] = df['score'].clip(0, 100).round(2)
+    result = df[['year', 'month', 'score', 'fatal', 'severe', 'light']].to_dict(orient="records")
+    return result
