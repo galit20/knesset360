@@ -36,7 +36,7 @@ def get_timeline():
                 B.knessetnum,
                 B.name,
                 B.statusid,
-				MIN(BI.lastupdateddate) as publishdate,
+				DATE_TRUNC('day', MIN(BI.lastupdateddate)) as publishdate,
                 json_agg(
                     json_build_object(
                         'id', P.id, 
