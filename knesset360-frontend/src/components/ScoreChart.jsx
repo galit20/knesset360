@@ -70,7 +70,6 @@ const ScoreChart = ({ data }) => {
           
           <Legend />
 
-          {/* הקו המרכזי של הציון */}
           <Line
             name="ציון בטיחות"
             type="basis"

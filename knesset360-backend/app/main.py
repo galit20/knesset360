@@ -36,6 +36,7 @@ def get_timeline():
                 B.knessetnum,
                 B.name,
                 B.statusid,
+				MIN(BI.lastupdateddate) as publishdate,
                 json_agg(
                     json_build_object(
                         'id', P.id, 
@@ -50,6 +51,7 @@ def get_timeline():
                 or name LIKE '%תאונות דרכים%' 
                 or name LIKE '%בטיחות בדרכים%'
                 or name LIKE '%תעבורה%')
+				and B.knessetnum > 19
             GROUP BY 
                 B.id,
                 B.knessetnum,
