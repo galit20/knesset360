@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from psycopg2.extras import RealDictCursor
-from db import get_db_connection
+from routes import timeline
 
 import pandas as pd
 
@@ -17,61 +16,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(timeline.router)
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Knesset360 API!"}
-
-@app.get("/api/timeline")
-def get_timeline():
-    conn = get_db_connection()
-    if conn is None:
-        raise HTTPException(status_code=500, detail="Could not connect to the database")
-    
-    try:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)  # read as JSON for better react functionallity
-        cursor.execute("""
-            SELECT 
-                B.id,
-                B.knessetnum,
-                B.name,
-                B.statusid,
-				DATE_TRUNC('day', MIN(BI.lastupdateddate)) as publishdate,
-                json_agg(
-                    json_build_object(
-                        'id', P.id, 
-                        'name', P.firstname || ' ' || P.lastname)
-                    ) AS initiators_info,
-                ROW_NUMBER() OVER(PARTITION BY B.knessetnum ORDER BY B.lastupdateddate ASC) as stack_position
-            FROM kns_bill as B 
-            JOIN kns_billinitiator as BI on BI.billid = B.id
-            JOIN kns_person as P on P.id = BI.personid
-            JOIN kns_status as S on S.id = B.statusid
-            WHERE (name LIKE '%חוק הדרכים%' 
-                or name LIKE '%תאונות דרכים%' 
-                or name LIKE '%בטיחות בדרכים%'
-                or name LIKE '%תעבורה%')
-				and B.knessetnum > 19
-            GROUP BY 
-                B.id,
-                B.knessetnum,
-                B.name
-            ORDER BY B.id ASC;
-        """)
-        
-        timeline_data = cursor.fetchall()
-        
-        # Clean up and return the data!
-        cursor.close()
-        conn.close()
-    
-        return timeline_data
-
-    except Exception as e:
-        if conn:
-            conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
-    
 
 
 @app.get("/api/traffic_score")
@@ -80,6 +29,6 @@ def get_scores():
     df['weighted_points'] = (df['fatal'] * 15) + (df['severe'] * 8) + (df['light'] * 2) # weights for each severity
     df['ratio'] = (df['weighted_points'] / df['population_thousands']) * 100  #calculating accidents for 100,000 people
     df['score'] = 100 - (df['ratio'] * 2) # Calibration factoring
-    df['score'] = df['score'].clip(0, 100).round(2)
+    df['score'] = df['score'].clip(0, 100).round(2) # change to this later maybe (100 - df['score'].clip(0, 100)).round(2)
     result = df[['year', 'month', 'score', 'fatal', 'severe', 'light']].to_dict(orient="records")
     return result
