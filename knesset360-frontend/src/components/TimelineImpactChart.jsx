@@ -25,7 +25,7 @@ const NeedleDot = (props) => {
     }
 
     const multipleBills = payload.bill_count > 1;
-    const dotColor = multipleBills ? '#4b5563' : STATUS_COLORS[payload.bills[0].statusid];
+    const dotColor = STATUS_COLORS[payload.bills[0].statusid];
     let targetY = (450 * (1 - payload.targetScore / 100)); // convert to pixels
     return (
         <g>
@@ -40,7 +40,7 @@ const NeedleDot = (props) => {
                 strokeDasharray="3 3" 
                 opacity={0.4}
             />
-            <circle cx={cx} cy={cy} r={multipleBills ? 8 + payload.bill_count : 8} fill={dotColor} stroke="#fff" strokeWidth={2} />
+            <circle cx={cx} cy={cy} r={multipleBills ? 8 + payload.bill_count : 6} fill={dotColor} stroke="#fff" strokeWidth={2} />
             {multipleBills && (
                 <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="10px" fontWeight="bold">
                     {payload.bill_count}
@@ -147,6 +147,11 @@ const MergedTooltip = ({ active, payload }) => {
 };
 
 
+//TODO: check the parenthesis
+const refineName = (name) => {
+
+}
+
 export default function TimelineImpactChart({ billsData, scoreData }) {
 
     const chartData = useMemo(() => {
@@ -198,7 +203,7 @@ export default function TimelineImpactChart({ billsData, scoreData }) {
                 ...group,
                 bill_count: group.bills.length,
                 targetScore: interpolatedScore,
-                visualY: interpolatedScore + 10 + (group.bills[0]?.id % 25),
+                visualY: interpolatedScore + 10 + (group.bills[0]?.id % 25) * 4,
             };
         });
 
@@ -210,14 +215,15 @@ export default function TimelineImpactChart({ billsData, scoreData }) {
 
     //xAxis to show only months - will change later to 3 or 4 months for better view
     const scoreTicks = useMemo(() => {
-        return chartData.formattedScores.map(d => d.timestamp);    },
-    [chartData.formattedScores]);
+        return chartData.formattedScores.map(d => d.timestamp);    
+    },[chartData.formattedScores]);
 
     return (
-        <div style={{ width: '100%', height: '500px', backgroundColor: '#fff', padding: '20px', borderRadius: '12px' }}>
-            <h2 style={{ textAlign: 'right', marginBottom: '20px' }}>השפעת חקיקה על מדד הבטיחות</h2>
+        <div className="big-chart-container">
+            <h2 className='title-content'>השפעת חקיקה על מדד הבטיחות</h2>
+            <div style={ {height: "500px" }}>
             <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData.merged} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <ComposedChart data={chartData.merged} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
                     
                     <XAxis 
@@ -246,6 +252,7 @@ export default function TimelineImpactChart({ billsData, scoreData }) {
                         stroke="#8884d8"
                         strokeWidth={4}
                         activeDot={{ r: 8, strokeWidth: 0 }} // Shows when hover
+                        dot={false}
                         connectNulls // for Continuous function view
                     />
 
@@ -262,6 +269,7 @@ export default function TimelineImpactChart({ billsData, scoreData }) {
                     />                
                 </ComposedChart>
             </ResponsiveContainer>
+            </div>
         </div>
     );
 }
