@@ -52,7 +52,7 @@ export default function StatusPieChart ({ pieData, total, title, onSliceClick })
                         cy="50%"
                         innerRadius={70}  // Creates the donut hole
                         outerRadius={130}
-                        paddingAngle={2}  // Visual gap between slices
+                        paddingAngle={3}  // Visual gap between slices
                         onClick={onSliceClick}
                     >
                     <Label 

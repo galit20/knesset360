@@ -4,8 +4,12 @@
   align-items: center;
   padding: 4rem 10rem;
   background-color: #f9f9f7;
+  background: linear-gradient(135deg, #f9f9f7 0%, #f0f2f5 100%);
+  border-bottom: 1px solid #e5e7eb;
   margin-bottom: 2rem;
   direction: rtl; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Shadow drops downward now */
+
 }
 
 .subject-banner-content {
@@ -14,8 +18,9 @@
 
 .subject-title {
   font-size: 6rem;
-  font-weight: 800;
-  color: #3e4bc7;
+  font-weight: 900;
+  letter-spacing: -2px;
+  color: #3046c2;
   margin-bottom: 1.5rem;
   text-align: right;
 }

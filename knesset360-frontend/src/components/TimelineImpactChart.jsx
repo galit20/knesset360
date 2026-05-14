@@ -7,6 +7,7 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
+    Legend,
 } from 'recharts';
 
 import { useMemo } from 'react';
@@ -20,35 +21,32 @@ import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
 const NeedleDot = (props) => {
     const { cx, cy, payload } = props;
 
-    if (!payload || !payload.bills || payload.bills.length === 0) {
-        return <circle cx={cx} cy={cy} r={6} fill="#ccc" />;
+    if (payload && payload.bills && payload.bills.length !== 0) {
+        const multipleBills = payload.bill_count > 1;
+        const dotColor = STATUS_COLORS[payload.bills[0].statusid];
+        let targetY = (450 * (1 - payload.targetScore / 100)); // convert to pixels
+        return (
+            <g>
+                {/* The Vertical Needle */}
+                <line 
+                    x1={cx} 
+                    y1={cy} 
+                    x2={cx} 
+                    y2={targetY} 
+                    stroke={dotColor} 
+                    strokeWidth={1} 
+                    strokeDasharray="3 3" 
+                    opacity={0.4}
+                />
+                <circle cx={cx} cy={cy} r={multipleBills ? 8 + payload.bill_count : 6} fill={dotColor} stroke="#fff" strokeWidth={2} />
+                {multipleBills && (
+                    <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="10px" fontWeight="bold">
+                        {payload.bill_count}
+                    </text>
+                )}
+            </g>
+        );
     }
-
-    const multipleBills = payload.bill_count > 1;
-    const dotColor = STATUS_COLORS[payload.bills[0].statusid];
-    let targetY = (450 * (1 - payload.targetScore / 100)); // convert to pixels
-    return (
-        <g>
-            {/* The Vertical Needle */}
-            <line 
-                x1={cx} 
-                y1={cy} 
-                x2={cx} 
-                y2={targetY} 
-                stroke={dotColor} 
-                strokeWidth={1} 
-                strokeDasharray="3 3" 
-                opacity={0.4}
-            />
-            <circle cx={cx} cy={cy} r={multipleBills ? 8 + payload.bill_count : 6} fill={dotColor} stroke="#fff" strokeWidth={2} />
-            {multipleBills && (
-                <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="10px" fontWeight="bold">
-                    {payload.bill_count}
-                </text>
-            )}
-        </g>
-    );
-
 };
 
 const MergedTooltip = ({ active, payload }) => {
@@ -224,7 +222,7 @@ export default function TimelineImpactChart({ billsData, scoreData }) {
             <div style={ {height: "500px" }}>
             <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData.merged} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5}/>
                     
                     <XAxis 
                         dataKey="timestamp" 
@@ -255,7 +253,6 @@ export default function TimelineImpactChart({ billsData, scoreData }) {
                         dot={false}
                         connectNulls // for Continuous function view
                     />
-
                     {/* The Bills Scatter */}
                     <Scatter
                         name="bill-dot"

@@ -20,11 +20,14 @@ export default function StatusBarChart ({ barData, title, onSliceClick }) {
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="knessetnum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -5 }} />
-                <YAxis label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft' }} />
-                <Tooltip />
+                <XAxis dataKey="knessetnum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -2 }} />
+                <YAxis
+                    tick={{ textAnchor: 'start' }} 
+                    label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft', offset: 10 }} />
+                <Tooltip/>
                 {Object.keys(STATUS_DESC).map((statusId) => (
                     <Bar 
+                        maxBarSize = {70}
                         key={statusId}
                         dataKey={statusId} 
                         name={STATUS_DESC[statusId]} 
