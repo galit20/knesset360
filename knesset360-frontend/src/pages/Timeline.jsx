@@ -1,31 +1,56 @@
 import { useState, useEffect, useMemo } from 'react';
-
-import ScatterChartBills from '../components/ScatterChartBill'
-import StatusPieChart from '../components/PieChartBill'
-import StatusBarChart from '../components/BarChartBill'
-import InitiatorCard from '../components/InitiatorCard'
-import ScoreChart from '../components/ScoreChart'
-
-
+import { useParams } from 'react-router-dom';
 import './Timeline.css'
 
+import ScatterChartBills    from '../components/ScatterChartBill'
+import StatusPieChart       from '../components/PieChartBill'
+import StatusBarChart       from '../components/BarChartBill'
+import InitiatorCard        from '../components/InitiatorCard'
+import ScoreChart           from '../components/ScoreChart'
+import TimelineImpactChart  from '../components/TimelineImpactChart'
+
 import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
+import { SUBJECTS_DICT } from '../utils/subjects'
+
+import roadSafetyImg    from '../assets/categories/road-safety.svg';
+import educationImg     from '../assets/categories/education.svg';
+import healthImg        from '../assets/categories/health.svg';
+import crimeImg         from '../assets/categories/crime.svg';
+import migrationImg     from '../assets/categories/migration.svg';
+import environmentImg   from '../assets/categories/environment.svg';
+
+const imageMap = {
+    'road-safety':  roadSafetyImg,
+    'education':    educationImg,
+    'health':       healthImg,
+    'crime':        crimeImg,
+    'migration':    migrationImg,
+    'environment':  environmentImg,
+};
 
 
 export default function TimelinePage() {
+
+    const { subject } = useParams();
+
     // hold the data from the server
     const [billsData, setBillData] = useState([]);
     const [scoreData, setScoreData] = useState([]);
 
+    const currentSubject = subject || 'road-safety';
+    const config = SUBJECTS_DICT[currentSubject];
+    const subjectImage = imageMap[currentSubject];
 
     // fetch the data from FastAPI when the page loads
     useEffect(() => {
-        fetch('http://localhost:8000/api/timeline')
+        fetch(`http://localhost:8000/api/timeline/${currentSubject}`)
             .then(response => response.json())      // convert the server response to JSON
             .then(data => setBillData(data))        // save to your react state
             .catch(error => console.error("Error fetching data:", error));
-    },  []); // [] - only run this once when the page loads
+    },  [currentSubject]);
 
+
+    // TODO: get all scores for all subjects and make an api/scores/{subject} route
     // fetch the data from FastAPI when the page loads
     useEffect(() => {
         fetch('http://localhost:8000/api/traffic_score')
@@ -66,8 +91,9 @@ export default function TimelinePage() {
                 initiator_counts[person.id].count += 1;
             });
         }
+        const pie_accumulator_values =  Object.values(pie_accumulator).filter(item => item.value > 0);
         return {
-            pieData: Object.values(pie_accumulator),
+            pieData: pie_accumulator_values,
             barData: Object.values(barMap),
             topInitiators: Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 10)
         };
@@ -97,15 +123,25 @@ export default function TimelinePage() {
                 );
     }, [selectedInitiatorId, billsData]);
 
+    const bills2015 = billsData.filter(b => new Date(b.publishdate).getFullYear() === 2015);
+    const bills2025newdate = bills2015.map(b => ({...b, publishdate: new Date(b.publishdate).getTime()}));
+    const scores2015 = scoreData.filter(s => s.year === 2015);
+
     return (
-        <div style={{ padding: '20px', width: '95vw', margin: '0 auto'}}>
-            <h1>Timeline - data check</h1>
-            <p style={{ color: '#6b7280' }}>Hover over any point to see the bill details.</p>
+        <div style={{ width: '100vw', margin: '0 auto'}}>
+        <div className="subject-banner">
+            <div className="subject-banner-content">
+                <h1 className="subject-title">{config.label}</h1>
+                <p className="subject-description">{config.description}</p>
+            </div>
+            <div className="subject-banner-visual">
+                <img src={subjectImage} alt={config.label} className="subject-illustration" />
+            </div>
+        </div>
+        <div style={{ width: '95vw', margin: '0 auto'}}>
 
-            <ScoreChart data={scoreData} />
-
-            <ScatterChartBills billsData={billsData} />
-
+            <TimelineImpactChart billsData={billsData} scoreData={scoreData} />
+            
             <div className="box-chart-container">
                 <StatusPieChart 
                     pieData={pieData}
@@ -199,7 +235,7 @@ export default function TimelinePage() {
             )}
 
             <div className="initiator-section">
-                <h2 className="title-content">חברי הכנסת היוזמים המובילים</h2>
+                <h2 className="title-content">עשרת חברי הכנסת היוזמים המובילים</h2>
                 
                 <div className="initiator-grid">
                     {topInitiators.map((initiator) => (
@@ -253,6 +289,7 @@ export default function TimelinePage() {
                 )}
 
             </div>
+        </div>
         </div>
     );
 }
