@@ -1,9 +1,9 @@
 // import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import NavBar from './components/NavBar' // <-- Import your new component!
-import Home from './pages/Home' // <-- Import your new Home page!
-import Timeline from './pages/Timeline'
+import NavBar from './components/NavBar' // Navigation bar
+import Home from './pages/Home' // Home page
+import Timeline from './pages/Timeline' // Timeline page with categories
 import './App.css'
 
 
@@ -16,6 +16,7 @@ function App() {
         <Routes>
             <Route path="/" element= {<Home />} />
             <Route path="/timeline" element= {<Timeline />} />
+            <Route path="/timeline/:subject" element={<Timeline />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -5,3 +5,5 @@ knesset360-backend/app/__pycache__/config.cpython-312.pyc
 knesset360-backend/app/__pycache__/db.cpython-312.pyc
 knesset360-backend/app/__pycache__/main.cpython-312.pyc
 .vscode/launch.json
+knesset360-backend/app/routes/__pycache__/timeline.cpython-312.pyc
+knesset360-backend/app/routes/__pycache__/__init__.cpython-312.pyc

@@ -5,6 +5,7 @@
 }
 
 .app-container {
+  width: 100%;
   padding-top: 60px;
   font-family: sans-serif;
 }
