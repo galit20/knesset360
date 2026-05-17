@@ -4,3 +4,8 @@ db-files/__pycache__/config.cpython-312.pyc
 knesset360-backend/app/__pycache__/config.cpython-312.pyc
 knesset360-backend/app/__pycache__/db.cpython-312.pyc
 knesset360-backend/app/__pycache__/main.cpython-312.pyc
+knesset360-backend/app/__pycache__/main.cpython-313.pyc
+knesset360-backend/app/__pycache__/db.cpython-313.pyc
+knesset360-backend/app/__pycache__/config.cpython-313.pyc
+.claude/calude.md
+.claude/settings.local.json

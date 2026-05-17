@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import NavBar from './components/NavBar' // <-- Import your new component!
 import Home from './pages/Home' // <-- Import your new Home page!
+import Factions from './pages/Factions'
 import './App.css'
+
 
 
 function App() {
@@ -14,6 +16,7 @@ function App() {
         <NavBar />
         <Routes>
             <Route path="/" element= {<Home />} />
+            <Route path="/factions" element={<Factions />} />
         </Routes>
       </div>
     </BrowserRouter>
@@ -22,3 +25,5 @@ function App() {
 }
 
 export default App
+
+//added for faction page
