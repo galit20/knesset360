@@ -305,3 +305,5 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
         if conn:
             conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
