@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import './Factions.css';
 
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
@@ -46,46 +46,160 @@ const STATUS_COLORS = {
   'אחר': '#94a3b8'
 };
 
-function getDominantColor(imgEl, fallback = '#1a3a8f') {
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width = 50;
-    canvas.height = 50;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(imgEl, 0, 0, 50, 50);
-    const data = ctx.getImageData(0, 0, 50, 50).data;
-    let r = 0, g = 0, b = 0, count = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const alpha = data[i + 3];
-      if (alpha < 128) continue;
-      const pr = data[i], pg = data[i + 1], pb = data[i + 2];
-      const brightness = (pr + pg + pb) / 3;
-      if (brightness > 230 || brightness < 20) continue;
-      r += pr; g += pg; b += pb; count++;
+const OFFICIAL_SEATS = {
+  20: {
+    'הליכוד': 30,
+    'המחנה הציוני': 24,
+    'הרשימה המשותפת': 13,
+    'יש עתיד': 11,
+    'כולנו': 10,
+    'הבית היהודי': 8,
+    'שס': 7,
+    'ישראל ביתנו': 6,
+    'יהדות התורה': 6,
+    'מרצ': 5,
+  },
+  21: {
+    'הליכוד': 35,
+    'כחול לבן': 35,
+    'חדש-תעל': 6,
+    'רעם-בלד': 4,
+    'שס': 8,
+    'יהדות התורה': 8,
+    'ישראל ביתנו': 5,
+    'העבודה': 6,
+    'תקווה חדשה': 4,
+    'מרצ': 4,
+  },
+  22: {
+    'כחול לבן': 33,
+    'הליכוד': 32,
+    'הרשימה המשותפת': 13,
+    'ישראל ביתנו': 8,
+    'שס': 9,
+    'יהדות התורה': 7,
+    'העבודה-גשר-מרצ': 7,
+    'ימינה': 7,
+    'כולנו': 4,
+    'רעם-בלד': 4,
+  },
+  23: {
+    'הליכוד': 36,
+    'כחול לבן': 33,
+    'הרשימה המשותפת': 15,
+    'שס': 9,
+    'יהדות התורה': 7,
+    'ישראל ביתנו': 7,
+    'העבודה-גשר-מרצ': 7,
+    'ימינה': 6,
+  },
+  24: {
+    'הליכוד': 30,
+    'יש עתיד': 17,
+    'שס': 9,
+    'כחול לבן': 8,
+    'ימינה': 7,
+    'העבודה': 7,
+    'יהדות התורה': 7,
+    'ישראל ביתנו': 7,
+    'תקווה חדשה': 6,
+    'הרשימה המשותפת': 6,
+    'הציונות הדתית': 6,
+    'מרצ': 6,
+    'רעם': 4,
+  },
+  25: {
+    'הליכוד': 32,
+    'יש עתיד': 24,
+    'המחנה הממלכתי': 12,
+    'שס': 11,
+    'יהדות התורה': 7,
+    'הציונות הדתית': 7,
+    'עוצמה יהודית': 6,
+    'ישראל ביתנו': 6,
+    'הרשימה המשותפת': 5,
+    'רעם': 5,
+    'חדש-תעל': 5,
+  },
+};
+
+const FACTION_COLORS = [
+  '#1a3a8f','#378ADD','#1D9E75','#EF9F27','#D85A30',
+  '#7F77DD','#D4537E','#5DCAA5','#639922','#E24B4A',
+  '#BA7517','#0F6E56','#534AB7','#993C1D','#888780',
+];
+
+function ParliamentChart({ factions, selectedFaction, onSelect, knessetNum }) {
+  const colorMap = {};
+  factions.forEach((f, i) => { colorMap[f.id] = FACTION_COLORS[i % FACTION_COLORS.length]; });
+
+  const officialSeats = OFFICIAL_SEATS[knessetNum] || {};
+
+  const getSeatCount = (f) => {
+    const match = Object.entries(officialSeats).find(([name]) =>
+      f.name.includes(name) || name.includes(f.name)
+    );
+    return match ? match[1] : (f.member_count || 0);
+  };
+
+  const total = factions.reduce((s, f) => s + getSeatCount(f), 0) || 120;
+  const cx = 220, cy = 200, innerR = 75, outerR = 165, rows = 4;
+
+  const allSeats = factions.flatMap(f =>
+    Array(getSeatCount(f)).fill({ id: f.id, color: colorMap[f.id] })
+  );
+
+  const seats = [];
+  let idx = 0;
+  for (let row = 0; row < rows; row++) {
+    const r = innerR + (outerR - innerR) * row / (rows - 1);
+    const n = Math.round(16 + row * 9);
+    for (let i = 0; i < n && idx < allSeats.length; i++, idx++) {
+      const angle = Math.PI + Math.PI * i / (n - 1);
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      seats.push({ x, y, ...allSeats[idx] });
     }
-    if (count === 0) return fallback;
-    r = Math.round(r / count);
-    g = Math.round(g / count);
-    b = Math.round(b / count);
-    const darken = 0.6;
-    return `rgb(${Math.round(r * darken)},${Math.round(g * darken)},${Math.round(b * darken)})`;
-  } catch {
-    return fallback;
   }
+
+  return (
+    <div className="parliament-wrap">
+      <svg viewBox="0 0 440 210" className="parliament-svg">
+        {seats.map((s, i) => (
+          <circle
+            key={i}
+            cx={s.x.toFixed(1)}
+            cy={s.y.toFixed(1)}
+            r={selectedFaction?.id === s.id ? 7 : 5.5}
+            fill={s.color}
+            opacity={selectedFaction && selectedFaction.id !== s.id ? 0.25 : 1}
+            style={{ cursor: 'pointer', transition: 'opacity 0.2s, r 0.2s' }}
+            onClick={() => onSelect(factions.find(f => f.id === s.id))}
+          />
+        ))}
+
+      </svg>
+      <div className="parliament-legend">
+        {factions.map((f, i) => (
+          <div
+            key={f.id}
+            className={`parliament-legend-item ${selectedFaction?.id === f.id ? 'selected' : ''}`}
+            onClick={() => onSelect(selectedFaction?.id === f.id ? null : f)}
+          >
+            <span className="parliament-legend-dot" style={{ background: colorMap[f.id] }} />
+            <span className="parliament-legend-name">{f.name}</span>
+            <span className="parliament-legend-count">{getSeatCount(f)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-function FactionBanner({ faction }) {
-  const [bannerColor, setBannerColor] = useState('#1a3a8f');
-  const logoSrc = FACTION_LOGOS[faction.name];
 
-  useEffect(() => {
-    if (!logoSrc) return;
-    setBannerColor('#1a3a8f');
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => setBannerColor(getDominantColor(img));
-    img.src = logoSrc;
-  }, [logoSrc]);
+function FactionBanner({ faction, color }) {
+  const logoSrc = FACTION_LOGOS[faction.name];
+  const bannerColor = color || '#1a3a8f';
 
   return (
     <div className="faction-banner" style={{ background: bannerColor }}>
@@ -332,20 +446,19 @@ export default function Factions() {
       {error && <div className="stats-error">{error}</div>}
 
       {factions.length > 0 && (
-        <>
-          <p className="bar-label">מפלגות</p>
-          <div className="faction-bar">
-            {factions.map(f => (
-              <button
-                key={f.id}
-                className={`selector-btn ${selectedFaction?.id === f.id ? 'active' : ''}`}
-                onClick={() => setSelectedFaction(f)}
-              >
-                {f.name}
-              </button>
-            ))}
-          </div>
-        </>
+        <ParliamentChart
+          factions={[...factions].sort((a, b) => {
+            const seats = OFFICIAL_SEATS[selectedKnesset] || {};
+            const getSeats = f => {
+              const match = Object.entries(seats).find(([name]) => f.name.includes(name) || name.includes(f.name));
+              return match ? match[1] : (f.member_count || 0);
+            };
+            return getSeats(b) - getSeats(a);
+          })}
+          selectedFaction={selectedFaction}
+          onSelect={f => setSelectedFaction(f)}
+          knessetNum={selectedKnesset}
+        />
       )}
 
       {factions.length === 0 && !error && (
@@ -356,7 +469,10 @@ export default function Factions() {
 
       {stats && !loading && (
         <div className="stats-panel">
-          <FactionBanner faction={stats.faction} />
+          <FactionBanner
+            faction={stats.faction}
+            color={FACTION_COLORS[factions.findIndex(f => f.id === stats.faction.id) % FACTION_COLORS.length]}
+          />
           <div className="stats-cards">
             <div className="stat-card">
               <span className="stat-number">{stats.total_bills.toLocaleString()}</span>

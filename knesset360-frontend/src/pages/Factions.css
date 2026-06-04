@@ -530,3 +530,71 @@
   color: #aaa;
   font-size: 0.88rem;
 }
+
+/* ── Parliament Chart ── */
+.parliament-wrap {
+  margin: 1rem 0;
+  background: var(--color-background-primary, #fff);
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1rem 1.5rem 1.2rem;
+}
+
+.parliament-svg {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.parliament-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  direction: rtl;
+  margin-top: 10px;
+}
+
+.parliament-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #333;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 0.5px solid #ddd;
+  cursor: pointer;
+  background: white;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.parliament-legend-item:hover {
+  border-color: #888;
+}
+
+.parliament-legend-item.selected {
+  background: #1a3a8f;
+  border-color: #1a3a8f;
+  color: white;
+}
+
+.parliament-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.parliament-legend-name {
+  font-weight: 500;
+}
+
+.parliament-legend-count {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.parliament-legend-item.selected .parliament-legend-count {
+  opacity: 0.8;
+}
