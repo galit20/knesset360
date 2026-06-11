@@ -143,12 +143,13 @@ const MergedTooltip = ({ active, payload }) => {
     return null;
 };
 
-
-//TODO: check the parenthesis
+// get cleaner bill names
 const refineName = (name) => {
-    indexParen = name.indexOf("(");
-    indexQuote = name.indexOf(",");
-    return index === -1 && indexQuote === -1 ? name : name.substring(indexParen + 1, indexQuote)
+    const newName = name.lastIndexOf(",") >= 0 ? name.slice(0, name.indexOf(",")) : name // delete the date at the end
+    const close = newName.lastIndexOf(')')
+    const open = newName.lastIndexOf('(', close);
+    const len = close - open - 1
+    return len > 15 ? newName.slice(open + 1, close) : newName
 }
 
 // export default function TimelineImpactChart({ billsData, scoreData, knessetNumber}) {
@@ -347,9 +348,7 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
             
             const newBill = {
                 id: bill.id,
-                name: bill.name.includes("(") && bill.name.includes("),")
-                    ? bill.name.substring(bill.name.indexOf("(") + 1, bill.name.indexOf("),")) 
-                    : bill.name,
+                name: refineName(bill.name),
                 initiators_info: bill.initiators_info,
                 statusid: bill.statusid,
                 subtypeid: bill.subtypeid,

@@ -48,32 +48,50 @@ async def get_subject_timeline(subject: str = "road-safety"):
         cursor = conn.cursor(cursor_factory=RealDictCursor)  # read as JSON for better react functionallity
         
         query_keywords = [f"%{k}%" for k in config['keywords']]
-        
         query = """
             SELECT 
-                B.id,
-                B.knessetnum,
-                B.name,
-                B.statusid,
-                B.subtypeid,
-				DATE_TRUNC('day', MIN(BI.lastupdateddate)) as publishdate,
+            B.id,
+            B.knessetnum,
+            B.name,
+            B.statusid,
+            B.subtypeid,
+            B.summarylaw,
+            COALESCE(
+                DATE_TRUNC('day', MIN(BI.lastupdateddate)),
+                DATE_TRUNC('day', B.lastupdateddate)
+            ) AS publishdate,
+            B.lastupdateddate,
+            COALESCE(
                 json_agg(
                     json_build_object(
-                        'id', P.id, 
-                        'name', P.firstname || ' ' || P.lastname)
-                    ) AS initiators_info,
-                ROW_NUMBER() OVER(PARTITION BY B.knessetnum ORDER BY B.lastupdateddate ASC) as stack_position
-            FROM kns_bill as B 
-            JOIN kns_billinitiator as BI on BI.billid = B.id
-            JOIN kns_person as P on P.id = BI.personid
-            JOIN kns_status as S on S.id = B.statusid
-            WHERE B.name LIKE ANY(%s)
-				and B.knessetnum > 19
-            GROUP BY 
-                B.id,
-                B.knessetnum,
-                B.name
-            ORDER BY B.id ASC;
+                        'id', P.id,
+                        'name', P.firstname || ' ' || P.lastname
+                    )
+                ) FILTER (WHERE P.id IS NOT NULL),
+                '[]'::json
+            ) AS initiators_info,
+            ROW_NUMBER() OVER (
+                PARTITION BY B.knessetnum
+                ORDER BY B.lastupdateddate ASC
+            ) AS stack_position
+        FROM kns_bill AS B
+        LEFT JOIN kns_billinitiator AS BI 
+            ON BI.billid = B.id
+        LEFT JOIN kns_person AS P 
+            ON P.id = BI.personid
+        JOIN kns_status AS S 
+            ON S.id = B.statusid
+        WHERE B.name LIKE ANY (%s)
+        AND B.knessetnum > 19
+        GROUP BY
+            B.id,
+            B.knessetnum,
+            B.name,
+            B.statusid,
+            B.subtypeid,
+            B.summarylaw,
+            B.lastupdateddate
+        ORDER BY B.id ASC;
         """
 
         cursor.execute(query, (query_keywords,))
