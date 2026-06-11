@@ -295,14 +295,16 @@ const refineName = (name) => {
 //     );
 // }
 
+const MAIN_STATUS = ["עברו", "בתהליך", "נעצרו"];
 
 export default function TimelineImpactChart({ billsData, scoreData, knessetNumber }) {
     const [selectedGroup, setSelectedGroup] = useState(null);
-    
+    const [statusFilter, setStatusFilter] = useState(null); // 'all', 'passed', 'progress', 'stopped'
+
     // Clear circle group details whenever the preset knesset number parameter shifts
     useEffect(() => { 
         setSelectedGroup(null); 
-    }, [knessetNumber]);
+    }, [knessetNumber, statusFilter]);
 
     const chartData = useMemo(() => {
         // 1. Process Scores
@@ -314,7 +316,10 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
 
         const groups = {}; // group bills by same publication date month. (Set in 15 of the month)
 
-        billsData.forEach(bill => {
+        const filteredBillsInput = !statusFilter ? billsData :
+                                billsData.filter(bill => statusFilter === getShortStatus(bill.statusid, bill.knessetnum));
+
+        filteredBillsInput.forEach(bill => {
             const originalDate = new Date(bill.publishdate);
             const year = originalDate.getFullYear();
             const month = originalDate.getMonth(); // 0 = Jan, 11 = Dec
@@ -383,11 +388,11 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
 
         // Return all three so we don't have to calculate them again
         return { merged, formattedBills, formattedScores };
-    }, [billsData, scoreData]);
+    }, [billsData, scoreData, statusFilter]);
 
     // xAxis to show only months
     const scoreTicks = useMemo(() => {
-        return chartData.formattedScores.filter((d, i) => i % 3 === 0).map(d => d.timestamp);    
+        return chartData.formattedScores.filter((d, i) => i % 6 === 0).map(d => d.timestamp);    
     }, [chartData.formattedScores]);
 
     // --- SIDEBAR DATA LOGIC ---
@@ -411,13 +416,33 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
         return knessetNumber ? `הצעות חוק - כנסת ${knessetNumber}` : "כל הצעות החוק";
     }, [selectedGroup, knessetNumber]);
 
+
     return (
         <div className="split-view-container" style={{ direction: 'rtl' }}>
             
             {/* Left Box Frame: Takes up 80% of layout view space */}
             <div className="chart-main-frame">
                 <div className="big-chart-container">
-                    <h2 className='title-content'>השפעת חקיקה על מדד הבטיחות</h2>
+                    <div className='chart-top-row'>
+                        <h2 className='title-content-side'>השפעת חקיקה על מדד הבטיחות</h2>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-start' }}>
+                            <button
+                                className={`selector-btn ${statusFilter === null ? 'active' : ''}`}
+                                onClick={() => {setSelectedGroup(null); setStatusFilter(null)}}>
+                            הכל
+                            </button>
+                            {MAIN_STATUS.map(s => (
+                                <button
+                                    key={s}
+                                    className={`selector-btn ${statusFilter === s ? 'active' : ''}`}
+                                    onClick={() => {setSelectedGroup(null); setStatusFilter(s)}}>
+                                {s}
+                                </button>))
+                            }
+                        </div>
+                    </div>
+                    
+
                     <div style={{ height: "500px" }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart data={chartData.merged} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>

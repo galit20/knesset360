@@ -13,6 +13,14 @@
   min-width: 0; /* Prevents recharts from breaking container widths */
 }
 
+.chart-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-items: center;
+  margin: 0 20px 0 70px;
+}
+
 /* 20% Allocation for Sidebar Registry */
 .bill-sidebar-panel {
   flex: 1;
@@ -228,4 +236,30 @@
 .progress-block.completed {
     /* We remove the fallback solid background color so the dynamic inline RGBA style can paint the gradient step effectively */
     background: none; 
+}
+
+.selector-btn {
+  border: 1px solid #e2e8f0; /* Softer border color */
+  border-radius: 9999px; /* Perfectly pill-shaped */
+  background: #ffffff;
+  color: #64748b; /* Muted text color for inactive state */
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle depth */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selector-btn:hover {
+  border-color: #cbd5e1;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.selector-btn.active {
+  background: #1a3a8f;
+  color: #ffffff;
+  border-color: #1a3a8f;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(41, 27, 233, 0.25); /* Colored glow effect */
 }

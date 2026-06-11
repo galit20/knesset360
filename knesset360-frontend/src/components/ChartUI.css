@@ -21,6 +21,10 @@
     margin-bottom: 20px;
 }
 
+.title-content-side {
+    text-align: right;
+    color: #374151;
+}
 
 .big-chart-container {
     width: 100%;
