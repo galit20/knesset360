@@ -10,7 +10,7 @@ import {
 
 import './ChartUI.css'
 
-import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
+import { STATUS_COLORS, STATUS_DESC, STATUS_COLORS_SHORT } from '../utils/billStatus'
 
 
 export default function StatusBarChart ({ barData, title, onSliceClick }) {
@@ -25,14 +25,14 @@ export default function StatusBarChart ({ barData, title, onSliceClick }) {
                     tick={{ textAnchor: 'start' }} 
                     label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft', offset: 10 }} />
                 <Tooltip/>
-                {Object.keys(STATUS_DESC).map((statusId) => (
+                {Object.keys(STATUS_COLORS_SHORT).map((statusId) => (
                     <Bar 
-                        maxBarSize = {70}
+                        maxBarSize = {80}
                         key={statusId}
                         dataKey={statusId} 
-                        name={STATUS_DESC[statusId]} 
+                        name={statusId} 
                         stackId="a" 
-                        fill={STATUS_COLORS[statusId]} 
+                        fill={STATUS_COLORS_SHORT[statusId]} 
                         cursor="pointer"
                         onClick={onSliceClick}>
                     </Bar>
