@@ -55,6 +55,7 @@ async def get_subject_timeline(subject: str = "road-safety"):
                 B.knessetnum,
                 B.name,
                 B.statusid,
+                B.subtypeid,
 				DATE_TRUNC('day', MIN(BI.lastupdateddate)) as publishdate,
                 json_agg(
                     json_build_object(

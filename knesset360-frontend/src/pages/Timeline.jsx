@@ -8,8 +8,9 @@ import StatusBarChart       from '../components/BarChartBill'
 import InitiatorCard        from '../components/InitiatorCard'
 import ScoreChart           from '../components/ScoreChart'
 import TimelineImpactChart  from '../components/TimelineImpactChart'
+import KnessetButtons       from '../components/knessetButtons';
 
-import { STATUS_COLORS, STATUS_DESC } from '../utils/billStatus'
+import { STATUS_COLORS, STATUS_COLORS_SHORT, STATUS_DESC, getShortStatus } from '../utils/billStatus'
 import { SUBJECTS_DICT } from '../utils/subjects'
 
 import roadSafetyImg    from '../assets/categories/road-safety.svg';
@@ -29,9 +30,21 @@ const imageMap = {
 };
 
 
+const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
+
+const KNESSETS = {
+    "20": {start: "2015-03-31", end: "2019-01-01"},
+    "21": {start: "2019-04-30", end: "2019-10-03"},
+    "22": {start: "2019-10-03", end: "2020-03-16"},
+    "23": {start: "2020-03-16", end: "2021-01-06"},
+    "24": {start: "2021-04-06", end: "2022-07-04"},
+    "25": {start: "2022-11-15", end: "2026-10-27"}
+};
+
 export default function TimelinePage() {
 
     const { subject } = useParams();
+
 
     // hold the data from the server
     const [billsData, setBillData] = useState([]);
@@ -65,8 +78,8 @@ export default function TimelinePage() {
         if (!billsData || billsData.length === 0) 
             return { pieData: [], barData: [] , topInitiators: []};
 
-        const pie_accumulator = Object.keys(STATUS_DESC).reduce((acc, key) => {
-            acc[key] = { name: STATUS_DESC[key], value: 0, statusId: key, fill: STATUS_COLORS[key] };
+        const pie_accumulator = Object.keys(STATUS_COLORS_SHORT).reduce((acc, key) => {
+            acc[key] = { name: key, value: 0, statusId: key, fill: STATUS_COLORS_SHORT[key] };
             return acc;
         }, {});
 
@@ -77,13 +90,14 @@ export default function TimelinePage() {
             const sId = bill.statusid;
             const kNum = bill.knessetnum;
 
-            pie_accumulator[sId].value += 1; // update the pie chart data - count by status of bill
-
             if (!barMap[kNum]) {
                 barMap[kNum] = { knessetnum: kNum };
             }
-            barMap[kNum][sId] = (barMap[kNum][sId] || 0) + 1;
 
+            const status_name = getShortStatus(sId, kNum);
+            pie_accumulator[status_name].value += 1; // update the pie chart data - count by status of bill
+            barMap[kNum][status_name] = (barMap[kNum][status_name] || 0) + 1;
+            
             bill.initiators_info.forEach(person => {
                 if (!initiator_counts[person.id]) {
                     initiator_counts[person.id] = { ...person, count: 0 };
@@ -123,46 +137,77 @@ export default function TimelinePage() {
                 );
     }, [selectedInitiatorId, billsData]);
 
-    const bills2015 = billsData.filter(b => new Date(b.publishdate).getFullYear() === 2015);
-    const bills2025newdate = bills2015.map(b => ({...b, publishdate: new Date(b.publishdate).getTime()}));
-    const scores2015 = scoreData.filter(s => s.year === 2015);
+    // const bills2015 = billsData.filter(b => new Date(b.publishdate).getFullYear() === 2015);
+    // const bills2025newdate = bills2015.map(b => ({...b, publishdate: new Date(b.publishdate).getTime()}));
+    // const scores2015 = scoreData.filter(s => s.year === 2015);
+    
+    const filteredBillsData = selectedKnesset ?
+        billsData.filter(b => b.knessetnum === selectedKnesset) : billsData;
+
+    const filteredScores = selectedKnesset 
+    ? scoreData.filter(s => {
+        const startTimestamp = new Date(KNESSETS[selectedKnesset].start).getTime();
+        const endTimestamp = new Date(KNESSETS[selectedKnesset].end).getTime();
+        const scoreTime = new Date(s.year, s.month, 28).getTime();
+        return scoreTime >= startTimestamp && scoreTime <= endTimestamp;
+      })
+    : scoreData;
 
     return (
-        <div style={{ width: '100vw', margin: '0 auto'}}>
-        <div className="subject-banner">
-            <div className="subject-banner-content">
-                <h1 className="subject-title">{config.label}</h1>
-                <p className="subject-description">{config.description}</p>
+        <div style={{ width: '100vw', margin: '0 auto'}} >
+            <div className="subject-banner">
+                <div className="subject-banner-content">
+                    <h1 className="subject-title">{config.label}</h1>
+                    <p className="subject-description">{config.description}</p>
+                </div>
+                <div className="subject-banner-visual">
+                    <img src={subjectImage} alt={config.label} className="subject-illustration" />
+                </div>
             </div>
-            <div className="subject-banner-visual">
-                <img src={subjectImage} alt={config.label} className="subject-illustration" />
-            </div>
-        </div>
-        <div style={{ width: '95vw', margin: '0 auto'}}>
+            <div style={{ width: '95vw', margin: '0 auto'}}>
 
-            <TimelineImpactChart billsData={billsData} scoreData={scoreData} />
+            <div className="filter-section-wrapper">
+                <p className="bar-label">מספר כנסת</p>
+                <div className="selector-bar">
+                    <button
+                        className={`selector-btn ${selectedKnesset === null ? 'active' : ''}`}
+                        onClick={() => setSelectedKnesset(null)}>
+                    הכל
+                    </button>
+                    {KNESSET_OPTIONS.map(k => (
+                        <button
+                            key={k}
+                            className={`selector-btn ${selectedKnesset === k ? 'active' : ''}`}
+                            onClick={() => setSelectedKnesset(k)}>
+                        {k}
+                        </button>))
+                    }
+                </div>
+            </div>
+
+            <TimelineImpactChart billsData={filteredBillsData} scoreData={filteredScores} knessetNumber={selectedKnesset}/>
             
             <div className="box-chart-container">
                 <StatusPieChart 
                     pieData={pieData}
                     total={totalBills}
                     title="התפלגות סטטוס הצעות חוק"
-                    onSliceClick={(data) => {
-                        if (data) {
-                            setSelectedStatus(Number(data.payload.statusId));
-                            setSelectedKnesset(null);
-                        }
-                    }} 
+                    // onSliceClick={(data) => {
+                    //     if (data) {
+                    //         setSelectedStatus(Number(data.payload.statusId));
+                    //         setSelectedKnesset(null);
+                    //     }
+                    // }} 
                 />
                 <StatusBarChart 
                     barData={barData}
                     title="התפלגות הצעות חוק על פי כנסות"
-                    onSliceClick={(data) => {
-                        if (data) {
-                            setSelectedKnesset(data.payload.knessetnum);
-                            setSelectedStatus(null);
-                        }
-                    }} 
+                    // onSliceClick={(data) => {
+                    //     if (data) {
+                    //         setSelectedKnesset(data.payload.knessetnum);
+                    //         setSelectedStatus(null);
+                    //     }
+                    // }} 
                 />
             </div>
 

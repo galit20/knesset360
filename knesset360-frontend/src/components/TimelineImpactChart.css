@@ -1,0 +1,231 @@
+/* Container holding the graph and sidebar side by side */
+.split-view-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  align-items: stretch; /* Forces both boxes to look even in height */
+  margin-top: 1rem;
+}
+
+/* 80% Allocation for Main Chart Space */
+.chart-main-frame {
+  flex: 4; 
+  min-width: 0; /* Prevents recharts from breaking container widths */
+}
+
+/* 20% Allocation for Sidebar Registry */
+.bill-sidebar-panel {
+  flex: 1;
+  background: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 
+                0 8px 10px -6px rgba(0, 0, 0, 0.04);;
+  transition: transform 0.2s ease;
+  max-height: 545px; /* Perfectly bounds it to match the chart frame height */
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: right;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.sidebar-count-badge {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.clear-circle-btn {
+  background: none;
+  border: none;
+  color: #1a3a8f;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.clear-circle-btn:hover { text-decoration: underline; }
+
+/* The independent viewport scrolling container */
+.sidebar-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 4px; /* Prevent scrollbar track overlapping text */
+}
+
+/* Custom Scrollbar styled matching dashboard aesthetics */
+.sidebar-scrollable-content::-webkit-scrollbar { width: 5px; }
+.sidebar-scrollable-content::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+/* Micro Card Layout configurations inside panel */
+.sidebar-bill-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  text-align: right;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.sidebar-bill-card:hover {
+  border-color: #cbd5e1;
+  transform: translateX(-2px); /* Moves left slightly in RTL when hovered */
+}
+
+.sidebar-bill-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.bill-card-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.empty-sidebar-text {
+  text-align: right;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}
+
+
+.bill-card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.bill-card-top-row h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #1e293b;
+    font-weight: 600;
+    line-height: 1.4;
+    flex: 1;
+    text-align: right;
+}
+
+/* Badges for Bill Types */
+.bill-type-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+.bill-type-badge.private { background: #f1f5f9; color: #475569; }
+.bill-type-badge.gov { background: #f0f1ff; color: #3239c3; }
+.bill-type-badge.committee { background: #f0fdf4; color: #15803d; }
+
+.bill-card-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 8px;
+}
+
+.bill-card-date {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Progress Layout matching official Knesset view */
+.bill-progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    gap: 4px;
+}
+
+.status-text-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-align: right;
+}
+.status-text-label.rejected {
+    color: #ef4444;
+}
+
+.knesset-progress-bar {
+    display: flex;
+    gap: 3px;
+    /* Keeps the logic reading cleanly right to left */
+    flex-direction: row; 
+}
+
+/* The actual steps design */
+.progress-block {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px; /* Slight roundness like the source screenshot */
+    transition: all 0.2s ease;
+}
+
+/* Status coloring mapping states */
+.progress-block.pending {
+    background: #e2e8f0; /* Muted gray */
+}
+
+/* .progress-block.completed {
+    background: #5a846e; Muted dark green from the official site */
+/* } */
+
+.progress-block.active-dot {
+    background: #f59e0b; /* Vibrant active orange */
+    border-radius: 50%;   /* Makes it a distinct circle matching the example image */
+}
+
+.progress-block.rejected-dot {
+    background: #d97706; /* Fallback orange or change to red below if dropped */
+    background: #ef4444; /* Bright Red for failed bills */
+    border-radius: 50%;
+}
+
+.status-text-label.success {
+    color: #034e0f; /* Muted dark green matching the passed blocks */
+}
+
+.status-text-label.inactive-knesset {
+  color: #c2410c; /* Deep, authoritative legislative dark orange */
+}
+
+.progress-block.inactive-knesset-dot {
+    background: #fc5800; /* Rich orange active circle marker */
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(234, 88, 12, 0.3);
+}
+
+/* Ensure the background override works on completed blocks */
+.progress-block.completed {
+    /* We remove the fallback solid background color so the dynamic inline RGBA style can paint the gradient step effectively */
+    background: none; 
+}
