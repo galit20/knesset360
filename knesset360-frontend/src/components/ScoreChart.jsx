@@ -48,12 +48,12 @@ const ScoreChart = ({ data }) => {
   };
 
   return (
-    <div style={{ width: '100%', height: 400, marginTop: '20px' }}>
+    <div style={{ width: '50%', height: 400, marginTop: '20px', marginTop: '60px' ,marginBottom: '50px'  }}>
       <h2 style={{ textAlign: 'center', fontFamily: 'sans-serif' }}>מדד בטיחות בדרכים</h2>
       <ResponsiveContainer>
         <LineChart
           data={formattedData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           

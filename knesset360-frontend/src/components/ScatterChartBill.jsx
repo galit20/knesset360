@@ -43,6 +43,9 @@ const CustomTooltip = ({ active, payload }) => {
             <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
                 Knesset: {bill.knessetnum}
             </p>
+            <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                {new Date(bill.publishdate).toLocaleDateString('he-IL', { day:'2-digit'}/{month:'short'}/{year: '2-digit'})}
+            </p>
             <span style={{ 
                 display: 'inline-block',
                 padding: '2px 8px', 
@@ -79,10 +82,14 @@ export default function ScatterChartBills ({ billsData }) {
                 <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5} />
                     <XAxis 
-                        dataKey="knessetnum" 
-                        type="category" 
-                        name="Knesset Number"
-                        tick={{ fontSize: 14, fill: '#6b7280', fontWeight: 'bold' }} 
+                        dataKey="publishdate" 
+                        type="number"
+                        scale="time" 
+                        domain={['dataMin', 'dataMax']} /* Crucial: Tells the axis not to start at 0 */
+                        name="Date"
+                        /* 2. Format the big number back into a readable date for the bottom axis */
+                        tickFormatter={(unixTime) => new Date(unixTime).toLocaleDateString('he-IL', { month: 'short', day: '2-digit' })}
+                        tick={{ fontSize: 14, fill: '#6b7280', fontWeight: 'bold' }}
                     />
                     <YAxis 
                         dataKey="stack_position" 
