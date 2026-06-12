@@ -1,0 +1,357 @@
+.dashboard {
+  min-height: calc(100vh - 60px);
+  width: 100%;
+  background: #0d1117;
+  color: #cdd9ef;
+  padding: 28px 32px;
+  font-family: 'IBM Plex Sans Hebrew', 'Segoe UI', system-ui, sans-serif;
+  direction: rtl;
+  box-sizing: border-box;
+}
+
+/* ── Knesset selector ── */
+.dash-ksel-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.dash-ksel-btn {
+  background: transparent;
+  border: 0.5px solid #1e3a5f;
+  border-radius: 6px;
+  color: #6b7a99;
+  font-size: 13px;
+  padding: 6px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.dash-ksel-btn:hover {
+  border-color: #4a9eff;
+  color: #cdd9ef;
+}
+
+.dash-ksel-btn.active {
+  border-color: #4a9eff;
+  background: #0d2240;
+  color: #4a9eff;
+}
+
+/* ── Stat cards ── */
+.dash-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dash-stat-card {
+  background: #0d1a2e;
+  border: 0.5px solid #1e3a5f;
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-align: center;
+}
+
+.dash-stat-label {
+  font-size: 12px;
+  color: #6b7a99;
+  margin-bottom: 8px;
+}
+
+.dash-stat-value {
+  font-size: 32px;
+  font-weight: 600;
+  color: #cdd9ef;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-stat-sub {
+  font-size: 11px;
+  color: #4a9eff;
+  margin-top: 6px;
+}
+
+/* ── Widget base ── */
+.dash-widget {
+  background: #0d1a2e;
+  border: 0.5px solid #1e3a5f;
+  border-radius: 10px;
+  padding: 16px 20px;
+}
+
+.dash-widget-full {
+  margin-bottom: 14px;
+}
+
+.dash-widget-title {
+  font-size: 12px;
+  color: #6b7a99;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ── Middle row ── */
+.dash-mid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+/* ── Factions ── */
+.dash-factions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-faction-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-faction-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dash-faction-name {
+  font-size: 12px;
+  color: #cdd9ef;
+  min-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-faction-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: #1e3a5f;
+  border-radius: 2px;
+}
+
+.dash-faction-bar-fill {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.dash-faction-seats {
+  font-size: 11px;
+  color: #6b7a99;
+  min-width: 64px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Committees ── */
+.dash-committees {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-committee-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-committee-count {
+  font-size: 12px;
+  color: #cdd9ef;
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-committee-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: #1e3a5f;
+  border-radius: 2px;
+}
+
+.dash-committee-bar-fill {
+  height: 4px;
+  background: #4a9eff;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.dash-committee-name {
+  font-size: 11px;
+  color: #6b7a99;
+  min-width: 100px;
+  text-align: left;
+}
+
+/* ── Bottom row ── */
+.dash-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+/* ── Bill status ── */
+.dash-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.dash-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-status-pct {
+  font-size: 13px;
+  color: #cdd9ef;
+  min-width: 36px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-status-label {
+  font-size: 12px;
+  color: #6b7a99;
+  min-width: 48px;
+}
+
+.dash-status-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #1e3a5f;
+  border-radius: 3px;
+}
+
+.dash-status-bar-fill {
+  height: 6px;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ── Calendar ── */
+.dash-cal-nav {
+  background: transparent;
+  border: none;
+  color: #6b7a99;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.dash-cal-nav:hover { color: #4a9eff; }
+
+.dash-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.dash-cal-header {
+  font-size: 10px;
+  color: #6b7a99;
+  text-align: center;
+  padding: 2px 0;
+  font-weight: 500;
+}
+
+.dash-cal-cell {
+  height: 26px;
+  border-radius: 5px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a4a62;
+  cursor: default;
+}
+
+.dash-cal-cell.has-event {
+  background: #0d2240;
+  color: #4a9eff;
+  border: 0.5px solid #1e3a5f;
+}
+
+.dash-cal-cell.today {
+  background: transparent;
+  border: 1.5px solid #4a9eff;
+  color: #4a9eff;
+  font-weight: 600;
+}
+
+/* ── Gender chart ── */
+.dash-gender-chart {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.dash-gender-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding-right: 8px;
+}
+
+.dash-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #cdd9ef;
+}
+
+.dash-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Tooltip ── */
+.dash-tooltip {
+  background: #0d1a2e;
+  border: 0.5px solid #1e3a5f;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.dash-tooltip-label { color: #6b7a99; margin-bottom: 3px; }
+.dash-tooltip-value { color: #4a9eff; font-weight: 500; }
+
+/* ── Loading ── */
+.dash-loading {
+  text-align: center;
+  color: #6b7a99;
+  padding: 60px;
+  font-size: 14px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .dash-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .dash-mid-row { grid-template-columns: 1fr; }
+  .dash-bottom-row { grid-template-columns: 1fr; }
+}

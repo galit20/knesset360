@@ -660,3 +660,270 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
         raise HTTPException(status_code=500, detail=str(e))
     
         
+# ── DASHBOARD ENDPOINTS ─────────────────────────────────────────────────────
+# Add these routes to main.py
+
+@app.get("/api/dashboard/stats")
+def get_dashboard_stats(knesset: int = 25):
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Total bills
+        cursor.execute("SELECT COUNT(*) as total FROM kns_bill WHERE knessetnum = %s", (knesset,))
+        total_bills = cursor.fetchone()["total"]
+
+        # Gender split
+        cursor.execute("""
+            SELECT p.genderid, COUNT(DISTINCT p2p.personid) as cnt
+            FROM kns_persontoposition p2p
+            JOIN kns_person p ON p.id = p2p.personid
+            WHERE p2p.positionid IN (43, 61) AND p2p.knessetnum = %s
+            AND p2p.startdate <= (
+                SELECT MIN(startdate) + INTERVAL '1 day'
+                FROM kns_persontoposition
+                WHERE positionid IN (43, 61) AND knessetnum = %s
+            )
+            GROUP BY p.genderid
+        """, (knesset, knesset))
+        gender_rows = cursor.fetchall()
+        women = next((r["cnt"] for r in gender_rows if r["genderid"] == 250), 0)
+        men = next((r["cnt"] for r in gender_rows if r["genderid"] == 251), 0)
+
+        # Mid-term exits
+        cursor.execute("""
+            SELECT COUNT(DISTINCT personid) as exits
+            FROM kns_persontoposition
+            WHERE positionid IN (43, 61)
+              AND finishdate IS NOT NULL
+              AND knessetnum = %s
+              AND finishdate < (
+                SELECT MAX(plenumfinish) FROM kns_knessetdates
+                WHERE kns_knessetdates.knessetnum = kns_persontoposition.knessetnum
+              )
+        """, (knesset,))
+        exits = cursor.fetchone()["exits"]
+
+        # Gov ministries
+        cursor.execute("SELECT COUNT(*) as cnt FROM kns_govministry WHERE isactive = true")
+        ministries = cursor.fetchone()["cnt"]
+
+        cursor.close()
+        conn.close()
+        return {
+            "total_bills": total_bills,
+            "women": women,
+            "men": men,
+            "mid_term_exits": exits,
+            "ministries": ministries,
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/dashboard/bills-per-month")
+def get_bills_per_month(knesset: int = 25):
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT
+                TO_CHAR(DATE_TRUNC('month', publicationdate), 'YYYY-MM') as month,
+                COUNT(*) as count
+            FROM kns_bill
+            WHERE knessetnum = %s
+              AND publicationdate IS NOT NULL
+            GROUP BY DATE_TRUNC('month', publicationdate)
+            ORDER BY DATE_TRUNC('month', publicationdate)
+        """, (knesset,))
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return data
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/dashboard/bill-status")
+def get_bill_status(knesset: int = 25):
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT
+                CASE
+                    WHEN statusid = 118 THEN 'עברו'
+                    WHEN statusid IN (101,108,113,109,167,178,179,130,131,141,111,
+                                      114,117,106,142,150,181,175,126,169,158,161,
+                                      162,165,140,143,115,104,120,176) THEN 'בתהליך'
+                    WHEN statusid IN (177,122,124,110) THEN 'נעצרו'
+                    ELSE 'אחר'
+                END as status_group,
+                COUNT(*) as count
+            FROM kns_bill
+            WHERE knessetnum = %s
+            GROUP BY status_group
+            ORDER BY count DESC
+        """, (knesset,))
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return data
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/dashboard/hot-committees")
+def get_hot_committees(knesset: int = 25):
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT c.name, COUNT(cs.id) as session_count
+            FROM kns_committeesession cs
+            JOIN kns_committee c ON c.id = cs.committeeid
+            WHERE c.knessetnum = %s
+              AND cs.startdate IS NOT NULL
+            GROUP BY c.name
+            ORDER BY session_count DESC
+            LIMIT 5
+        """, (knesset,))
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return data
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+OFFICIAL_SEATS = {
+    20: [
+        {'name': 'הליכוד', 'seats': 30},
+        {'name': 'המחנה הציוני', 'seats': 24},
+        {'name': 'הרשימה המשותפת', 'seats': 13},
+        {'name': 'יש עתיד', 'seats': 11},
+        {'name': 'כולנו', 'seats': 10},
+        {'name': 'הבית היהודי', 'seats': 8},
+        {'name': 'שס', 'seats': 7},
+        {'name': 'ישראל ביתנו', 'seats': 6},
+        {'name': 'יהדות התורה', 'seats': 6},
+        {'name': 'מרצ', 'seats': 5},
+    ],
+    21: [
+        {'name': 'הליכוד', 'seats': 35},
+        {'name': 'כחול לבן', 'seats': 35},
+        {'name': 'שס', 'seats': 8},
+        {'name': 'יהדות התורה', 'seats': 8},
+        {'name': 'חדש-תעל', 'seats': 6},
+        {'name': 'העבודה', 'seats': 6},
+        {'name': 'ישראל ביתנו', 'seats': 5},
+        {'name': 'תקווה חדשה', 'seats': 4},
+        {'name': 'רעם-בלד', 'seats': 4},
+        {'name': 'מרצ', 'seats': 4},
+        {'name': 'ימינה', 'seats': 4},
+        {'name': 'עוצמה יהודית', 'seats': 1},
+    ],
+    22: [
+        {'name': 'כחול לבן', 'seats': 33},
+        {'name': 'הליכוד', 'seats': 32},
+        {'name': 'הרשימה המשותפת', 'seats': 13},
+        {'name': 'שס', 'seats': 9},
+        {'name': 'ישראל ביתנו', 'seats': 8},
+        {'name': 'יהדות התורה', 'seats': 7},
+        {'name': 'העבודה-גשר-מרצ', 'seats': 7},
+        {'name': 'ימינה', 'seats': 7},
+        {'name': 'כולנו', 'seats': 4},
+    ],
+    23: [
+        {'name': 'הליכוד', 'seats': 36},
+        {'name': 'כחול לבן', 'seats': 33},
+        {'name': 'הרשימה המשותפת', 'seats': 15},
+        {'name': 'שס', 'seats': 9},
+        {'name': 'יהדות התורה', 'seats': 7},
+        {'name': 'ישראל ביתנו', 'seats': 7},
+        {'name': 'העבודה-גשר-מרצ', 'seats': 7},
+        {'name': 'ימינה', 'seats': 6},
+    ],
+    24: [
+        {'name': 'הליכוד', 'seats': 30},
+        {'name': 'יש עתיד', 'seats': 17},
+        {'name': 'שס', 'seats': 9},
+        {'name': 'כחול לבן', 'seats': 8},
+        {'name': 'יהדות התורה', 'seats': 7},
+        {'name': 'ישראל ביתנו', 'seats': 7},
+        {'name': 'העבודה', 'seats': 7},
+        {'name': 'ימינה', 'seats': 7},
+        {'name': 'הציונות הדתית', 'seats': 6},
+        {'name': 'מרצ', 'seats': 6},
+        {'name': 'רעם', 'seats': 4},
+        {'name': 'חדש-תעל', 'seats': 6},
+        {'name': 'עוצמה יהודית', 'seats': 1},
+        {'name': 'בלד', 'seats': 4},
+        {'name': 'תקווה חדשה', 'seats': 6},
+        {'name': 'גשר', 'seats': 1},
+        {'name': 'דרך ארץ', 'seats': 2},
+    ],
+    25: [
+        {'name': 'הליכוד', 'seats': 32},
+        {'name': 'יש עתיד', 'seats': 24},
+        {'name': 'המחנה הממלכתי', 'seats': 12},
+        {'name': 'שס', 'seats': 11},
+        {'name': 'הציונות הדתית', 'seats': 7},
+        {'name': 'יהדות התורה', 'seats': 7},
+        {'name': 'ישראל ביתנו', 'seats': 6},
+        {'name': 'עוצמה יהודית', 'seats': 6},
+        {'name': 'העבודה', 'seats': 4},
+        {'name': 'חדש-תעל', 'seats': 6},
+        {'name': 'רעם', 'seats': 5},
+    ],
+}
+
+@app.get("/api/dashboard/factions")
+def get_dashboard_factions(knesset: int = 25):
+    data = OFFICIAL_SEATS.get(knesset, OFFICIAL_SEATS[25])
+    return data
+
+
+@app.get("/api/dashboard/committee-calendar")
+def get_committee_calendar(year: int = None, month: int = None):
+    from datetime import date
+    today = date.today()
+    y = year or today.year
+    m = month or today.month
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT
+                cs.startdate::date as session_date,
+                c.name as committee_name,
+                COUNT(*) as session_count
+            FROM kns_committeesession cs
+            JOIN kns_committee c ON c.id = cs.committeeid
+            WHERE EXTRACT(YEAR FROM cs.startdate) = %s
+              AND EXTRACT(MONTH FROM cs.startdate) = %s
+              AND c.knessetnum = 25
+            GROUP BY cs.startdate::date, c.name
+            ORDER BY cs.startdate::date
+        """, (y, m))
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return data
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
