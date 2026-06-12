@@ -302,10 +302,18 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [statusFilter, setStatusFilter] = useState(null); // 'all', 'passed', 'progress', 'stopped'
 
+    // Tracks the ID of the expanded bill card
+    const [expandedBillId, setExpandedBillId] = useState(null);
+
     // Clear circle group details whenever the preset knesset number parameter shifts
     useEffect(() => { 
         setSelectedGroup(null); 
     }, [knessetNumber, statusFilter]);
+
+    // Reset the expanded bill if the month group or status filters change
+    useEffect(() => {
+        setExpandedBillId(null);
+    }, [selectedGroup, statusFilter, knessetNumber]);
 
     const chartData = useMemo(() => {
         // 1. Process Scores
@@ -353,6 +361,8 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                 statusid: bill.statusid,
                 subtypeid: bill.subtypeid,
                 knessetnum: bill.knessetnum,
+                summarylaw: bill.summarylaw,
+                failreason: bill.postponementreasondesc,
                 actualPublishDate: bill.publishdate // Keep original date for tooltip lists
             };
             
@@ -532,8 +542,16 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                             const isRejected = isRejectedStatus(bill.statusid);
                             const isFullyCompleted = currentStep === config.totalSteps - 1 && !isRejected;
                             const isFromInactiveKnesset = Number(bill.knessetnum) < 25;
+
+                            const isExpanded = expandedBillId === bill.id;
+
                             return (
-                                <div key={bill.id} className="sidebar-bill-card">
+                                <div 
+                                    key={bill.id} 
+                                    className={`sidebar-bill-card accordion-card ${isExpanded ? 'expanded' : ''}`}
+                                    onClick={() => setExpandedBillId(isExpanded ? null : bill.id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     {/* Top row: Bill Name and Type Label */}
                                     <div className="bill-card-top-row">
                                         <h4>{bill.name}</h4>
@@ -589,12 +607,43 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                                                 })}
                                             </div>
                                         </div>
-                                        {bill.actualPublishDate && (
-                                            <span className="bill-card-date">
-                                                {new Date(bill.actualPublishDate).toLocaleDateString('he-IL')}
+                                        <div style={{display: 'flex', gap: '0.5rem', alignItems:'center'}}>
+                                            {bill.actualPublishDate && (
+                                                <span className="bill-card-date">
+                                                    {new Date(bill.actualPublishDate).toLocaleDateString('he-IL')}
+                                                </span>
+                                            )}
+                                            <span className={`accordion-arrow ${isExpanded ? 'rotated' : ''}`}>
+                                                ▼
                                             </span>
-                                        )}
+                                        </div>
                                     </div>
+                                    {/* Expandable Drawer Content */}
+                                    {isExpanded && (
+                                        <div className="bill-card-drawer" onClick={(e) => e.stopPropagation()}>
+                                            {/* Initiators Section */}
+                                            {bill.initiators_info?.length > 0 && (
+                                                <div className="drawer-section">
+                                                    <h5>יוזמים:</h5>
+                                                    <p className="initiators-text">{bill.initiators_info.map(p => p.name).join(', ')}</p>
+                                                </div>
+                                            )}
+                                            {(isRejected || isFromInactiveKnesset) && bill.failreason && (
+                                                <div className="drawer-section stopped-reason-section">
+                                                    <h5>סיבת עצירה:</h5>
+                                                    <p className="stopped-reason-text">{bill.failreason}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Conditional Summary Law (Only available for passed bills) */}
+                                            {isFullyCompleted && bill.summarylaw && (
+                                                <div className="drawer-section summary-section">
+                                                    <h5>תקציר החוק המאושר:</h5>
+                                                    <p className="summary-text">{bill.summarylaw}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })

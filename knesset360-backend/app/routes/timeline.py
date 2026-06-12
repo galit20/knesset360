@@ -11,7 +11,7 @@ SUBJECTS_CONFIG = {
     },
     "education": {
         "label": "חינוך",
-        "keywords": ["חינוך", "בתי ספר", "מורים", "השכלה גבוהה", "מעונות יום"],
+        "keywords": ["חינוך", "בתי ספר", " מורים", "השכלה גבוהה", "מעונות יום", "לימודים", "תלמיד", "סטודנט"],
     },
     "health": {
         "label": "בריאות",
@@ -49,13 +49,15 @@ async def get_subject_timeline(subject: str = "road-safety"):
         
         query_keywords = [f"%{k}%" for k in config['keywords']]
         query = """
-            SELECT 
+        SELECT 
             B.id,
             B.knessetnum,
             B.name,
             B.statusid,
             B.subtypeid,
             B.summarylaw,
+            B.postponementreasonid,
+            B.postponementreasondesc,
             COALESCE(
                 DATE_TRUNC('day', MIN(BI.lastupdateddate)),
                 DATE_TRUNC('day', B.lastupdateddate)
@@ -90,6 +92,8 @@ async def get_subject_timeline(subject: str = "road-safety"):
             B.statusid,
             B.subtypeid,
             B.summarylaw,
+            B.postponementreasonid,
+            B.postponementreasondesc,
             B.lastupdateddate
         ORDER BY B.id ASC;
         """

@@ -2,13 +2,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import './Timeline.css'
 
-import ScatterChartBills    from '../components/ScatterChartBill'
+// import ScatterChartBills    from '../components/ScatterChartBill'
 import StatusPieChart       from '../components/PieChartBill'
 import StatusBarChart       from '../components/BarChartBill'
 import InitiatorCard        from '../components/InitiatorCard'
-import ScoreChart           from '../components/ScoreChart'
+// import ScoreChart           from '../components/ScoreChart'
 import TimelineImpactChart  from '../components/TimelineImpactChart'
-import KnessetButtons       from '../components/knessetButtons';
+// import KnessetButtons       from '../components/knessetButtons';
 
 import { STATUS_COLORS, STATUS_COLORS_SHORT, STATUS_DESC, getShortStatus } from '../utils/billStatus'
 import { SUBJECTS_DICT } from '../utils/subjects'

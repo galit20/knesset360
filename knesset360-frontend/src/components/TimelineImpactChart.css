@@ -110,11 +110,6 @@
   line-height: 1.4;
 }
 
-.bill-card-date {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
-
 .empty-sidebar-text {
   text-align: right;
   color: #94a3b8;
@@ -162,7 +157,7 @@
 
 .bill-card-date {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: #6b7685;
 }
 
 /* Progress Layout matching official Knesset view */
@@ -262,4 +257,106 @@
   border-color: #1a3a8f;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(41, 27, 233, 0.25); /* Colored glow effect */
+}
+
+
+
+/* Accordion Container Modifiers */
+.sidebar-bill-card.accordion-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e2e8f0;
+}
+
+.sidebar-bill-card.accordion-card:hover {
+    border-color: #cbd5e1;
+    background-color: #fdfdfd;
+}
+
+.sidebar-bill-card.accordion-card.expanded {
+    border-color: #94a3b8;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Expanded Inside Drawer Styling */
+.bill-card-drawer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: default; /* Keeps text selection simple inside the card */
+}
+
+.drawer-section h5 {
+    margin: 0 0 4px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.initiators-text {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.4;
+}
+
+.summary-section {
+    background: #f8fafc;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-right: 3px solid #5a846e; /* Elegant green edge marker indicating successful passage */
+}
+
+.summary-text {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.summary-text.italicized {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+
+/* Layout helper for down arrow wrapping alignment */
+.bill-title-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1;
+}
+
+/* down arrow indicator layout mechanics */
+.accordion-arrow {
+    font-size: 0.8rem;
+    color: #6b7685;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+/* Rotates arrow cleanly downward when active drawer is invoked */
+.accordion-arrow.rotated {
+    transform: rotate(180deg);
+    color: #475569;
+}
+
+/* Dark Orange layout structure specialized for stopped reason blocks */
+.stopped-reason-section {
+    background: #fffcf9; /* Light warning orange background tint */
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-right: 3px solid #ea580c; /* Deep legislative orange alert border line */
+}
+
+.stopped-reason-text {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #c2410c; /* Deep contrasting dark orange text */
+    line-height: 1.4;
+    font-weight: 500;
 }
