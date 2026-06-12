@@ -10,7 +10,7 @@ import InitiatorCard        from '../components/InitiatorCard'
 import TimelineImpactChart  from '../components/TimelineImpactChart'
 // import KnessetButtons       from '../components/knessetButtons';
 
-import { STATUS_COLORS, STATUS_COLORS_SHORT, STATUS_DESC, getShortStatus } from '../utils/billStatus'
+import { POSTPONEMENT_DESC, POSTPONEMENT_COLORS, STATUS_COLORS, STATUS_COLORS_SHORT, STATUS_DESC, getShortStatus } from '../utils/billStatus'
 import { SUBJECTS_DICT } from '../utils/subjects'
 
 import roadSafetyImg    from '../assets/categories/road-safety.svg';
@@ -74,9 +74,9 @@ export default function TimelinePage() {
 
     const totalBills = billsData.length;
 
-    const { pieData, barData, topInitiators } = useMemo(() => {
+    const { statusPieData, stoppedPieData, barData, topInitiators } = useMemo(() => {
         if (!billsData || billsData.length === 0) 
-            return { pieData: [], barData: [] , topInitiators: []};
+            return { statusPieData: [], stoppedPieData: [], barData: [] , topInitiators: []};
 
         const pie_accumulator = Object.keys(STATUS_COLORS_SHORT).reduce((acc, key) => {
             acc[key] = { name: key, value: 0, statusId: key, fill: STATUS_COLORS_SHORT[key] };
@@ -84,6 +84,7 @@ export default function TimelinePage() {
         }, {});
 
         const barMap = {};
+        const stoppedMap = {};
         const initiator_counts = {};
         
         for (const bill of billsData) {
@@ -94,6 +95,16 @@ export default function TimelinePage() {
                 barMap[kNum] = { knessetnum: kNum };
             }
 
+            if (bill.postponementreasonid) {
+                if (!stoppedMap[bill.postponementreasonid]) {
+                    stoppedMap[bill.postponementreasonid] = {   name: POSTPONEMENT_DESC[bill.postponementreasonid],
+                                                                value: 0, 
+                                                                statusId: bill.postponementreasondesc,
+                                                                fill: POSTPONEMENT_COLORS[bill.postponementreasonid]};
+                }
+                stoppedMap[bill.postponementreasonid].value += 1; // update the pie chart data - count by postponement status of bill
+            }
+                
             const status_name = getShortStatus(sId, kNum);
             pie_accumulator[status_name].value += 1; // update the pie chart data - count by status of bill
             barMap[kNum][status_name] = (barMap[kNum][status_name] || 0) + 1;
@@ -105,9 +116,9 @@ export default function TimelinePage() {
                 initiator_counts[person.id].count += 1;
             });
         }
-        const pie_accumulator_values =  Object.values(pie_accumulator).filter(item => item.value > 0);
         return {
-            pieData: pie_accumulator_values,
+            statusPieData: Object.values(pie_accumulator).filter(item => item.value > 0),
+            stoppedPieData: Object.values(stoppedMap),
             barData: Object.values(barMap),
             topInitiators: Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 10)
         };
@@ -189,7 +200,7 @@ export default function TimelinePage() {
             
             <div className="box-chart-container">
                 <StatusPieChart 
-                    pieData={pieData}
+                    pieData={statusPieData}
                     total={totalBills}
                     title="התפלגות סטטוס הצעות חוק"
                     // onSliceClick={(data) => {
@@ -209,8 +220,13 @@ export default function TimelinePage() {
                     //     }
                     // }} 
                 />
+                <StatusPieChart 
+                    pieData={stoppedPieData}
+                    total={stoppedPieData.reduce((acc, curr) => acc + curr.value, 0)}
+                    title="התפלגות סטטוס סיבות הצעות חוק שנעצרו"
+                />
             </div>
-
+            
             {selectedKnesset && (
             <div className="table-container">
                 <div className="table-top-container">
