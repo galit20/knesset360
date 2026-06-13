@@ -8,10 +8,7 @@ const API = 'http://localhost:8000'
 
 const KNESSETS = [20, 21, 22, 23, 24, 25]
 
-const SIGNIFICANT_EVENTS = [
-  { date: '2020-03', label: 'קורונה' },
-  { date: '2023-10', label: '7.10' },
-]
+const SIGNIFICANT_EVENTS = []
 
 const FACTION_COLORS = [
   '#4a9eff', '#3dd68c', '#c084fc', '#fb923c',
@@ -70,7 +67,7 @@ export default function Dashboard() {
       setStats(s)
       setBillsPerMonth(bpm.map(row => ({
         ...row,
-        label: MONTH_LABELS[row.month?.slice(5, 7)] || row.month,
+        label: (parseInt(row.month?.slice(5, 7)) || '') + '/' + (row.month?.slice(2, 4) || ''),
       })))
       setBillStatus(bs)
       setHotCommittees(hc)
@@ -145,58 +142,43 @@ export default function Dashboard() {
             <StatCard
               label="חברי כנסת"
               value={stats ? (stats.women + stats.men) : '—'}
-              sub={stats ? `${stats.women} נשים · ${stats.men} גברים` : ''}
             />
             <StatCard
               label="חילופי ח״כים"
               value={stats?.mid_term_exits ?? '—'}
-              sub="במהלך הכהונה"
             />
             <StatCard
               label="משרדי ממשלה"
               value={stats?.ministries ?? '—'}
-              sub={`ממשלה ${selectedKnesset === 25 ? 37 : ''}`}
             />
             <StatCard
               label="הצעות חוק"
               value={stats?.total_bills?.toLocaleString() ?? '—'}
-              sub="מתחילת הכנסת"
             />
           </div>
 
           {/* Bills per month chart */}
           <div className="dash-widget dash-widget-full">
             <div className="dash-widget-title">
-              הצעות חוק לפי חודש — כנסת {selectedKnesset}
+              הצעות חוק לפי חודש
             </div>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={billsPerMonth} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: '#6b7a99', fontSize: 11 }}
+                  tick={{ fill: '#6b7a99', fontSize: 8 }}
                   axisLine={false}
                   tickLine={false}
+                  interval={0}
                 />
                 <YAxis hide />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(74,158,255,0.08)' }} />
-                {SIGNIFICANT_EVENTS.map(ev => {
-                  const idx = billsPerMonth.findIndex(b => b.month === ev.date)
-                  if (idx === -1) return null
-                  return (
-                    <ReferenceLine
-                      key={ev.date}
-                      x={billsPerMonth[idx]?.label}
-                      stroke="#ff5c5c"
-                      strokeWidth={1.5}
-                      label={{ value: ev.label, position: 'top', fill: '#ff5c5c', fontSize: 10 }}
-                    />
-                  )
-                })}
+
                 <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                   {billsPerMonth.map((entry, i) => (
                     <Cell
                       key={i}
-                      fill={eventMonths.has(entry.month) ? '#4a9eff' : '#1e3a5f'}
+                      fill='#1e3a5f'
                     />
                   ))}
                 </Bar>
@@ -207,22 +189,21 @@ export default function Dashboard() {
           {/* Middle row: factions + committees */}
           <div className="dash-mid-row">
             <div className="dash-widget">
-              <div className="dash-widget-title">סיעות — כנסת {selectedKnesset}</div>
+              <div className="dash-widget-title">התפלגות מנדטים</div>
               <div className="dash-factions">
-                {factions.filter(f => f.seats >= 4).map((f, i) => (
+                {[...factions].sort((a, b) => b.seats - a.seats).map((f, i) => (
                   <div key={f.name} className="dash-faction-row">
-                    <span className="dash-faction-dot" style={{ background: FACTION_COLORS[i % FACTION_COLORS.length] }} />
                     <span className="dash-faction-name">{f.name}</span>
-                    <div className="dash-faction-bar-bg">
+                    <div className="dash-faction-bar-wrap">
                       <div
-                        className="dash-faction-bar-fill"
+                        className="dash-faction-bar"
                         style={{
-                          width: `${(f.seats / (factions[0]?.seats || 1)) * 100}%`,
+                          width: `${(f.seats / (Math.max(...factions.map(x => x.seats)) || 1)) * 100}%`,
                           background: FACTION_COLORS[i % FACTION_COLORS.length],
                         }}
                       />
+                      <span className="dash-faction-seats">{f.seats}</span>
                     </div>
-                    <span className="dash-faction-seats">{f.seats} מנדטים</span>
                   </div>
                 ))}
               </div>
@@ -233,14 +214,14 @@ export default function Dashboard() {
               <div className="dash-committees">
                 {hotCommittees.map((c, i) => (
                   <div key={c.name} className="dash-committee-row">
-                    <span className="dash-committee-count">{c.session_count}</span>
+                    <span className="dash-committee-name">{c.name}</span>
                     <div className="dash-committee-bar-bg">
                       <div
                         className="dash-committee-bar-fill"
                         style={{ width: `${(c.session_count / (hotCommittees[0]?.session_count || 1)) * 100}%` }}
                       />
                     </div>
-                    <span className="dash-committee-name">{c.name}</span>
+                    <span className="dash-committee-count">{c.session_count}</span>
                   </div>
                 ))}
               </div>
@@ -304,38 +285,52 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-widget">
-              <div className="dash-widget-title">נשים מול גברים</div>
+              <div className="dash-widget-title">פילוח מגדרי</div>
               {stats && (
                 <>
                   <div className="dash-gender-chart">
                     <svg viewBox="0 0 120 120" width="110" height="110">
-                      <circle cx="60" cy="60" r="48" fill="none" stroke="#1e3a5f" strokeWidth="18" />
                       {(() => {
                         const total = stats.women + stats.men
                         const womenPct = total ? stats.women / total : 0
+                        const menPct = 1 - womenPct
                         const circumference = 2 * Math.PI * 48
                         const womenDash = circumference * womenPct
+                        const menDash = circumference * menPct
                         return (
-                          <circle
-                            cx="60" cy="60" r="48"
-                            fill="none"
-                            stroke="#4a9eff"
-                            strokeWidth="18"
-                            strokeDasharray={`${womenDash} ${circumference - womenDash}`}
-                            strokeDashoffset={circumference * 0.25}
-                            strokeLinecap="butt"
-                          />
+                          <>
+                            <circle
+                              cx="60" cy="60" r="48"
+                              fill="none"
+                              stroke="#1E5FA8"
+                              strokeWidth="18"
+                              strokeDasharray={`${menDash} ${circumference - menDash}`}
+                              strokeDashoffset={circumference * 0.25 - womenDash}
+                              strokeLinecap="butt"
+                            />
+                            <circle
+                              cx="60" cy="60" r="48"
+                              fill="none"
+                              stroke="#FF6B9D"
+                              strokeWidth="18"
+                              strokeDasharray={`${womenDash} ${circumference - womenDash}`}
+                              strokeDashoffset={circumference * 0.25}
+                              strokeLinecap="butt"
+                            />
+                          </>
                         )
                       })()}
                     </svg>
                   </div>
                   <div className="dash-gender-legend">
                     <div className="dash-legend-item">
-                      <span className="dash-legend-dot" style={{ background: '#4a9eff' }} />
+                      <span className="dash-legend-dot" style={{ background: '#FF6B9D' }} />
+                      <i className="ti ti-woman" style={{ color: '#FF6B9D', fontSize: '16px' }} />
                       נשים {stats.women} ({stats.women + stats.men ? Math.round((stats.women / (stats.women + stats.men)) * 100) : 0}%)
                     </div>
                     <div className="dash-legend-item">
-                      <span className="dash-legend-dot" style={{ background: '#1e3a5f' }} />
+                      <span className="dash-legend-dot" style={{ background: '#1E5FA8' }} />
+                      <i className="ti ti-man" style={{ color: '#1E5FA8', fontSize: '16px' }} />
                       גברים {stats.men} ({stats.women + stats.men ? Math.round((stats.men / (stats.women + stats.men)) * 100) : 0}%)
                     </div>
                   </div>

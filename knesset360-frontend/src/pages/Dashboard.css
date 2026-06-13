@@ -23,7 +23,7 @@
   border: 0.5px solid #1e3a5f;
   border-radius: 6px;
   color: #6b7a99;
-  font-size: 13px;
+  font-size: 15px;
   padding: 6px 18px;
   cursor: pointer;
   transition: all 0.15s;
@@ -58,8 +58,8 @@
 }
 
 .dash-stat-label {
-  font-size: 12px;
-  color: #6b7a99;
+  font-size: 15px;
+  color: #ffffff;
   margin-bottom: 8px;
 }
 
@@ -72,7 +72,7 @@
 }
 
 .dash-stat-sub {
-  font-size: 11px;
+  font-size: 15px;
   color: #4a9eff;
   margin-top: 6px;
 }
@@ -90,15 +90,16 @@
 }
 
 .dash-widget-title {
-  font-size: 12px;
-  color: #6b7a99;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0;
   margin-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  text-align: right;
 }
 
 /* ── Middle row ── */
@@ -130,32 +131,33 @@
 }
 
 .dash-faction-name {
-  font-size: 12px;
+  font-size: 15px;
   color: #cdd9ef;
-  min-width: 110px;
+  min-width: 130px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.dash-faction-bar-bg {
+.dash-faction-bar-wrap {
   flex: 1;
-  height: 4px;
-  background: #1e3a5f;
-  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.dash-faction-bar-fill {
-  height: 4px;
-  border-radius: 2px;
+.dash-faction-bar {
+  height: 18px;
+  border-radius: 3px;
+  min-width: 16px;
   transition: width 0.4s ease;
+  flex-shrink: 0;
 }
 
 .dash-faction-seats {
-  font-size: 11px;
-  color: #6b7a99;
-  min-width: 64px;
-  text-align: left;
+  font-size: 13px;
+  color: #ffffff;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
@@ -173,10 +175,11 @@
 }
 
 .dash-committee-count {
-  font-size: 12px;
-  color: #cdd9ef;
-  min-width: 32px;
-  text-align: right;
+  font-size: 13px;
+  color: #ffffff;
+  width: 36px;
+  min-width: 36px;
+  text-align: left;
   font-variant-numeric: tabular-nums;
 }
 
@@ -195,10 +198,14 @@
 }
 
 .dash-committee-name {
-  font-size: 11px;
-  color: #6b7a99;
-  min-width: 100px;
-  text-align: left;
+  font-size: 13px;
+  color: #ffffff;
+  width: 180px;
+  min-width: 180px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Bottom row ── */
@@ -223,15 +230,15 @@
 }
 
 .dash-status-pct {
-  font-size: 13px;
-  color: #cdd9ef;
+  font-size: 15px;
+  color: #ffffff;
   min-width: 36px;
   font-variant-numeric: tabular-nums;
 }
 
 .dash-status-label {
-  font-size: 12px;
-  color: #6b7a99;
+  font-size: 15px;
+  color: #ffffff;
   min-width: 48px;
 }
 
@@ -268,8 +275,8 @@
 }
 
 .dash-cal-header {
-  font-size: 10px;
-  color: #6b7a99;
+  font-size: 12px;
+  color: #ffffff;
   text-align: center;
   padding: 2px 0;
   font-weight: 500;
@@ -278,7 +285,7 @@
 .dash-cal-cell {
   height: 26px;
   border-radius: 5px;
-  font-size: 10px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,8 +325,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  color: #cdd9ef;
+  font-size: 15px;
+  color: #ffffff;
 }
 
 .dash-legend-dot {
@@ -335,7 +342,7 @@
   border: 0.5px solid #1e3a5f;
   border-radius: 6px;
   padding: 8px 12px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .dash-tooltip-label { color: #6b7a99; margin-bottom: 3px; }
@@ -346,7 +353,7 @@
   text-align: center;
   color: #6b7a99;
   padding: 60px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* ── Responsive ── */
