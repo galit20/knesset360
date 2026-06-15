@@ -11,8 +11,9 @@ const KNESSETS = [20, 21, 22, 23, 24, 25]
 const SIGNIFICANT_EVENTS = []
 
 const FACTION_COLORS = [
-  '#4a9eff', '#3dd68c', '#c084fc', '#fb923c',
-  '#f87171', '#34d399', '#fbbf24', '#60a5fa',
+  '#3b82f6', '#10b981', '#a855f7', '#f97316',
+  '#ef4444', '#eab308', '#06b6d4', '#ec4899',
+  '#84cc16', '#f43f5e', '#8b5cf6', '#14b8a6',
 ]
 
 const MONTH_LABELS = {
@@ -86,7 +87,6 @@ export default function Dashboard() {
   const eventMonths = new Set(SIGNIFICANT_EVENTS.map(e => e.date.slice(0, 7)))
   const maxBills = Math.max(...billsPerMonth.map(b => b.count), 1)
 
-  // calendar grid
   const today = new Date()
   const firstDay = new Date(calYear, calMonth - 1, 1).getDay()
   const daysInMonth = new Date(calYear, calMonth, 0).getDate()
@@ -94,7 +94,7 @@ export default function Dashboard() {
 
   const totalBills = billStatus.reduce((a, b) => a + b.count, 0)
   const statusOrder = ['בתהליך', 'נעצרו', 'עברו', 'אחר']
-  const statusColors = { 'בתהליך': '#4a9eff', 'נעצרו': '#555e72', 'עברו': '#3dd68c', 'אחר': '#888' }
+  const statusColors = { 'בתהליך': '#2563eb', 'נעצרו': '#94a3b8', 'עברו': '#16a34a', 'אחר': '#888' }
   const sortedStatus = [...billStatus].sort(
     (a, b) => statusOrder.indexOf(a.status_group) - statusOrder.indexOf(b.status_group)
   )
@@ -172,14 +172,10 @@ export default function Dashboard() {
                   interval={0}
                 />
                 <YAxis hide />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(74,158,255,0.08)' }} />
-
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37,99,235,0.06)' }} />
                 <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                   {billsPerMonth.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill='#1e3a5f'
-                    />
+                    <Cell key={i} fill='#2d4a7a' />
                   ))}
                 </Bar>
               </BarChart>

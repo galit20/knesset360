@@ -1,15 +1,15 @@
 .dashboard {
   min-height: calc(100vh - 60px);
   width: 100%;
-  background: #0d1117;
-  color: #cdd9ef;
+  background: #f4f6fa;
+  color: #1a2540;
   padding: 28px 32px;
   font-family: 'IBM Plex Sans Hebrew', 'Segoe UI', system-ui, sans-serif;
   direction: rtl;
   box-sizing: border-box;
 }
 
-/* ── Knesset selector ── */
+/* Knesset selector */
 .dash-ksel-row {
   display: flex;
   justify-content: center;
@@ -19,8 +19,8 @@
 }
 
 .dash-ksel-btn {
-  background: transparent;
-  border: 0.5px solid #1e3a5f;
+  background: #ffffff;
+  border: 1px solid #d0d8eb;
   border-radius: 6px;
   color: #6b7a99;
   font-size: 15px;
@@ -31,17 +31,17 @@
 }
 
 .dash-ksel-btn:hover {
-  border-color: #4a9eff;
-  color: #cdd9ef;
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .dash-ksel-btn.active {
-  border-color: #4a9eff;
-  background: #0d2240;
-  color: #4a9eff;
+  border-color: #2563eb;
+  background: #eff4ff;
+  color: #2563eb;
 }
 
-/* ── Stat cards ── */
+/* Stat cards */
 .dash-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -50,39 +50,41 @@
 }
 
 .dash-stat-card {
-  background: #0d1a2e;
-  border: 0.5px solid #1e3a5f;
+  background: #ffffff;
+  border: 1px solid #e2e8f5;
   border-radius: 10px;
   padding: 18px 20px;
   text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .dash-stat-label {
   font-size: 15px;
-  color: #ffffff;
+  color: #6b7a99;
   margin-bottom: 8px;
 }
 
 .dash-stat-value {
   font-size: 32px;
   font-weight: 600;
-  color: #cdd9ef;
+  color: #1a2540;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .dash-stat-sub {
   font-size: 15px;
-  color: #4a9eff;
+  color: #2563eb;
   margin-top: 6px;
 }
 
-/* ── Widget base ── */
+/* Widget base */
 .dash-widget {
-  background: #0d1a2e;
-  border: 0.5px solid #1e3a5f;
+  background: #ffffff;
+  border: 1px solid #e2e8f5;
   border-radius: 10px;
   padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .dash-widget-full {
@@ -92,8 +94,7 @@
 .dash-widget-title {
   font-size: 17px;
   font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0;
+  color: #1a2540;
   margin-bottom: 14px;
   display: flex;
   align-items: center;
@@ -102,7 +103,7 @@
   text-align: right;
 }
 
-/* ── Middle row ── */
+/* Middle row */
 .dash-mid-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -110,7 +111,7 @@
   margin-bottom: 14px;
 }
 
-/* ── Factions ── */
+/* Factions */
 .dash-factions {
   display: flex;
   flex-direction: column;
@@ -132,7 +133,7 @@
 
 .dash-faction-name {
   font-size: 15px;
-  color: #cdd9ef;
+  color: #1a2540;
   min-width: 130px;
   white-space: nowrap;
   overflow: hidden;
@@ -156,16 +157,18 @@
 
 .dash-faction-seats {
   font-size: 13px;
-  color: #ffffff;
+  color: #6b7a99;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Committees ── */
+/* Committees */
 .dash-committees {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .dash-committee-row {
@@ -176,7 +179,7 @@
 
 .dash-committee-count {
   font-size: 13px;
-  color: #ffffff;
+  color: #6b7a99;
   width: 36px;
   min-width: 36px;
   text-align: left;
@@ -186,20 +189,20 @@
 .dash-committee-bar-bg {
   flex: 1;
   height: 4px;
-  background: #1e3a5f;
+  background: #e2e8f5;
   border-radius: 2px;
 }
 
 .dash-committee-bar-fill {
   height: 4px;
-  background: #4a9eff;
+  background: #2563eb;
   border-radius: 2px;
   transition: width 0.4s ease;
 }
 
 .dash-committee-name {
   font-size: 13px;
-  color: #ffffff;
+  color: #1a2540;
   width: 180px;
   min-width: 180px;
   text-align: right;
@@ -208,14 +211,14 @@
   text-overflow: ellipsis;
 }
 
-/* ── Bottom row ── */
+/* Bottom row */
 .dash-bottom-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 14px;
 }
 
-/* ── Bill status ── */
+/* Bill status */
 .dash-status-list {
   display: flex;
   flex-direction: column;
@@ -231,21 +234,21 @@
 
 .dash-status-pct {
   font-size: 15px;
-  color: #ffffff;
+  color: #1a2540;
   min-width: 36px;
   font-variant-numeric: tabular-nums;
 }
 
 .dash-status-label {
   font-size: 15px;
-  color: #ffffff;
+  color: #1a2540;
   min-width: 48px;
 }
 
 .dash-status-bar-bg {
   flex: 1;
   height: 6px;
-  background: #1e3a5f;
+  background: #e2e8f5;
   border-radius: 3px;
 }
 
@@ -255,7 +258,7 @@
   transition: width 0.4s ease;
 }
 
-/* ── Calendar ── */
+/* Calendar */
 .dash-cal-nav {
   background: transparent;
   border: none;
@@ -266,7 +269,7 @@
   line-height: 1;
 }
 
-.dash-cal-nav:hover { color: #4a9eff; }
+.dash-cal-nav:hover { color: #2563eb; }
 
 .dash-cal {
   display: grid;
@@ -276,7 +279,7 @@
 
 .dash-cal-header {
   font-size: 12px;
-  color: #ffffff;
+  color: #6b7a99;
   text-align: center;
   padding: 2px 0;
   font-weight: 500;
@@ -289,24 +292,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3a4a62;
+  color: #b0bcd4;
   cursor: default;
 }
 
 .dash-cal-cell.has-event {
-  background: #0d2240;
-  color: #4a9eff;
-  border: 0.5px solid #1e3a5f;
+  background: #eff4ff;
+  color: #2563eb;
+  border: 1px solid #c7d9f8;
 }
 
 .dash-cal-cell.today {
   background: transparent;
-  border: 1.5px solid #4a9eff;
-  color: #4a9eff;
+  border: 1.5px solid #2563eb;
+  color: #2563eb;
   font-weight: 600;
 }
 
-/* ── Gender chart ── */
+/* Gender chart */
 .dash-gender-chart {
   display: flex;
   justify-content: center;
@@ -326,7 +329,7 @@
   align-items: center;
   gap: 8px;
   font-size: 15px;
-  color: #ffffff;
+  color: #1a2540;
 }
 
 .dash-legend-dot {
@@ -336,19 +339,20 @@
   flex-shrink: 0;
 }
 
-/* ── Tooltip ── */
+/* Tooltip */
 .dash-tooltip {
-  background: #0d1a2e;
-  border: 0.5px solid #1e3a5f;
+  background: #ffffff;
+  border: 1px solid #e2e8f5;
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .dash-tooltip-label { color: #6b7a99; margin-bottom: 3px; }
-.dash-tooltip-value { color: #4a9eff; font-weight: 500; }
+.dash-tooltip-value { color: #2563eb; font-weight: 500; }
 
-/* ── Loading ── */
+/* Loading */
 .dash-loading {
   text-align: center;
   color: #6b7a99;
@@ -356,7 +360,7 @@
   font-size: 15px;
 }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 900px) {
   .dash-stats-row { grid-template-columns: repeat(2, 1fr); }
   .dash-mid-row { grid-template-columns: 1fr; }
