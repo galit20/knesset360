@@ -256,8 +256,8 @@
 //             <div key={i} className="legend-item">
 //               <span className="legend-dot" style={{ background: STATUS_COLORS[s.status_group] || '#ccc' }} />
 //               <span className="legend-label">{s.status_group}</span>
-//               <span className="legend-count"> — {s.count}</span>
-//               <span className="legend-pct"> ({Math.round(s.count / total * 100)}%)</span>
+//               <span className="legend-count">{s.count}</span>
+//               <span className="legend-pct">({Math.round(s.count / total * 100)}%)</span>
 //             </div>
 //           ))}
 //         </div>
@@ -803,8 +803,8 @@ function DonutChart({ statusData, selectedTopic, onClear }) {
             <div key={i} className="legend-item">
               <span className="legend-dot" style={{ background: STATUS_COLORS[s.status_group] || '#ccc' }} />
               <span className="legend-label">{s.status_group}</span>
-              <span className="legend-count"> — {s.count}</span>
-              <span className="legend-pct"> ({Math.round(s.count / total * 100)}%)</span>
+              <span className="legend-count">{s.count}</span>
+              <span className="legend-pct">({Math.round(s.count / total * 100)}%)</span>
             </div>
           ))}
         </div>

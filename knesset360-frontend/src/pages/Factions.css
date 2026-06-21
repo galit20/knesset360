@@ -1,13 +1,13 @@
 /* .factions-page {
   padding: 2rem;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
 .factions-title {
   text-align: right;
   margin-bottom: 1.5rem;
-  font-size: 1.4rem;
+  font-size: 32px;
   color: #333;
 }
 
@@ -31,7 +31,7 @@
   border-radius: 20px;
   background: white;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 24px;
   transition: all 0.2s;
 }
 
@@ -51,8 +51,8 @@
   border: 1px solid #e0e0e0;
 }
 
-.faction-header h3 { margin: 0 0 0.25rem; font-size: 1.3rem; }
-.faction-dates { color: #777; font-size: 0.85rem; margin: 0 0 1rem; }
+.faction-header h3 { margin: 0 0 0.25rem; font-size: 30px; }
+.faction-dates { color: #777; font-size: 23px; margin: 0 0 1rem; }
 
 .stats-cards {
   display: flex;
@@ -79,13 +79,13 @@
   border-color: #1a1a2e;
 }
 
-.stat-number { font-size: 2rem; font-weight: 700; }
-.stat-label { font-size: 0.85rem; opacity: 0.7; }
+.stat-number { font-size: 42px; font-weight: 700; }
+.stat-label { font-size: 23px; opacity: 0.7; }
 .stats-loading { text-align: center; padding: 2rem; color: #777; } */
 
 .factions-page {
   padding: 2rem 2rem 2rem 0;
-  max-width: 900px;
+  max-width: 1200px;
   margin-left: auto;
   margin-right: 0;
   text-align: right;
@@ -94,7 +94,7 @@
 .factions-title {
   text-align: right;
   margin-bottom: 1.5rem;
-  font-size: 1.4rem;
+  font-size: 32px;
   color: #333;
 }
 
@@ -103,7 +103,7 @@
   font-weight: 600;
   margin-bottom: 0.4rem;
   color: #444;
-  font-size: 1rem;
+  font-size: 26px;
 }
 
 .selector-bar {
@@ -132,7 +132,7 @@
   border-radius: 20px;
   background: white;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 24px;
   transition: all 0.2s;
 }
 
@@ -153,12 +153,12 @@
   border: 1px solid #e0e0e0;
 }
 
-.faction-header h3 { margin: 0 0 0.25rem; font-size: 1.3rem; }
+.faction-header h3 { margin: 0 0 0.25rem; font-size: 30px; }
 .faction-header {
   text-align: right;
   width: 100%;
 }
-.faction-dates { color: #777; font-size: 0.85rem; margin: 0 0 1rem; }
+.faction-dates { color: #777; font-size: 23px; margin: 0 0 1rem; }
 
 .faction-banner {
   display: flex;
@@ -194,14 +194,14 @@
 }
 
 .faction-banner-name {
-  font-size: 1.4rem;
+  font-size: 32px;
   font-weight: 600;
   color: white;
   margin: 0 0 4px;
 }
 
 .faction-banner-dates {
-  font-size: 0.85rem;
+  font-size: 23px;
   color: rgba(255, 255, 255, 0.65);
   margin: 0;
 }
@@ -232,8 +232,8 @@
   border-color: #1a1a2e;
 }
 
-.stat-number { font-size: 2rem; font-weight: 700; }
-.stat-label { font-size: 0.85rem; opacity: 0.7; }
+.stat-number { font-size: 42px; font-weight: 700; }
+.stat-label { font-size: 23px; opacity: 0.7; }
 .stats-loading { text-align: right; padding: 2rem; color: #777; }
 .stats-error { text-align: right; padding: 1rem; color: red; }
 
@@ -258,7 +258,7 @@
 }
 
 .topics-title {
-  font-size: 1rem;
+  font-size: 26px;
   font-weight: 600;
   margin-bottom: 1rem;
   color: #333;
@@ -273,12 +273,12 @@
 }
 
 .topic-name {
-  width: 180px;
-  font-size: 0.9rem;
+  width: 320px;
+  min-width: 320px;
+  font-size: 24px;
   text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .topic-bar-bg {
@@ -302,10 +302,12 @@
 .topic-bar-fill.color-4 { background: #bfdbfe; }
 
 .topic-count {
-  width: 30px;
-  font-size: 0.85rem;
+  width: 44px;
+  min-width: 44px;
+  font-size: 23px;
   color: #555;
   text-align: left;
+  flex-shrink: 0;
 }
 
 
@@ -344,7 +346,7 @@
   border-radius: 20px;
   background: white;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 23px;
   color: #555;
 }
 
@@ -375,7 +377,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.85rem;
+  font-size: 23px;
   direction: rtl;
 }
 
@@ -419,7 +421,7 @@
 }
 
 .mk-rank {
-  font-size: 1.3rem;
+  font-size: 30px;
   width: 24px;
   text-align: center;
   flex-shrink: 0;
@@ -431,7 +433,7 @@
   border-radius: 50%;
   background: #e8f0fe;
   color: #1a3a8f;
-  font-size: 0.75rem;
+  font-size: 22px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -448,12 +450,12 @@
 }
 
 .mk-name {
-  font-size: 0.92rem;
+  font-size: 24px;
   font-weight: 500;
   color: #1a1a2e;
   text-align: right;
   white-space: nowrap;
-  width: 140px;
+  width: 180px;
   flex-shrink: 0;
 }
 
@@ -477,7 +479,7 @@
 }
 
 .mk-count {
-  font-size: 0.82rem;
+  font-size: 23px;
   color: #888;
   white-space: nowrap;
   flex-shrink: 0;
@@ -497,7 +499,7 @@
 
 .subject-dropdown {
   direction: rtl;
-  font-size: 0.95rem;
+  font-size: 25px;
   padding: 0.5rem 0.9rem;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -522,13 +524,13 @@
 
 .subject-prompt {
   color: #aaa;
-  font-size: 0.88rem;
+  font-size: 24px;
   margin-top: 0.5rem;
 }
 
 .no-mks-msg {
   color: #aaa;
-  font-size: 0.88rem;
+  font-size: 24px;
 }
 
 /* ── Parliament Chart ── */
@@ -559,7 +561,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 22px;
   color: #333;
   padding: 4px 10px;
   border-radius: 20px;
@@ -591,7 +593,7 @@
 }
 
 .parliament-legend-count {
-  font-size: 11px;
+  font-size: 21px;
   opacity: 0.7;
 }
 
