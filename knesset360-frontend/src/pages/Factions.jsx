@@ -546,6 +546,7 @@
 // }
 
 import { useState, useEffect } from 'react';
+import MkAvatar from '../components/MkAvatar';
 import './Factions.css';
 
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
@@ -876,30 +877,12 @@ function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
           <p className="no-mks-msg">אין נתונים לתחום זה</p>
         ) : (
           topMKs.map((mk, i) => {
-            const initials = mk.name.trim().split(' ').map(w => w[0]).slice(0, 2).join('');
             const maxCount = topMKs[0].bill_count;
             const barWidth = Math.round((mk.bill_count / maxCount) * 100);
             return (
               <div key={i} className="mk-card">
                 <span className="mk-rank">{['🥇','🥈','🥉'][i]}</span>
-                <div className="mk-avatar-wrap">
-                  {mk.personid ? (
-                    <img
-                      src={`/mk-photos/${mk.personid}.jpg`}
-                      alt={mk.name}
-                      className="mk-avatar-img"
-                      onError={e => {
-                        if (!e.target.src.includes('.png')) {
-                          e.target.src = `/mk-photos/${mk.personid}.png`;
-                        } else {
-                          e.target.style.display='none';
-                          e.target.nextSibling.style.display='flex';
-                        }
-                      }}
-                    />
-                  ) : null}
-                  <div className="mk-avatar" style={mk.personid ? {display:'none'} : {}}>{initials}</div>
-                </div>
+                <MkAvatar id={mk.personid} name={mk.name} size={36} />
                 <span className="mk-name">{mk.name}</span>
                 <div className="mk-bar-wrap">
                   <div className="mk-bar-fill" style={{ width: `${barWidth}%` }} />

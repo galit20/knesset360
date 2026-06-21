@@ -632,7 +632,8 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
             params.append(committee)
 
         cursor.execute(f"""
-            SELECT p.firstname || ' ' || p.lastname as name,
+            SELECT p.id as personid,
+                   p.firstname || ' ' || p.lastname as name,
                    COUNT(DISTINCT b.id) as bill_count
             FROM kns_bill b
             JOIN kns_billinitiator bi ON bi.billid = b.id
@@ -643,7 +644,7 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
               AND bi.isinitiator = true
               {knesset_filter}
               {committee_filter}
-            GROUP BY p.firstname, p.lastname
+            GROUP BY p.id, p.firstname, p.lastname
             ORDER BY bill_count DESC
             LIMIT 3
         """, params)

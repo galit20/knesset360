@@ -1,67 +1,152 @@
 import os
+import sys
 import time
 import requests
 from pathlib import Path
 
-MK_IDS = [
-    1037,477,30690,30806,30558,23573,30797,30703,30117,30880,30837,30660,30830,30849,
-    30082,30689,30743,23553,556,475,30870,30720,23631,30871,30840,30692,30722,30682,
-    30796,23533,30893,30074,12964,23567,23600,12961,23595,23568,30694,11835,2291,23565,
-    30842,30702,30066,30118,30628,12952,30716,30776,23511,30718,30069,1025,23569,30328,
-    23673,30700,9615,23643,30804,30060,30851,30721,30719,30686,30677,30078,528,30821,
-    557,563,30549,30121,2178,483,30520,12955,23642,30894,1044,23599,30057,23597,30877,
-    30843,30693,30873,30764,30811,30470,30751,30772,30684,30554,30786,30480,30868,532,
-    4355,30808,30813,965,23652,30707,23564,30759,1027,4412,30705,30685,30106,12959,
-    30773,22151,30863,30065,30095,30061,30691,12944,526,30657,498,30770,30814,469,
-    30750,30687,30788,488,30688,30741,30071,30698,30717,30080,23594,12937,30765,30762,
-    30859,479,23632,30058,23653,30099,23571,30094,30714,30791,4395,4416,30779,30746,
-    12945,30854,30833,30711,23639,30063,30766,30816,30810,30775,30832,30662,30876,30708,
-    30079,23601,30774,30818,30783,30872,30778,30847,1057,30812,23635,23596,30805,4405,
-    30710,468,30799,30724,23534,30070,30784,23641,30809,30752,427,30680,30749,30097,
-    30831,30839,30781,30709,30084,445,30777,467,23598,30853,30767,30861,30758,30789,
-    23591,23570,30794,30671,30055,30054,30807,503,30787,30678,12951,30056,30836,30068,
-    30895,30654,30067,1061,23572,30681,30780,30059,12963,30823,713,448,511,30672,28513,
-    30879,23512,1034,30096,30601,30077,1056,30588,30815,30548,23566,30064,504,560,23551,
-    30102,30723,12948,30867,30083,30803,30857,30745,30696,30555,4397,30835,30820,12947,
-    30782,23558,30852,30713,30715,30874,1068,30289,12938,30098,30646,30763,30300,30704,
-    30860,30706,23651,30875,30081,30683,30695,30407,23531,23560,30701,30076,30846,30760,
-    30679,30062,30881,30768,30550,30817,12962,580
-]
+sys.path.append(str(Path(__file__).resolve().parent / "knesset360-backend" / "app"))
+import psycopg2
+from config import config
 
+# -- Settings ----------------------------------------------------------------
+KNESSET_MIN = 20
+KNESSET_MAX = 25
 OUTPUT_DIR = Path("knesset360-frontend/public/mk-photos")
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+SLEEP_BETWEEN_REQUESTS = 3.0  # seconds, be polite to Wikidata/Commons
 
-BASE_URL = "https://www.knesset.gov.il/mk/images/{id}.jpg"
+HEADERS = {
+    "User-Agent": "Knesset360AcademicProject/1.0 (https://github.com/; student project, non-commercial, low-volume)"
+}
 
-session = requests.Session()
-session.headers.update({"User-Agent": "Mozilla/5.0"})
+SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
-downloaded = 0
-skipped = 0
-missing = []
+# -- Get all MKs (personid + name) from the DB --------------------------------
+def get_mks():
+    base_dir = Path(__file__).resolve().parent / "db-files"
+    ini_path = base_dir / "database.ini"
+    params = config(filename=str(ini_path))
+    conn = psycopg2.connect(**params)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT DISTINCT p.id, p.firstname, p.lastname
+        FROM kns_persontoposition p2p
+        JOIN kns_person p ON p.id = p2p.personid
+        WHERE p2p.knessetnum BETWEEN %s AND %s
+          AND p.id IS NOT NULL
+        ORDER BY p.id
+        """,
+        (KNESSET_MIN, KNESSET_MAX),
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows  # list of (id, firstname, lastname)
 
-for mk_id in MK_IDS:
-    out_path = OUTPUT_DIR / f"{mk_id}.jpg"
-    if out_path.exists():
-        skipped += 1
-        continue
-
-    url = BASE_URL.format(id=mk_id)
+# -- Find a Wikidata image filename for a given Hebrew full name -------------
+def find_wikidata_image(full_name):
+    query = f"""
+    SELECT ?image WHERE {{
+      ?person rdfs:label "{full_name}"@he .
+      ?person wdt:P31 wd:Q5 .
+      ?person wdt:P18 ?image .
+    }}
+    LIMIT 1
+    """
     try:
-        r = session.get(url, timeout=10)
-        if r.status_code == 200 and len(r.content) > 1000:  # ignore tiny placeholder images
-            out_path.write_bytes(r.content)
-            downloaded += 1
-            print(f"✓ {mk_id}")
-        else:
-            missing.append(mk_id)
-            print(f"✗ {mk_id} (status {r.status_code})")
+        r = requests.get(
+            SPARQL_ENDPOINT,
+            params={"query": query, "format": "json"},
+            headers=HEADERS,
+            timeout=15,
+        )
+        r.raise_for_status()
+        bindings = r.json().get("results", {}).get("bindings", [])
+        if not bindings:
+            return None
+        image_url = bindings[0]["image"]["value"]
+        # image_url looks like http://commons.wikimedia.org/wiki/Special:FilePath/Some_File.jpg
+        return image_url
     except Exception as e:
-        missing.append(mk_id)
-        print(f"✗ {mk_id} (error: {e})")
+        print(f"  (wikidata query failed: {e})")
+        return None
 
-    time.sleep(0.15)  # ~150ms between requests
+# -- Main ----------------------------------------------------------------------
+def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-print(f"\nDone. Downloaded: {downloaded}, Skipped (already exist): {skipped}, Missing: {len(missing)}")
-if missing:
-    print(f"Missing IDs: {missing}")
+    print("Fetching MKs from database...")
+    mks = get_mks()
+    print(f"Found {len(mks)} unique MKs for Knesset {KNESSET_MIN}-{KNESSET_MAX}")
+
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    downloaded = 0
+    skipped = 0
+    missing = []
+    consecutive_rate_limits = 0
+
+    for mk_id, firstname, lastname in mks:
+        out_path = OUTPUT_DIR / f"{mk_id}.jpg"
+        if out_path.exists():
+            skipped += 1
+            continue
+
+        full_name = f"{firstname} {lastname}".strip()
+        image_url = find_wikidata_image(full_name)
+        time.sleep(SLEEP_BETWEEN_REQUESTS)
+
+        if not image_url:
+            missing.append((mk_id, full_name))
+            print(f"-- {mk_id} {full_name} (no Wikidata image found)")
+            continue
+
+        try:
+            image_bytes = None
+            got_rate_limited = False
+            for attempt in range(4):
+                r = session.get(image_url, timeout=15)
+                if r.status_code == 200 and len(r.content) > 1000:
+                    image_bytes = r.content
+                    break
+                if r.status_code == 429:
+                    got_rate_limited = True
+                    server_wait = int(r.headers.get("Retry-After", 5))
+                    wait = min(server_wait, 15)
+                    print(f"  (rate limited, waiting {wait}s...)")
+                    time.sleep(wait)
+                    continue
+                break  # other failure, don't retry
+
+            if got_rate_limited:
+                consecutive_rate_limits += 1
+            else:
+                consecutive_rate_limits = 0
+
+            if consecutive_rate_limits >= 3:
+                print("  (hit repeatedly, cooling down for 60s...)")
+                time.sleep(60)
+                consecutive_rate_limits = 0
+
+            if image_bytes:
+                out_path.write_bytes(image_bytes)
+                downloaded += 1
+                print(f"OK {mk_id} {full_name}")
+            else:
+                missing.append((mk_id, full_name))
+                print(f"-- {mk_id} {full_name} (image download failed)")
+        except Exception as e:
+            missing.append((mk_id, full_name))
+            print(f"-- {mk_id} {full_name} (error: {e})")
+
+        time.sleep(SLEEP_BETWEEN_REQUESTS)
+
+    print(f"\nDone. Downloaded: {downloaded}, Skipped (already exist): {skipped}, Missing: {len(missing)}")
+    if missing:
+        print("\nMissing (no photo found, will fall back to initials):")
+        for mk_id, name in missing:
+            print(f"  {mk_id}: {name}")
+
+if __name__ == "__main__":
+    main()
