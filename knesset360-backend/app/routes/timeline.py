@@ -59,6 +59,7 @@ async def get_subject_timeline(subject: str = "road-safety"):
             B.postponementreasonid,
             B.postponementreasondesc,
             COALESCE(
+                DATE_TRUNC('day', B.publicationdate),
                 DATE_TRUNC('day', MIN(BI.lastupdateddate)),
                 DATE_TRUNC('day', B.lastupdateddate)
             ) AS publishdate,
