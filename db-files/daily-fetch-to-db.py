@@ -25,6 +25,8 @@ def connect():
         cur = conn.cursor()
 
         fetch_by_last_update_date_from_odata(conn, cur)
+        # fetch_knesset_table_odata_to_DB_by_specific_id(conn, cur, "kns_committeesession", "554729")
+        # fetch_knesset_table_odata_to_DB(conn, cur, "KNS_DocumentCommitteeSession", yesterday_odata_format())
 
         cur.close()  
     except (Exception, psycopg2.DatabaseError) as error:
