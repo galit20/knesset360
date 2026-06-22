@@ -21,14 +21,17 @@ const renderHebrewLegend = (props) => {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'flex-start', // Keeps everything aligned to the right edge
-                marginBottom: '10px'
+                marginBottom: '10px',
+                flexWrap: 'wrap',
+                
+
                 }}
             >
-            <svg width="12" height="12" style={{ marginLeft: '10px', flexShrink: 0 }}>
-                <circle cx="6" cy="6" r="6" fill={entry.color} />
+            <svg width="15" height="15" style={{ marginLeft: '8px', flexShrink: 0 }}>
+                <circle cx="8" cy="8" r="6" fill={entry.color} />
             </svg>
                 
-            <span style={{ color: '#374151', fontSize: '18px', textAlign: 'right' }}>
+            <span style={{ color: '#374151', fontSize: '16px', textAlign: 'right' }}>
                 {entry.value}
             </span>
           </li>

@@ -10,7 +10,7 @@ import {
 
 import './ChartUI.css'
 
-import { STATUS_COLORS, STATUS_DESC, STATUS_COLORS_SHORT } from '../utils/billStatus'
+import { STATUS_COLORS_SHORT } from '../utils/billStatus'
 
 
 export default function StatusBarChart ({ barData, title, onSliceClick }) {
@@ -20,10 +20,10 @@ export default function StatusBarChart ({ barData, title, onSliceClick }) {
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="knessetnum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -2 }} />
+                <XAxis dataKey="knessetnum" label={{ value: 'מספר כנסת', position: 'insideBottom', offset: -2, fontSize: '20px'}} />
                 <YAxis
                     tick={{ textAnchor: 'start' }} 
-                    label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft', offset: 10 }} />
+                    label={{ value: 'כמות הצעות', angle: -90, position: 'insideLeft', offset: 5, fontSize: '20px' }} />
                 <Tooltip/>
                 {Object.keys(STATUS_COLORS_SHORT).map((statusId) => (
                     <Bar 

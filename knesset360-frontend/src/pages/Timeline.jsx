@@ -29,6 +29,7 @@ const imageMap = {
     'environment':  environmentImg,
 };
 
+const API_ADDR = "http://localhost:8000"
 
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
 
@@ -56,7 +57,7 @@ export default function TimelinePage() {
 
     // fetch the data from FastAPI when the page loads
     useEffect(() => {
-        fetch(`http://localhost:8000/api/timeline/${currentSubject}`)
+        fetch(`${API_ADDR}/api/timeline/${currentSubject}`)
             .then(response => response.json())      // convert the server response to JSON
             .then(data => setBillData(data))        // save to your react state
             .catch(error => console.error("Error fetching data:", error));
@@ -64,9 +65,8 @@ export default function TimelinePage() {
 
 
     // TODO: get all scores for all subjects and make an api/scores/{subject} route
-    // fetch the data from FastAPI when the page loads
     useEffect(() => {
-        fetch('http://localhost:8000/api/traffic_score')
+        fetch(`${API_ADDR}/api/scores/road_safety`)
             .then(response => response.json())      // convert the server response to JSON
             .then(data => setScoreData(data))        // save to your react state
             .catch(error => console.error("Error fetching data:", error));

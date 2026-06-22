@@ -8,21 +8,62 @@ import {
     Tooltip,
     ResponsiveContainer,
     Legend,
+    ReferenceLine
 } from 'recharts';
 import { useMemo, useEffect, useState } from 'react';
 
 import './ChartUI.css'
 import './TimelineImpactChart.css'
 
-import { STATUS_COLORS, STATUS_DESC, STATUS_COLORS_SHORT, getShortStatus, BILL_TYPE_CONFIG, isRejectedStatus, getActiveStepIndex } from '../utils/billStatus'
+import { STATUS_COLORS, STATUS_DESC, STATUS_COLORS_SHORT, getShortStatus, BILL_TYPE_CONFIG, isRejectedStatus, getActiveStepIndex, POSTPONEMENT_DESC } from '../utils/billStatus'
+
+const KNESSETS = [
+    { name: "כנסת 20", date: "2015-03-31"},
+    { name: "כנסת 21", date: "2019-04-30"},
+    { name: "כנסת 22", date: "2019-10-03"},
+    { name: "כנסת 23", date: "2020-03-16"},
+    { name: "כנסת 24", date: "2021-04-06"},
+    { name: "כנסת 25", date: "2022-11-15"},
+];
+
+const HISTORICAL_EVENTS = [
+    { name: "קורונה",           date: "2020-02-27",},
+    { name: "מלחמת חרבות ברזל",date: "2023-10-07",},
+    { name: "עם כלביא",         date: "2025-06-13",},
+    { name: "שאגת הארי",        date: "2026-02-28",},
+    { name: "שומר חומות",       date: "2021-05-10",},
+];
+
+const getProgressColor = (passingScore) => {
+    if (!passingScore || passingScore <= 1) return '#cb5858ff'; // Red 
+    const MAX_SCORE = 4; 
+    // Normalize score to a 0 to 1 scale
+    const normalized = Math.min(1, (passingScore - 1) / (MAX_SCORE - 1));
+    // Scale to HSL Hue values: 0 (Red) to 125 (Green)
+    const hue = normalized * 125; 
+    return `hsl(${hue}, 85%, 40%)`;
+};
 
 // Return a custom dot to create a lollipop effect
 const NeedleDot = (props) => {
     const { cx, cy, payload } = props;
 
     if (payload && payload.bills && payload.bills.length !== 0) {
-        const multipleBills = payload.bill_count > 1;
-        const dotColor = STATUS_COLORS_SHORT[getShortStatus(payload.bills[0].statusid, payload.bills[0].knessetnum)];
+        const n = payload.bill_count;
+        const multipleBills = n > 1;
+        const circleSize = 
+        n === 1 ? 7 : 
+        n <= 5  ? 8 + n :
+        n <= 10 ? 12 : 
+        n <= 20 ? 14 : 
+        n <= 40 ? 16 :
+        n <= 60 ? 18 :
+        n <= 80 ? 20 : 22;
+
+        const dotColor = payload.passingScore !== undefined 
+            ? getProgressColor(payload.passingScore)
+            : STATUS_COLORS_SHORT[getShortStatus(payload.bills[0].statusid, payload.bills[0].knessetnum)];
+        // const dotColor = STATUS_COLORS_SHORT[getShortStatus(payload.bills[0].statusid, payload.bills[0].knessetnum)];
         let targetY = (450 * (1 - payload.targetScore / 100)); // convert to pixels
         return (
             <g>
@@ -35,12 +76,12 @@ const NeedleDot = (props) => {
                     stroke={dotColor} 
                     strokeWidth={1} 
                     strokeDasharray="3 3" 
-                    opacity={0.4}
+                    opacity={0.3}
                 />
-                <circle cx={cx} cy={cy} r={multipleBills ? payload.bill_count > 20 ? 22 : payload.bill_count + 8 : 6} fill={dotColor} stroke="#fff" strokeWidth={2} />
+                <circle cx={cx} cy={cy} r={circleSize} fill={dotColor} stroke="#fff" strokeWidth={2} />
                 {multipleBills && (
-                    <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="10px" fontWeight="bold">
-                        {payload.bill_count}
+                    <text x={cx} y={cy + 4} textAnchor="middle" fill="#fff" fontSize="12px" fontWeight="bold">
+                        {n}
                     </text>
                 )}
             </g>
@@ -59,57 +100,103 @@ const MergedTooltip = ({ active, payload }) => {
     // --- IF HOVERING A BILL_GROUP ---
     if (data.bills) {
         const dotColor = data.bill_count > 1 ? '#4b5563' : STATUS_COLORS[data.bills[0].statusid];
-        return (
-            <div className="custom-tooltip bill-tooltip" 
-                style={{ 
-                    backgroundColor: '#ffffff', 
-                    padding: '15px', 
-                    border: `2px solid ${dotColor}`,
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    maxWidth: '400px',
-                    direction: 'rtl',
-                    textAlign: 'right'
-                }}>
-                <p style={{ margin: '0 0 5px 0', fontSize: '11px', color: '#6b7280' }}>
-                    כנסת: {data.knessetnum} | {new Date(data.publishdate).toLocaleDateString('he-IL')}
-                </p>
+        // return (
+            // <div className="custom-tooltip bill-tooltip" 
+            //     style={{ 
+            //         backgroundColor: '#ffffff', 
+            //         padding: '15px', 
+            //         border: `2px solid ${dotColor}`,
+            //         borderRadius: '8px',
+            //         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            //         maxWidth: '400px',
+            //         direction: 'rtl',
+            //         textAlign: 'right'
+            //     }}>
+            //     <p style={{ margin: '0 0 5px 0', fontSize: '11px', color: '#6b7280' }}>
+            //         כנסת: {data.knessetnum} | {new Date(data.publishdate).toLocaleDateString('he-IL')}
+            //     </p>
             
-                {data.bills.map((bill, idx) => (
-                    <div key={bill.id} style={{ marginBottom: idx !== data.bill_count - 1 ? '12px' : '0' }}>
-                        <span style={{ 
-                            display: 'inline-block',
-                            padding: '2px 8px', 
-                            borderRadius: '10px', 
-                            fontSize: '12px', 
-                            fontWeight: 'bold',
-                            backgroundColor: STATUS_COLORS[bill.statusid],
-                            color: '#fff',
-                            marginBottom: '10px'
-                        }}>
-                            {STATUS_DESC[bill.statusid]}
-                        </span>
-                        <p style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold', color: '#111827'}}>
-                            {bill.name}
-                        </p>
-                        <div style={{ fontSize: '13px', color: '#4b5563' }}>
-                            <strong>👤 יוזמים:</strong>{' '}
-                            {bill.initiators_info?.length < 4 ? (
-                                /* Show first 3 in a row */
-                                bill.initiators_info.map(p => p.name).join(', ')
-                            ) : (
-                                /* If 4 or more: Show the first 3 + the remaining count */
-                                <>
-                                    {bill.initiators_info.slice(0, 3).map(p => p.name).join(', ')}
-                                    <span style={{ fontWeight: 'bold', color: '#8884d8' }}>
-                                        {` +${bill.initiators_info.length - 3}`}
-                                    </span>
-                                </>
-                            )}
-                        </div>
-                        {idx !== data.bill_count - 1 && <hr style={{ opacity: 0.4, margin: '8px 0' }} />}
-                    </div>
-                ))}
+            //     {data.bills.map((bill, idx) => (
+            //         <div key={bill.id} style={{ marginBottom: idx !== data.bill_count - 1 ? '12px' : '0' }}>
+            //             <span style={{ 
+            //                 display: 'inline-block',
+            //                 padding: '2px 8px', 
+            //                 borderRadius: '10px', 
+            //                 fontSize: '12px', 
+            //                 fontWeight: 'bold',
+            //                 backgroundColor: STATUS_COLORS[bill.statusid],
+            //                 color: '#fff',
+            //                 marginBottom: '10px'
+            //             }}>
+            //                 {STATUS_DESC[bill.statusid]}
+            //             </span>
+            //             <p style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold', color: '#111827'}}>
+            //                 {bill.name}
+            //             </p>
+            //             <div style={{ fontSize: '13px', color: '#4b5563' }}>
+            //                 <strong>👤 יוזמים:</strong>{' '}
+            //                 {bill.initiators_info?.length < 4 ? (
+            //                     /* Show first 3 in a row */
+            //                     bill.initiators_info.map(p => p.name).join(', ')
+            //                 ) : (
+            //                     /* If 4 or more: Show the first 3 + the remaining count */
+            //                     <>
+            //                         {bill.initiators_info.slice(0, 3).map(p => p.name).join(', ')}
+            //                         <span style={{ fontWeight: 'bold', color: '#8884d8' }}>
+            //                             {` +${bill.initiators_info.length - 3}`}
+            //                         </span>
+            //                     </>
+            //                 )}
+            //             </div>
+            //             {idx !== data.bill_count - 1 && <hr style={{ opacity: 0.4, margin: '8px 0' }} />}
+            //         </div>
+            //     ))}
+            // </div>
+
+        let passed = 0;
+        let stopped = 0;
+        let inprogress = 0;
+        let hasPrevious = false;
+        for (const bill of data.bills) {
+            const status = getShortStatus(bill.statusid, bill.knessetnum);
+            status === 'עברו' ? passed++ : status === 'נעצרו' ? stopped++ : inprogress++;
+        }
+        return (
+            <div 
+                style={{ 
+                        backgroundColor: '#ffffff', 
+                        padding: '3px', 
+                        border: '0.8px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        direction: 'rtl',
+                        textAlign: 'right'
+                    }}>
+                <p className="tooltip-click-prompt">
+                    {new Date(data.publishdate).toLocaleDateString('he-IL', { month: 'long', year: '2-digit' })}
+                </p>
+                <div className="tooltip-breakdown-box">
+                    {passed > 0 && (
+                        hasPrevious = true,
+                        <span className="breakdown-stat passed">{passed} {passed === 1 ? 'אושר' : 'אושרו'}</span>
+                    )}
+                    
+                    {stopped > 0 && (
+                        <>
+                            {hasPrevious && <span className="breakdown-stat separator">|</span>}
+                            {hasPrevious = true}
+                            <span className="breakdown-stat stopped">{stopped} {stopped === 1 ? 'נעצר' : 'נעצרו'}</span>
+                        </>
+                    )}
+                    
+                    {inprogress > 0 && (
+                        <>
+                            {hasPrevious && <span className="breakdown-stat separator">|</span>}
+                            <span className="breakdown-stat inprogress">{inprogress} בתהליך</span>
+                        </>
+                    )}
+                </div>
+                <p className="tooltip-click-prompt">לחץ לצפייה בפרטים מלאים</p>
             </div>
         );
     }
@@ -120,7 +207,7 @@ const MergedTooltip = ({ active, payload }) => {
             <div style={{
                 backgroundColor: '#fff',
                 padding: '10px',
-                border: '1px solid #8884d8',
+                border: '1px solid #4273de',
                 borderRadius: '8px',
                 direction: 'rtl',
                 textAlign: 'right',
@@ -129,7 +216,7 @@ const MergedTooltip = ({ active, payload }) => {
                 <p style={{ fontWeight: 'bold', margin: '0 0 5px 0' }}>
                     {data.month}/{data.year}
                 </p>
-                <p style={{ color: '#8884d8', margin: '3px 0' }}>
+                <p style={{ color: '#4273de', margin: '3px 0' }}>
                     ציון בטיחות: <strong>{data.score}</strong>
                 </p>
                 <hr style={{ border: '0.5px solid #eee' }} />
@@ -362,14 +449,14 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                 subtypeid: bill.subtypeid,
                 knessetnum: bill.knessetnum,
                 summarylaw: bill.summarylaw,
-                failreason: bill.postponementreasondesc,
+                failreasonid: bill.postponementreasonid,
                 actualPublishDate: bill.publishdate // Keep original date for tooltip lists
             };
             
             groups[halfMonthKey].bills.push(newBill);
         });
 
-        const formattedBills = Object.values(groups).map(group => {            
+        const formattedBills = Object.values(groups).map((group, index) => {            
             // Calculate the interpolated score once for the whole group
             let interpolatedScore = 0;
             const nextScoreIndex = formattedScores.findIndex(s => s.timestamp >= group.timestamp);
@@ -382,14 +469,35 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                 const next = formattedScores[nextScoreIndex];
                 interpolatedScore = prev.score + (group.timestamp - prev.timestamp) * ((next.score - prev.score) / (next.timestamp - prev.timestamp));
             }
-            let yValue = interpolatedScore + 10 + (group.bills[0]?.id % 25) * 4;
-            if (Math.abs(yValue - interpolatedScore) < 30)
-                yValue += 50;
+            // const n = group.bills.length;
+            // const yOffset = 70 * Math.sin(index * 1.618 * Math.PI) * Math.pow(index / n, 0.25);
+            // const yValue = 20 + yOffset;
+            let yValue = (index % 5) * 7 + (group.bills[0]?.id % 3);
+            if (Math.abs(yValue - interpolatedScore) < 50)
+                yValue += 35;
+            // let yValue = 5;
+            // if (Math.abs(yValue - interpolatedScore) < 40)
+            //     yValue += 40;
+            if (yValue < interpolatedScore)
+                yValue = interpolatedScore + 1;
+            let score = 0;
+            for (const bill of group.bills) {
+                const indexScore = getActiveStepIndex(bill.subtypeid, bill.statusid);
+                if (bill.statusid === 118)
+                    score += 30;
+                else if (bill.knessetnum === 25 && !isRejectedStatus(bill.statusid))
+                    score += 2.2;
+                else
+                    score += indexScore;
+                if (indexScore > 1 && bill.subtypeid === 54)
+                    score += 2;
+            }
             return {
                 ...group,
                 bill_count: group.bills.length,
                 targetScore: interpolatedScore,
                 visualY: yValue,
+                passingScore: score / group.bills.length
             };
         });
 
@@ -455,8 +563,53 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                     <div style={{ height: "500px" }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart data={chartData.merged} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5}/>
-                                
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3}/>
+                                { !knessetNumber && (KNESSETS.map((event) => (
+                                    <ReferenceLine
+                                        key={event.name}
+                                        x={new Date(event.date).getTime()}
+                                        stroke="rgba(117, 103, 209, 0.5)"
+                                        strokeDasharray="4 4"
+                                        strokeWidth={1.5}
+                                        label={{
+                                            value: event.name,
+                                            position: 'insideTopRight', // Positions it clearly near the top boundary
+                                            fill: '#4c5869',            // Dark, high-contrast slate text color
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                            offset: 8,
+                                            // Soft text-shadow acts as an invisible protective mask over grid lines
+                                            style: { 
+                                                filter: 'drop-shadow(0px 1px 2px rgba(255,255,255,0.9))',
+                                                backgroundColor: '#fff',
+                                                writingMode: 'vertical-rl'
+                                            } 
+                                        }}
+                                    />
+                                )))}
+                                {HISTORICAL_EVENTS.map((event) => (
+                                    <ReferenceLine
+                                        key={event.name}
+                                        x={new Date(event.date).getTime()}
+                                        stroke="rgba(117, 68, 208, 0.5)"
+                                        strokeDasharray="4 4"
+                                        strokeWidth={1.5}
+                                        label={{
+                                            value: event.name,
+                                            position: 'insideBottomLeft', // Positions it clearly near the top boundary
+                                            fill: '#4c5869',            // Dark, high-contrast slate text color
+                                            fontSize: 14,
+                                            fontWeight: 700,
+                                            offset: 10,
+                                            // Soft text-shadow acts as an invisible protective mask over grid lines
+                                            style: { 
+                                                filter: 'drop-shadow(0px 1px 2px rgba(255,255,255,0.9))',
+                                                backgroundColor: '#fff',
+                                                writingMode: 'vertical-rl'
+                                            } 
+                                        }}
+                                    />
+                                ))}
                                 <XAxis 
                                     dataKey="timestamp" 
                                     type="number" 
@@ -481,8 +634,8 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                                     yAxisId="left"
                                     type="monotone"
                                     dataKey="score"
-                                    stroke="#8884d8"
-                                    strokeWidth={4}
+                                    stroke="#1a334cd4"
+                                    strokeWidth={3.5}
                                     activeDot={{ r: 8, strokeWidth: 0 }} 
                                     dot={false}
                                     connectNulls 
@@ -628,10 +781,10 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                                                     <p className="initiators-text">{bill.initiators_info.map(p => p.name).join(', ')}</p>
                                                 </div>
                                             )}
-                                            {(isRejected || isFromInactiveKnesset) && bill.failreason && (
+                                            {(isRejected || isFromInactiveKnesset) && bill.failreasonid && (
                                                 <div className="drawer-section stopped-reason-section">
                                                     <h5>סיבת עצירה:</h5>
-                                                    <p className="stopped-reason-text">{bill.failreason}</p>
+                                                    <p className="stopped-reason-text">{POSTPONEMENT_DESC[bill.failreasonid]}</p>
                                                 </div>
                                             )}
 

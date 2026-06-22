@@ -47,7 +47,7 @@
 
 .sidebar-header h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.4rem;
   color: #1e293b;
   font-weight: 700;
 }
@@ -127,7 +127,7 @@
 
 .bill-card-top-row h4 {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
     color: #1e293b;
     font-weight: 600;
     line-height: 1.4;
@@ -137,7 +137,7 @@
 
 /* Badges for Bill Types */
 .bill-type-badge {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 6px;
@@ -156,7 +156,7 @@
 }
 
 .bill-card-date {
-    font-size: 0.75rem;
+    font-size: 1rem;
     color: #6b7685;
 }
 
@@ -169,7 +169,7 @@
 }
 
 .status-text-label {
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #64748b;
     text-align: right;
@@ -239,8 +239,8 @@
   background: #ffffff;
   color: #64748b; /* Muted text color for inactive state */
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 700;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle depth */
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -359,4 +359,78 @@
     color: #c2410c; /* Deep contrasting dark orange text */
     line-height: 1.4;
     font-weight: 500;
+}
+
+
+.custom-chart-tooltip {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    backdrop-filter: blur(4px);
+    min-width: 180px;
+}
+
+.tooltip-date-header {
+    margin: 0 0 6px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+}
+
+.tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #475569;
+    margin: 4px 0;
+}
+
+.tooltip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.tooltip-dot.score-indicator { background: #8884d8; }
+.tooltip-dot.bill-indicator { background: #5a846e; }
+
+.tooltip-value {
+    margin-right: auto; /* Pushes number cleanly to the left in RTL layout */
+    color: #0f172a;
+}
+
+.tooltip-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 6px 0;
+}
+
+.tooltip-breakdown-box {
+    display: flex;
+    gap: 6px;
+    font-size: 0.75rem;
+    background: #f8fafc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+    color: #64748b;
+    justify-content: center;
+}
+
+.breakdown-stat.passed { color: #15803d; font-weight: 600; font-size: large;}
+.breakdown-stat.stopped { color: #b42b09; font-weight: 600; font-size: large;}
+.breakdown-stat.inprogress { color: #0931b4; font-weight: 600; font-size: large;}
+.breakdown-stat.separator { font-weight: 600; font-size: large;}
+
+
+.tooltip-click-prompt {
+    margin: 6px 0 0 0;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    text-align: center;
+    font-style: italic;
 }
