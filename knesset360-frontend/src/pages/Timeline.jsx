@@ -33,11 +33,11 @@ const imageMap = {
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
 
 const KNESSETS = {
-    "20": {start: "2015-03-31", end: "2019-01-01"},
+    "20": {start: "2015-03-31", end: "2019-04-29"},
     "21": {start: "2019-04-30", end: "2019-10-03"},
     "22": {start: "2019-10-03", end: "2020-03-16"},
     "23": {start: "2020-03-16", end: "2021-01-06"},
-    "24": {start: "2021-04-06", end: "2022-07-04"},
+    "24": {start: "2021-04-06", end: "2022-11-14"},
     "25": {start: "2022-11-15", end: "2026-10-27"}
 };
 
@@ -157,9 +157,13 @@ export default function TimelinePage() {
 
     const filteredScores = selectedKnesset 
     ? scoreData.filter(s => {
-        const startTimestamp = new Date(KNESSETS[selectedKnesset].start).getTime();
-        const endTimestamp = new Date(KNESSETS[selectedKnesset].end).getTime();
-        const scoreTime = new Date(s.year, s.month, 28).getTime();
+        const startDate = new Date(KNESSETS[selectedKnesset].start);
+        const endDate = new Date(KNESSETS[selectedKnesset].end);
+        startDate.setMonth(startDate.getMonth() - 2);
+        endDate.setMonth(endDate.getMonth() + 1);
+        const startTimestamp = startDate.getTime();
+        const endTimestamp = endDate.getTime();
+        const scoreTime = new Date(s.year, s.month - 1, 28).getTime();
         return scoreTime >= startTimestamp && scoreTime <= endTimestamp;
       })
     : scoreData;
@@ -223,7 +227,7 @@ export default function TimelinePage() {
                 <StatusPieChart 
                     pieData={stoppedPieData}
                     total={stoppedPieData.reduce((acc, curr) => acc + curr.value, 0)}
-                    title="התפלגות סטטוס סיבות הצעות חוק שנעצרו"
+                    title="התפלגות סיבות הצעות חוק שנעצרו"
                 />
             </div>
             
