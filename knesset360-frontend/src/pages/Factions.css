@@ -578,3 +578,98 @@
 .parliament-legend-item.selected .parliament-legend-count {
   opacity: 0.8;
 }
+
+/* ── Voting Deviations ── */
+.voting-deviations {
+  margin-top: 2rem;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+}
+
+.vd-title {
+  font-size: 26px;
+  color: #1a1a2e;
+  margin: 0 0 2px;
+  font-weight: 700;
+}
+
+.vd-subtitle {
+  font-size: 15px;
+  color: #777;
+  margin: 0 0 18px;
+}
+
+.vd-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.vd-stat-tile {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vd-stat-number {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.vd-stat-label {
+  font-size: 13px;
+  color: #777;
+}
+
+.vd-mk-list {
+  background: white;
+  border-radius: 10px;
+  padding: 4px 20px;
+}
+
+.vd-mk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  direction: rtl;
+}
+
+.vd-mk-row:last-child {
+  border-bottom: none;
+}
+
+.vd-mk-name {
+  font-size: 16px;
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.vd-mk-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: #e8e8e8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vd-mk-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.vd-mk-count {
+  font-size: 14px;
+  font-weight: 700;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}

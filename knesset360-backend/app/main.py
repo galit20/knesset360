@@ -661,6 +661,108 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
         raise HTTPException(status_code=500, detail=str(e))
     
         
+@app.get("/api/faction-rebels")
+def get_faction_rebels(faction_id: int, knesset: int):
+    """
+    Finds MKs who voted against their own faction's majority position in plenum
+    votes, for a specific Knesset. A vote only counts if at least 3 faction
+    members cast a decisive vote (בעד/נגד) on it, and ties (no clear majority)
+    are skipped entirely.
+    """
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="Could not connect to the database")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("SELECT name FROM kns_faction WHERE id = %s", (faction_id,))
+        faction = cursor.fetchone()
+        if not faction:
+            raise HTTPException(status_code=404, detail="Faction not found")
+
+        faction_name = normalize_faction_name(faction['name'])
+        params = {"knesset": knesset, "faction_name": faction_name}
+
+        base_cte = """
+            WITH faction_members AS (
+                SELECT DISTINCT personid, TRIM(factionname) AS factionname
+                FROM kns_persontoposition
+                WHERE knessetnum = %(knesset)s
+                  AND factionname IS NOT NULL
+                  AND TRIM(factionname) = TRIM(%(faction_name)s)
+            ),
+            faction_votes AS (
+                SELECT vr."MkId" AS mkid,
+                       vr."VoteID" AS voteid,
+                       vr."ResultDesc" AS resultdesc
+                FROM "plenumVoteResult" vr
+                JOIN "plenumVote" pv ON pv."Id" = vr."VoteID"
+                JOIN kns_plenumsession ps ON ps.id = pv."SessionID"
+                JOIN faction_members fm ON fm.personid = vr."MkId"
+                WHERE ps.knessetnum = %(knesset)s
+                  AND vr."ResultDesc" IN ('בעד', 'נגד')
+            ),
+            vote_majority AS (
+                SELECT voteid,
+                       CASE
+                           WHEN SUM(CASE WHEN resultdesc = 'בעד' THEN 1 ELSE 0 END) >
+                                SUM(CASE WHEN resultdesc = 'נגד' THEN 1 ELSE 0 END)
+                           THEN 'בעד'
+                           WHEN SUM(CASE WHEN resultdesc = 'נגד' THEN 1 ELSE 0 END) >
+                                SUM(CASE WHEN resultdesc = 'בעד' THEN 1 ELSE 0 END)
+                           THEN 'נגד'
+                           ELSE NULL
+                       END AS majority
+                FROM faction_votes
+                GROUP BY voteid
+                HAVING COUNT(*) >= 3
+            ),
+            rebel_votes AS (
+                SELECT fv.mkid, fv.voteid
+                FROM faction_votes fv
+                JOIN vote_majority vm ON vm.voteid = fv.voteid
+                WHERE vm.majority IS NOT NULL
+                  AND fv.resultdesc <> vm.majority
+            )
+        """
+
+        cursor.execute(base_cte + """
+            , mk_rebel_counts AS (
+                SELECT mkid, COUNT(*) AS rebel_count
+                FROM rebel_votes
+                GROUP BY mkid
+            )
+            SELECT p.id AS personid,
+                   p.firstname || ' ' || p.lastname AS name,
+                   rc.rebel_count
+            FROM mk_rebel_counts rc
+            JOIN kns_person p ON p.id = rc.mkid
+            ORDER BY rc.rebel_count DESC
+            LIMIT 3
+        """, params)
+        top_mks = cursor.fetchall()
+
+        cursor.execute(base_cte + """
+            SELECT
+                (SELECT COUNT(*) FROM rebel_votes) AS total_rebel_votes,
+                (SELECT COUNT(DISTINCT mkid) FROM rebel_votes) AS rebel_mk_count
+        """, params)
+        summary = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+        return {
+            "summary": summary,
+            "top_mks": top_mks,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn:
+            conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+        
 # ── DASHBOARD ENDPOINTS ─────────────────────────────────────────────────────
 # Add these routes to main.py
 

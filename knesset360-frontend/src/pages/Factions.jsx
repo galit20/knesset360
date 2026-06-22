@@ -897,6 +897,75 @@ function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
   );
 }
 
+function VotingDeviations({ data, loading, knesset }) {
+  if (knesset === 'all') {
+    return (
+      <div className="voting-deviations">
+        <h3 className="vd-title">חריגות בהצבעות</h3>
+        <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
+        <p className="no-mks-msg">בחרו כנסת ספציפית כדי לצפות בחריגות בהצבעות</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="stats-loading">טוען נתוני הצבעות...</div>;
+  }
+
+  if (!data || !data.summary || data.summary.total_rebel_votes === 0) {
+    return (
+      <div className="voting-deviations">
+        <h3 className="vd-title">חריגות בהצבעות</h3>
+        <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
+        <p className="no-mks-msg">אין נתוני הצבעות מספקים לסיעה זו בכנסת הנבחרת</p>
+      </div>
+    );
+  }
+
+  const { summary, top_mks } = data;
+  const maxCount = top_mks[0]?.rebel_count || 1;
+  const barColors = ['#1a3a8f', '#2563eb', '#60a5fa'];
+
+  return (
+    <div className="voting-deviations">
+      <h3 className="vd-title">חריגות בהצבעות</h3>
+      <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
+
+      <div className="vd-stats-row">
+        <div className="vd-stat-tile">
+          <span className="vd-stat-number">{summary.total_rebel_votes}</span>
+          <span className="vd-stat-label">סה״כ חריגות</span>
+        </div>
+        <div className="vd-stat-tile">
+          <span className="vd-stat-number">{summary.rebel_mk_count}</span>
+          <span className="vd-stat-label">חברי כנסת חורגים</span>
+        </div>
+      </div>
+
+      <div className="vd-mk-list">
+        {top_mks.map((mk, i) => (
+          <div key={i} className="vd-mk-row">
+            <MkAvatar id={mk.personid} name={mk.name} size={32} />
+            <span className="vd-mk-name">{mk.name}</span>
+            <div className="vd-mk-bar-wrap">
+              <div
+                className="vd-mk-bar-fill"
+                style={{
+                  width: `${(mk.rebel_count / maxCount) * 100}%`,
+                  background: barColors[i % barColors.length],
+                }}
+              />
+            </div>
+            <span className="vd-mk-count" style={{ color: barColors[i % barColors.length] }}>
+              {mk.rebel_count}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Factions() {
   const [selectedKnesset, setSelectedKnesset] = useState(23);
   const [factions, setFactions] = useState([]);
@@ -906,6 +975,8 @@ export default function Factions() {
   const [statusData, setStatusData] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [topMKs, setTopMKs] = useState([]);
+  const [rebelsData, setRebelsData] = useState(null);
+  const [rebelsLoading, setRebelsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -916,6 +987,7 @@ export default function Factions() {
     setStatusData([]);
     setSelectedTopic(null);
     setTopMKs([]);
+    setRebelsData(null);
     setError(null);
     const url = selectedKnesset === 'all'
       ? 'http://localhost:8000/api/factions'
@@ -940,6 +1012,7 @@ export default function Factions() {
     setStatusData([]);
     setSelectedTopic(null);
     setTopMKs([]);
+    setRebelsData(null);
     const knessetParam = selectedKnesset === 'all' ? '' : `&knesset=${selectedKnesset}`;
 
     fetch(`http://localhost:8000/api/faction-stats?faction_id=${selectedFaction.id}${knessetParam}`)
@@ -980,6 +1053,15 @@ export default function Factions() {
       .catch(console.error);
 
   }, [selectedTopic]);
+
+  useEffect(() => {
+    if (!selectedFaction || selectedKnesset === 'all') return;
+    setRebelsLoading(true);
+    fetch(`http://localhost:8000/api/faction-rebels?faction_id=${selectedFaction.id}&knesset=${selectedKnesset}`)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(data => { setRebelsData(data); setRebelsLoading(false); })
+      .catch(e => { console.error(e); setRebelsLoading(false); });
+  }, [selectedFaction, selectedKnesset]);
 
   return (
     <div className="factions-page" dir="rtl">
@@ -1085,6 +1167,12 @@ export default function Factions() {
               topMKs={topMKs}
             />
           )}
+
+          <VotingDeviations
+            data={rebelsData}
+            loading={rebelsLoading}
+            knesset={selectedKnesset}
+          />
 
         </div>
       )}
