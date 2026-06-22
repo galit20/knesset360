@@ -9,3 +9,9 @@ knesset360-backend/app/routes/__pycache__/timeline.cpython-312.pyc
 knesset360-backend/app/routes/__pycache__/__init__.cpython-312.pyc
 knesset360-frontend/src/components/KnessetButtons.jsx
 knesset360-frontend/src/components/KnessetButtons.css
+PlenumVote.csv
+PlenumVoteResult-final.csv
+db-schema.pgerd
+knesset360-backend/app/routes/__pycache__/trends.cpython-312.pyc
+knesset360-backend/app/routes/__pycache__/scores.cpython-312.pyc
+knesset360-backend/app/output.csv
