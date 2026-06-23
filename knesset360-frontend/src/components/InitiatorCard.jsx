@@ -1,6 +1,11 @@
 import './InitiatorCard.css'
 import userSvg from '../assets/user.svg';
 
+
+const handleError = (e) => {
+    e.target.src = userSvg;
+  };
+
 export default function InitiatorCard({ initiator, onClick, isSelected }) {
     return (
         <div 
@@ -8,13 +13,13 @@ export default function InitiatorCard({ initiator, onClick, isSelected }) {
             className={`initiator-card ${isSelected ? 'selected' : ''}`}
         >
             <img 
-                // src={initiator.imgPath || '../assets/user.svg'} 
-                src= {userSvg}
-                alt={initiator.name} 
+                src={`/mk-photos/${initiator.id}.jpg`}
+                alt={initiator.name}
+                onError={handleError}
             />
             <div className="initiator-info">
                 <h3>{initiator.name}</h3>
-                <p><strong>{initiator.count}</strong> :הצעות חוק</p>
+                <p> הצעות חוק: <strong>{initiator.count}</strong></p>
             </div>
         </div>
     );

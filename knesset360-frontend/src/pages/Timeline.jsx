@@ -2,13 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import './Timeline.css'
 
-// import ScatterChartBills    from '../components/ScatterChartBill'
 import StatusPieChart       from '../components/PieChartBill'
 import StatusBarChart       from '../components/BarChartBill'
 import InitiatorCard        from '../components/InitiatorCard'
-// import ScoreChart           from '../components/ScoreChart'
 import TimelineImpactChart  from '../components/TimelineImpactChart'
-// import KnessetButtons       from '../components/knessetButtons';
+import TrendsChart          from '../components/trendCharts'
 
 import { POSTPONEMENT_DESC, POSTPONEMENT_COLORS, STATUS_COLORS, STATUS_COLORS_SHORT, STATUS_DESC, getShortStatus } from '../utils/billStatus'
 import { SUBJECTS_DICT } from '../utils/subjects'
@@ -46,10 +44,11 @@ export default function TimelinePage() {
 
     const { subject } = useParams();
 
-
     // hold the data from the server
     const [billsData, setBillData] = useState([]);
     const [scoreData, setScoreData] = useState([]);
+    const [roadsafetyData, setroadData] = useState([]);
+    const [transportationData, setTData] = useState([]);
 
     const currentSubject = subject || 'road-safety';
     const config = SUBJECTS_DICT[currentSubject];
@@ -72,11 +71,27 @@ export default function TimelinePage() {
             .catch(error => console.error("Error fetching data:", error));
     },  []); // [] - only run this once when the page loads
 
+
+    useEffect(() => {
+        fetch(`${API_ADDR}/api/trends/road_safety`)
+        .then(response => response.json())
+        .then(data => setroadData(data))
+        .catch(error => console.error("Error fetching data:", error));
+  }, []);
+
+
+    useEffect(() => {
+            fetch(`${API_ADDR}/api/trends/transportation`)
+            .then(response => response.json())
+            .then(data => setTData(data))
+            .catch(error => console.error("Error fetching data:", error));
+    }, []);
+    
     const totalBills = billsData.length;
 
-    const { statusPieData, stoppedPieData, barData, topInitiators } = useMemo(() => {
+    const { statusPieData, stoppedPieData, barData } = useMemo(() => {
         if (!billsData || billsData.length === 0) 
-            return { statusPieData: [], stoppedPieData: [], barData: [] , topInitiators: []};
+            return { statusPieData: [], stoppedPieData: [], barData: [] };
 
         const pie_accumulator = Object.keys(STATUS_COLORS_SHORT).reduce((acc, key) => {
             acc[key] = { name: key, value: 0, statusId: key, fill: STATUS_COLORS_SHORT[key] };
@@ -85,7 +100,6 @@ export default function TimelinePage() {
 
         const barMap = {};
         const stoppedMap = {};
-        const initiator_counts = {};
         
         for (const bill of billsData) {
             const sId = bill.statusid;
@@ -108,19 +122,11 @@ export default function TimelinePage() {
             const status_name = getShortStatus(sId, kNum);
             pie_accumulator[status_name].value += 1; // update the pie chart data - count by status of bill
             barMap[kNum][status_name] = (barMap[kNum][status_name] || 0) + 1;
-            
-            bill.initiators_info.forEach(person => {
-                if (!initiator_counts[person.id]) {
-                    initiator_counts[person.id] = { ...person, count: 0 };
-                }
-                initiator_counts[person.id].count += 1;
-            });
         }
         return {
             statusPieData: Object.values(pie_accumulator).filter(item => item.value > 0),
             stoppedPieData: Object.values(stoppedMap),
-            barData: Object.values(barMap),
-            topInitiators: Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 10)
+            barData: Object.values(barMap)
         };
     }, [billsData]); 
 
@@ -139,19 +145,34 @@ export default function TimelinePage() {
         return billsData.filter(b => b.statusid === selectedStatus);
     }, [selectedStatus, billsData]);
 
-    const [selectedInitiatorId, setSelectedInitiatorId] = useState(null);
-    // Filter bills for selected top initiator
-    const billsForTableByInitiatorId = useMemo(() => {
-        if (!selectedInitiatorId) return [];
-            return billsData.filter(b => 
-                    b.initiators_info.some(p => p.id === selectedInitiatorId)
-                );
-    }, [selectedInitiatorId, billsData]);
 
-    // const bills2015 = billsData.filter(b => new Date(b.publishdate).getFullYear() === 2015);
-    // const bills2025newdate = bills2015.map(b => ({...b, publishdate: new Date(b.publishdate).getTime()}));
-    // const scores2015 = scoreData.filter(s => s.year === 2015);
-    
+
+    const topInitiators = useMemo(() => {
+        if (!billsData || billsData.length === 0) return [];
+
+        // Filter down to the targeted Knesset
+        const targetBills = selectedKnesset 
+            ? billsData.filter(b => b.knessetnum === selectedKnesset)
+            : billsData;
+
+        const initiator_counts = {};
+        
+        // Count frequencies
+        for (const bill of targetBills) {
+            bill.initiators_info.forEach(person => {
+                if (!initiator_counts[person.id]) {
+                    initiator_counts[person.id] = { ...person, count: 0 };
+                }
+                initiator_counts[person.id].count += 1;
+            });
+        }
+
+        // Sort and yield the top 10 matches
+        return Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 10);
+    }, [billsData, selectedKnesset]);
+
+
+
     const filteredBillsData = selectedKnesset ?
         billsData.filter(b => b.knessetnum === selectedKnesset) : billsData;
 
@@ -167,6 +188,29 @@ export default function TimelinePage() {
         return scoreTime >= startTimestamp && scoreTime <= endTimestamp;
       })
     : scoreData;
+
+    const filteredRoadsafetyData = selectedKnesset 
+    ? roadsafetyData.filter(s => {
+        const startDate = new Date(KNESSETS[selectedKnesset].start);
+        const endDate = new Date(KNESSETS[selectedKnesset].end);
+        startDate.setMonth(startDate.getMonth() - 2);
+        endDate.setMonth(endDate.getMonth() + 1);
+        const startTimestamp = startDate.getTime();
+        const endTimestamp = endDate.getTime();
+        const [month, year] = s.name.split('/').map(Number);
+        const scoreTime = new Date(2000 + year, month - 1, 1);
+        return scoreTime >= startTimestamp && scoreTime <= endTimestamp;
+      })
+    : roadsafetyData;
+
+    const [selectedInitiatorId, setSelectedInitiatorId] = useState(null);
+    // Filter bills for selected top initiator
+    const billsForTableByInitiatorId = useMemo(() => {
+        if (!selectedInitiatorId) return [];
+            return filteredBillsData.filter(b => 
+                    b.initiators_info.some(p => p.id === selectedInitiatorId)
+                );
+    }, [selectedInitiatorId, filteredBillsData]);
 
     return (
         <div style={{ width: '100vw', margin: '0 auto'}} >
@@ -186,14 +230,20 @@ export default function TimelinePage() {
                 <div className="selector-bar">
                     <button
                         className={`selector-btn ${selectedKnesset === null ? 'active' : ''}`}
-                        onClick={() => setSelectedKnesset(null)}>
+                        onClick={() => {
+                            setSelectedKnesset(null);
+                            setSelectedInitiatorId(null);
+                        }}>
                     הכל
                     </button>
                     {KNESSET_OPTIONS.map(k => (
                         <button
                             key={k}
                             className={`selector-btn ${selectedKnesset === k ? 'active' : ''}`}
-                            onClick={() => setSelectedKnesset(k)}>
+                            onClick={() => {
+                                setSelectedKnesset(k);
+                                setSelectedInitiatorId(null);
+                            }}>
                         {k}
                         </button>))
                     }
@@ -231,7 +281,7 @@ export default function TimelinePage() {
                 />
             </div>
             
-            {selectedKnesset && (
+            {/* {selectedKnesset && (
             <div className="table-container">
                 <div className="table-top-container">
                     <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בכנסת ה-{selectedKnesset}</h3>
@@ -297,10 +347,15 @@ export default function TimelinePage() {
                     </table>
                 </div>
             </div>
-            )}
+            )} */}
+            
+            <div className="box-chart-container">
+                <TrendsChart quotesData={filteredRoadsafetyData} title={"מדד עיסוק בטיחות בדרכים בוועדות"}/>
+                <TrendsChart quotesData={transportationData} title={"מדד עיסוק תחבורה ציבורית בוועדות"}/>
+            </div>
 
             <div className="initiator-section">
-                <h2 className="title-content">עשרת חברי הכנסת היוזמים המובילים</h2>
+                <h2 className="title-content">עשרת חברי הכנסת היוזמים המובילים בהצעות חוקים</h2>
                 
                 <div className="initiator-grid">
                     {topInitiators.map((initiator) => (
@@ -311,10 +366,8 @@ export default function TimelinePage() {
                             onClick={(id) => {
                                 // Toggle selection: if already selected, clear it; otherwise, set it.
                                 setSelectedInitiatorId(prevId => prevId === id ? null : id);
-                                
                                 // Clear other filters to focus only on this person
                                 setSelectedStatus(null);
-                                setSelectedKnesset(null);
                             }}
                         />
                     ))}
