@@ -7,6 +7,8 @@ import StatusBarChart       from '../components/BarChartBill'
 import InitiatorCard        from '../components/InitiatorCard'
 import TimelineImpactChart  from '../components/TimelineImpactChart'
 import TrendsChart          from '../components/trendCharts'
+import MKLeaderboards       from '../components/MKleaderboards'
+
 
 import { POSTPONEMENT_DESC, POSTPONEMENT_COLORS, STATUS_COLORS, STATUS_COLORS_SHORT, STATUS_DESC, getShortStatus } from '../utils/billStatus'
 import { SUBJECTS_DICT } from '../utils/subjects'
@@ -47,8 +49,13 @@ export default function TimelinePage() {
     // hold the data from the server
     const [billsData, setBillData] = useState([]);
     const [scoreData, setScoreData] = useState([]);
-    const [roadsafetyData, setroadData] = useState([]);
-    const [transportationData, setTData] = useState([]);
+    const [committeeData, setCommitteeData] = useState([]);
+    const [plenumData, setPlenumData] = useState([]);
+
+    const [topMksCommittee, setTopMksCommittee] = useState([]);
+    const [selectedMk, setSelectedMk] = useState(null);
+
+    const [topMksPlenum, setTopMksPlenum] = useState([]);
 
     const currentSubject = subject || 'road-safety';
     const config = SUBJECTS_DICT[currentSubject];
@@ -73,20 +80,37 @@ export default function TimelinePage() {
 
 
     useEffect(() => {
-        fetch(`${API_ADDR}/api/trends/road_safety`)
+        fetch(`${API_ADDR}/api/trends/committee/road_safety`)
         .then(response => response.json())
-        .then(data => setroadData(data))
+        .then(data => setCommitteeData(data))
         .catch(error => console.error("Error fetching data:", error));
   }, []);
 
 
     useEffect(() => {
-            fetch(`${API_ADDR}/api/trends/transportation`)
+            fetch(`${API_ADDR}/api/trends/plenum/road_safety`)
             .then(response => response.json())
-            .then(data => setTData(data))
+            .then(data => setPlenumData(data))
             .catch(error => console.error("Error fetching data:", error));
     }, []);
-    
+
+
+    useEffect(() => {
+        // Fetching top 10 speakers for subject in committees
+        fetch(`${API_ADDR}/api/trends/committee/road_safety/top_mks`)
+            .then(res => res.json())
+            .then(data => setTopMksCommittee(data))
+            .catch(error => console.error("Error fetching data:", error));
+    }, []);
+
+    useEffect(() => {
+        // Fetching top 10 speakers for subject in plenums
+        fetch(`${API_ADDR}/api/trends/plenum/road_safety/top_mks`)
+            .then(res => res.json())
+            .then(data => setTopMksPlenum(data))
+            .catch(error => console.error("Error fetching data:", error));
+    }, []);
+
     const totalBills = billsData.length;
 
     const { statusPieData, stoppedPieData, barData } = useMemo(() => {
@@ -168,7 +192,7 @@ export default function TimelinePage() {
         }
 
         // Sort and yield the top 10 matches
-        return Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 10);
+        return Object.values(initiator_counts).sort((a, b) => b.count - a.count).slice(0, 15);
     }, [billsData, selectedKnesset]);
 
 
@@ -189,8 +213,8 @@ export default function TimelinePage() {
       })
     : scoreData;
 
-    const filteredRoadsafetyData = selectedKnesset 
-    ? roadsafetyData.filter(s => {
+    const filteredCommitteeData = selectedKnesset 
+    ? committeeData.filter(s => {
         const startDate = new Date(KNESSETS[selectedKnesset].start);
         const endDate = new Date(KNESSETS[selectedKnesset].end);
         startDate.setMonth(startDate.getMonth() - 2);
@@ -201,7 +225,22 @@ export default function TimelinePage() {
         const scoreTime = new Date(2000 + year, month - 1, 1);
         return scoreTime >= startTimestamp && scoreTime <= endTimestamp;
       })
-    : roadsafetyData;
+    : committeeData;
+
+
+    const filteredPlenumData = selectedKnesset 
+    ? plenumData.filter(s => {
+        const startDate = new Date(KNESSETS[selectedKnesset].start);
+        const endDate = new Date(KNESSETS[selectedKnesset].end);
+        startDate.setMonth(startDate.getMonth() - 2);
+        endDate.setMonth(endDate.getMonth() + 1);
+        const startTimestamp = startDate.getTime();
+        const endTimestamp = endDate.getTime();
+        const [month, year] = s.name.split('/').map(Number);
+        const scoreTime = new Date(2000 + year, month - 1, 1);
+        return scoreTime >= startTimestamp && scoreTime <= endTimestamp;
+      })
+    : plenumData;
 
     const [selectedInitiatorId, setSelectedInitiatorId] = useState(null);
     // Filter bills for selected top initiator
@@ -350,11 +389,11 @@ export default function TimelinePage() {
             )} */}
             
             <div className="box-chart-container">
-                <TrendsChart quotesData={filteredRoadsafetyData} title={"מדד עיסוק בטיחות בדרכים בוועדות"}/>
-                <TrendsChart quotesData={transportationData} title={"מדד עיסוק תחבורה ציבורית בוועדות"}/>
+                <TrendsChart quotesData={filteredCommitteeData} title={"מדד עיסוק בטיחות בדרכים בוועדות"}/>
+                <TrendsChart quotesData={filteredPlenumData} title={"מדד עיסוק בטיחות בדרכים במליאות"}/>
             </div>
 
-            <div className="initiator-section">
+            {/* <div className="initiator-section">
                 <h2 className="title-content">עשרת חברי הכנסת היוזמים המובילים בהצעות חוקים</h2>
                 
                 <div className="initiator-grid">
@@ -406,7 +445,39 @@ export default function TimelinePage() {
                 </div>
                 )}
 
+            </div> */}
+
+            <div className="box-chart-container">
+                <div style={{ padding: '20px', maxWidth: '400px' }}>
+                    <MKLeaderboards 
+                        mks={topInitiators} 
+                        // selectedMkId={selectedInitiatorId} 
+                        // onMkSelect={(id) => setSelectedInitiatorId(id)} 
+                        title="חברי הכנסת המובילים לפי מספר הצעות חוק" 
+                        countText="הצעות חוק"
+                    />
+                </div>
+
+                <div style={{ padding: '20px', maxWidth: '400px' }}>
+                    <MKLeaderboards 
+                        mks={topMksCommittee} 
+                        // selectedMkId={selectedMk} 
+                        // onMkSelect={(id) => setSelectedMk(id)}                 
+                        title="חברי הכנסת המובילים באזכורים בוועדות"
+                        countText="אזכורים"
+                    />
+                </div>
+                <div style={{ padding: '20px', maxWidth: '400px' }}>
+                    <MKLeaderboards 
+                        mks={topMksPlenum} 
+                        // selectedMkId={selectedMk} 
+                        // onMkSelect={(id) => setSelectedMk(id)}                 
+                        title="חברי הכנסת המובילים באזכורים במליאות"
+                        countText="אזכורים"
+                    />
+                </div>
             </div>
+
         </div>
         </div>
     );
