@@ -1,8 +1,8 @@
 export const SUBJECTS_ARRAY = [
     { 
-        id: 'road-safety', 
+        id: 'road_safety', 
         label: 'בטיחות בדרכים', 
-        path: '/timeline/road-safety', 
+        path: '/timeline/road_safety', 
         keywords: ["תעבורה", "תאונות דרכים", "בטיחות בדרכים", "חוק הדרכים"],
         description: "נראה נתונים על תעבורה ובטיחות בדרכים...."
     },
@@ -45,7 +45,7 @@ export const SUBJECTS_ARRAY = [
 
 
 export const SUBJECTS_DICT = {
-    'road-safety': { 
+    'road_safety': { 
         label: 'בטיחות בדרכים', 
         description: "נראה נתונים על תעבורה ובטיחות בדרכים...."
     },

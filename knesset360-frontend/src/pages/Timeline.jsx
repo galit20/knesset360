@@ -21,7 +21,7 @@ import migrationImg     from '../assets/categories/migration.svg';
 import environmentImg   from '../assets/categories/environment.svg';
 
 const imageMap = {
-    'road-safety':  roadSafetyImg,
+    'road_safety':  roadSafetyImg,
     'education':    educationImg,
     'health':       healthImg,
     'crime':        crimeImg,
@@ -60,7 +60,7 @@ export default function TimelinePage() {
     const [selectedKnesset, setSelectedKnesset] = useState(null);
 
 
-    const currentSubject = subject || 'road-safety';
+    const currentSubject = subject || 'road_safety';
     const config = SUBJECTS_DICT[currentSubject];
     const subjectImage = imageMap[currentSubject];
 
@@ -75,27 +75,27 @@ export default function TimelinePage() {
 
     // TODO: get all scores for all subjects and make an api/scores/{subject} route
     useEffect(() => {
-        fetch(`${API_ADDR}/api/scores/road_safety`)
+        fetch(`${API_ADDR}/api/scores/${currentSubject}`)
             .then(response => response.json())      // convert the server response to JSON
             .then(data => setScoreData(data))        // save to your react state
             .catch(error => console.error("Error fetching data:", error));
-    },  []); // [] - only run this once when the page loads
+    },  [currentSubject]); // [] - only run this once when the page loads
 
 
     useEffect(() => {
-        fetch(`${API_ADDR}/api/trends/committee/road_safety`)
+        fetch(`${API_ADDR}/api/trends/committee/${currentSubject}`)
         .then(response => response.json())
         .then(data => setCommitteeData(data))
         .catch(error => console.error("Error fetching data:", error));
-  }, []);
+  }, [currentSubject]);
 
 
     useEffect(() => {
-            fetch(`${API_ADDR}/api/trends/plenum/road_safety`)
+            fetch(`${API_ADDR}/api/trends/plenum/${currentSubject}`)
             .then(response => response.json())
             .then(data => setPlenumData(data))
             .catch(error => console.error("Error fetching data:", error));
-    }, []);
+    }, [currentSubject]);
 
 
     // useEffect(() => {
@@ -116,7 +116,7 @@ export default function TimelinePage() {
 
 
     useEffect(() => {
-        let url = `${API_ADDR}/api/trends/committee/road_safety/top_mks?limit=15`;
+        let url = `${API_ADDR}/api/trends/committee/${currentSubject}/top_mks?limit=15`;
         if (selectedKnesset) {
             url += `&knesset=${selectedKnesset}`;
         }
@@ -125,10 +125,10 @@ export default function TimelinePage() {
             .then(res => res.json())
             .then(data => setTopMksCommittee(data))
             .catch(error => console.error("Error fetching committee speaker leaderboards:", error));
-    }, [selectedKnesset]); 
+    }, [selectedKnesset, currentSubject]); 
 
     useEffect(() => {
-        let url = `${API_ADDR}/api/trends/plenum/road_safety/top_mks?limit=15`;
+        let url = `${API_ADDR}/api/trends/plenum/${currentSubject}/top_mks?limit=15`;
         if (selectedKnesset) {
             url += `&knesset=${selectedKnesset}`;
         }
@@ -136,7 +136,7 @@ export default function TimelinePage() {
             .then(res => res.json())
             .then(data => setTopMksPlenum(data))
             .catch(error => console.error("Error fetching plenum speaker leaderboards:", error));
-    }, [selectedKnesset]); 
+    }, [selectedKnesset, currentSubject]); 
 
     const totalBills = billsData.length;
 
@@ -239,6 +239,8 @@ export default function TimelinePage() {
       })
     : scoreData;
 
+    //TODO: Check why selected knesset is not working
+
     const filteredCommitteeData = selectedKnesset 
     ? committeeData.filter(s => {
         const startDate = new Date(KNESSETS[selectedKnesset].start);
@@ -253,6 +255,7 @@ export default function TimelinePage() {
       })
     : committeeData;
 
+    //TODO: Check why selected knesset is not working
 
     const filteredPlenumData = selectedKnesset 
     ? plenumData.filter(s => {

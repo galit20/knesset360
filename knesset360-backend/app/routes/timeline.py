@@ -5,7 +5,7 @@ from db import get_db_connection
 router = APIRouter(prefix="/api/timeline", tags=["Timeline"]) #define route
 
 SUBJECTS_CONFIG = {
-    "road-safety": {
+    "road_safety": {
         "label": "בטיחות בדרכים",
         "keywords": ["תעבורה", "תאונות דרכים", "בטיחות בדרכים", "חוק הדרכים"],
     },
