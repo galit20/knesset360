@@ -57,6 +57,9 @@ export default function TimelinePage() {
 
     const [topMksPlenum, setTopMksPlenum] = useState([]);
 
+    const [selectedKnesset, setSelectedKnesset] = useState(null);
+
+
     const currentSubject = subject || 'road-safety';
     const config = SUBJECTS_DICT[currentSubject];
     const subjectImage = imageMap[currentSubject];
@@ -95,21 +98,45 @@ export default function TimelinePage() {
     }, []);
 
 
-    useEffect(() => {
-        // Fetching top 10 speakers for subject in committees
-        fetch(`${API_ADDR}/api/trends/committee/road_safety/top_mks`)
-            .then(res => res.json())
-            .then(data => setTopMksCommittee(data))
-            .catch(error => console.error("Error fetching data:", error));
-    }, []);
+    // useEffect(() => {
+    //     // Fetching top 10 speakers for subject in committees
+    //     fetch(`${API_ADDR}/api/trends/committee/road_safety/top_mks`)
+    //         .then(res => res.json())
+    //         .then(data => setTopMksCommittee(data))
+    //         .catch(error => console.error("Error fetching data:", error));
+    // }, []);
+
+    // useEffect(() => {
+    //     // Fetching top 10 speakers for subject in plenums
+    //     fetch(`${API_ADDR}/api/trends/plenum/road_safety/top_mks`)
+    //         .then(res => res.json())
+    //         .then(data => setTopMksPlenum(data))
+    //         .catch(error => console.error("Error fetching data:", error));
+    // }, []);
+
 
     useEffect(() => {
-        // Fetching top 10 speakers for subject in plenums
-        fetch(`${API_ADDR}/api/trends/plenum/road_safety/top_mks`)
+        let url = `${API_ADDR}/api/trends/committee/road_safety/top_mks?limit=15`;
+        if (selectedKnesset) {
+            url += `&knesset=${selectedKnesset}`;
+        }
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => setTopMksCommittee(data))
+            .catch(error => console.error("Error fetching committee speaker leaderboards:", error));
+    }, [selectedKnesset]); 
+
+    useEffect(() => {
+        let url = `${API_ADDR}/api/trends/plenum/road_safety/top_mks?limit=15`;
+        if (selectedKnesset) {
+            url += `&knesset=${selectedKnesset}`;
+        }
+        fetch(url)
             .then(res => res.json())
             .then(data => setTopMksPlenum(data))
-            .catch(error => console.error("Error fetching data:", error));
-    }, []);
+            .catch(error => console.error("Error fetching plenum speaker leaderboards:", error));
+    }, [selectedKnesset]); 
 
     const totalBills = billsData.length;
 
@@ -155,7 +182,6 @@ export default function TimelinePage() {
     }, [billsData]); 
 
 
-    const [selectedKnesset, setSelectedKnesset] = useState(null);
     // Filter bills for the table based on bar selection
     const billsForTableByKnesset = useMemo(() => {
     if (!selectedKnesset) return [];
@@ -263,222 +289,141 @@ export default function TimelinePage() {
                 </div>
             </div>
             <div style={{ width: '95vw', margin: '0 auto'}}>
-
-            <div className="filter-section-wrapper">
-                <p className="bar-label">מספר כנסת</p>
-                <div className="selector-bar">
-                    <button
-                        className={`selector-btn ${selectedKnesset === null ? 'active' : ''}`}
-                        onClick={() => {
-                            setSelectedKnesset(null);
-                            setSelectedInitiatorId(null);
-                        }}>
-                    הכל
-                    </button>
-                    {KNESSET_OPTIONS.map(k => (
+                <div className="filter-section-wrapper">
+                    <p className="bar-label">מספר כנסת</p>
+                    <div className="selector-bar">
                         <button
-                            key={k}
-                            className={`selector-btn ${selectedKnesset === k ? 'active' : ''}`}
+                            className={`selector-btn ${selectedKnesset === null ? 'active' : ''}`}
                             onClick={() => {
-                                setSelectedKnesset(k);
+                                setSelectedKnesset(null);
                                 setSelectedInitiatorId(null);
                             }}>
-                        {k}
-                        </button>))
-                    }
-                </div>
-            </div>
-
-            <TimelineImpactChart billsData={filteredBillsData} scoreData={filteredScores} knessetNumber={selectedKnesset}/>
-            
-            <div className="box-chart-container">
-                <StatusPieChart 
-                    pieData={statusPieData}
-                    total={totalBills}
-                    title="התפלגות סטטוס הצעות חוק"
-                    // onSliceClick={(data) => {
-                    //     if (data) {
-                    //         setSelectedStatus(Number(data.payload.statusId));
-                    //         setSelectedKnesset(null);
-                    //     }
-                    // }} 
-                />
-                <StatusBarChart 
-                    barData={barData}
-                    title="התפלגות הצעות חוק על פי כנסות"
-                    // onSliceClick={(data) => {
-                    //     if (data) {
-                    //         setSelectedKnesset(data.payload.knessetnum);
-                    //         setSelectedStatus(null);
-                    //     }
-                    // }} 
-                />
-                <StatusPieChart 
-                    pieData={stoppedPieData}
-                    total={stoppedPieData.reduce((acc, curr) => acc + curr.value, 0)}
-                    title="התפלגות סיבות הצעות חוק שנעצרו"
-                />
-            </div>
-            
-            {/* {selectedKnesset && (
-            <div className="table-container">
-                <div className="table-top-container">
-                    <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בכנסת ה-{selectedKnesset}</h3>
-                    <button
-                        className="close-button-style"
-                        onClick={() => setSelectedKnesset(null)} >
-                        <span style={{ fontSize: '16px' }}>✕</span>
-                        <span>סגור</span>
-                    </button>
-                </div>
-                <div className="table-div-scroll">
-                    <table className="table-content">
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid #eee' }}>
-                            <th>מספר הצעה</th>
-                            <th>שם הצעה</th>
-                            <th>סטטוס</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {billsForTableByKnesset.map(bill => (
-                            <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '15px' }}>{bill.id}</td>
-                                <td>{bill.name}</td>
-                                <td>{STATUS_DESC[bill.statusid]}</td>
-                            </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            )}
-
-            {selectedStatus && (
-            <div className="table-container">
-                <div className="table-top-container">
-                    <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות חוק בסטטוס - {STATUS_DESC[selectedStatus]}</h3>
-                    <button 
-                        className="close-button-style"
-                        onClick={() => setSelectedStatus(null)} >
-                        <span style={{ fontSize: '16px' }}>✕</span>
-                        <span>סגור</span>
-                    </button>
-                </div>
-                <div className="table-div-scroll">
-                    <table className="table-content">
-                        <thead style={{ position: 'sticky', top: 0, backgroundColor: '#ffffff', zIndex: 9 }}>
-                            <tr style={{ borderBottom: '2px solid #eee' }}>
-                                <th>מספר הצעה</th>
-                                <th>שם הצעה</th>
-                                <th>יוזמים</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {billsForTableByStatus.map(bill => (
-                            <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '15px' }}>{bill.id}</td>
-                                <td>{bill.name}</td>
-                                <td></td>
-                            </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            )} */}
-            
-            <div className="box-chart-container">
-                <TrendsChart quotesData={filteredCommitteeData} title={"מדד עיסוק בטיחות בדרכים בוועדות"}/>
-                <TrendsChart quotesData={filteredPlenumData} title={"מדד עיסוק בטיחות בדרכים במליאות"}/>
-            </div>
-
-            {/* <div className="initiator-section">
-                <h2 className="title-content">עשרת חברי הכנסת היוזמים המובילים בהצעות חוקים</h2>
-                
-                <div className="initiator-grid">
-                    {topInitiators.map((initiator) => (
-                        <InitiatorCard 
-                            key={initiator.id} // Essential for React to track items
-                            initiator={initiator}
-                            isSelected={selectedInitiatorId === initiator.id}
-                            onClick={(id) => {
-                                // Toggle selection: if already selected, clear it; otherwise, set it.
-                                setSelectedInitiatorId(prevId => prevId === id ? null : id);
-                                // Clear other filters to focus only on this person
-                                setSelectedStatus(null);
-                            }}
-                        />
-                    ))}
-                </div>
-
-                {selectedInitiatorId && (
-                <div className="table-container">
-                    <div className="table-top-container">
-                        <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות החוק של {topInitiators.find(i => i.id === selectedInitiatorId).name}</h3>
-                        <button 
-                            className="close-button-style"
-                            onClick={() => setSelectedInitiatorId(null)} >
-                            <span style={{ fontSize: '16px' }}>✕</span>
-                            <span>סגור</span>
+                        הכל
                         </button>
-                    </div>
-                    <div className="table-div-scroll">
-                        <table className="table-content">
-                            <thead style={{ position: 'sticky', top: 0, backgroundColor: '#ffffff', zIndex: 9 }}>
-                                <tr style={{ borderBottom: '2px solid #eee' }}>
-                                    <th>מספר הצעה</th>
-                                    <th>שם הצעה</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {billsForTableByInitiatorId.map(bill => (
-                                <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ padding: '15px' }}>{bill.id}</td>
-                                    <td>{bill.name}</td>
-                                    <td></td>
-                                </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        {KNESSET_OPTIONS.map(k => (
+                            <button
+                                key={k}
+                                className={`selector-btn ${selectedKnesset === k ? 'active' : ''}`}
+                                onClick={() => {
+                                    setSelectedKnesset(k);
+                                    setSelectedInitiatorId(null);
+                                }}>
+                            {k}
+                            </button>))
+                        }
                     </div>
                 </div>
-                )}
 
-            </div> */}
-
-            <div className="box-chart-container">
-                <div style={{ padding: '20px', maxWidth: '400px' }}>
-                    <MKLeaderboards 
-                        mks={topInitiators} 
-                        // selectedMkId={selectedInitiatorId} 
-                        // onMkSelect={(id) => setSelectedInitiatorId(id)} 
-                        title="חברי הכנסת המובילים לפי מספר הצעות חוק" 
-                        countText="הצעות חוק"
+                <TimelineImpactChart billsData={filteredBillsData} scoreData={filteredScores} knessetNumber={selectedKnesset}/>
+                
+                <div className="box-chart-container">
+                    <StatusPieChart 
+                        pieData={statusPieData}
+                        total={totalBills}
+                        title="התפלגות סטטוס הצעות חוק"
+                    />
+                    <StatusBarChart 
+                        barData={barData}
+                        title="התפלגות הצעות חוק על פי כנסות"
+                    />
+                    <StatusPieChart 
+                        pieData={stoppedPieData}
+                        total={stoppedPieData.reduce((acc, curr) => acc + curr.value, 0)}
+                        title="התפלגות סיבות הצעות חוק שנעצרו"
                     />
                 </div>
-
-                <div style={{ padding: '20px', maxWidth: '400px' }}>
-                    <MKLeaderboards 
-                        mks={topMksCommittee} 
-                        // selectedMkId={selectedMk} 
-                        // onMkSelect={(id) => setSelectedMk(id)}                 
-                        title="חברי הכנסת המובילים באזכורים בוועדות"
-                        countText="אזכורים"
-                    />
+                
+                
+                <div className="box-chart-container">
+                    <TrendsChart quotesData={filteredCommitteeData} title={"מדד עיסוק בטיחות בדרכים בוועדות"}/>
+                    <TrendsChart quotesData={filteredPlenumData} title={"מדד עיסוק בטיחות בדרכים במליאות"}/>
                 </div>
-                <div style={{ padding: '20px', maxWidth: '400px' }}>
-                    <MKLeaderboards 
-                        mks={topMksPlenum} 
-                        // selectedMkId={selectedMk} 
-                        // onMkSelect={(id) => setSelectedMk(id)}                 
-                        title="חברי הכנסת המובילים באזכורים במליאות"
-                        countText="אזכורים"
-                    />
+
+                {/* <div className="initiator-section">
+                    <h2 className="title-content">עשרת חברי הכנסת היוזמים המובילים בהצעות חוקים</h2>
+                    
+                    <div className="initiator-grid">
+                        {topInitiators.map((initiator) => (
+                            <InitiatorCard 
+                                key={initiator.id} // Essential for React to track items
+                                initiator={initiator}
+                                isSelected={selectedInitiatorId === initiator.id}
+                                onClick={(id) => {
+                                    // Toggle selection: if already selected, clear it; otherwise, set it.
+                                    setSelectedInitiatorId(prevId => prevId === id ? null : id);
+                                    // Clear other filters to focus only on this person
+                                    setSelectedStatus(null);
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    {selectedInitiatorId && (
+                    <div className="table-container">
+                        <div className="table-top-container">
+                            <h3 style={{ margin: 0, color: '#1f2937' }}>הצעות החוק של {topInitiators.find(i => i.id === selectedInitiatorId).name}</h3>
+                            <button 
+                                className="close-button-style"
+                                onClick={() => setSelectedInitiatorId(null)} >
+                                <span style={{ fontSize: '16px' }}>✕</span>
+                                <span>סגור</span>
+                            </button>
+                        </div>
+                        <div className="table-div-scroll">
+                            <table className="table-content">
+                                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#ffffff', zIndex: 9 }}>
+                                    <tr style={{ borderBottom: '2px solid #eee' }}>
+                                        <th>מספר הצעה</th>
+                                        <th>שם הצעה</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {billsForTableByInitiatorId.map(bill => (
+                                    <tr key={bill.id} style={{ borderBottom: '1px solid #eee' }}>
+                                        <td style={{ padding: '15px' }}>{bill.id}</td>
+                                        <td>{bill.name}</td>
+                                        <td></td>
+                                    </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    )}
+
+                </div> */}
+
+                <div className="box-chart-container">
+                    <div style={{ padding: '20px', maxWidth: '400px' }}>
+                        <MKLeaderboards 
+                            mks={topInitiators} 
+                            // selectedMkId={selectedInitiatorId} 
+                            // onMkSelect={(id) => setSelectedInitiatorId(id)} 
+                            title="חברי הכנסת המובילים לפי מספר הצעות חוק" 
+                            countText="הצעות חוק"
+                        />
+                    </div>
+
+                    <div style={{ padding: '20px', maxWidth: '400px' }}>
+                        <MKLeaderboards 
+                            mks={topMksCommittee} 
+                            // selectedMkId={selectedMk} 
+                            // onMkSelect={(id) => setSelectedMk(id)}                 
+                            title="חברי הכנסת המובילים באזכורים בוועדות"
+                            countText="אזכורים"
+                        />
+                    </div>
+                    <div style={{ padding: '20px', maxWidth: '400px' }}>
+                        <MKLeaderboards 
+                            mks={topMksPlenum} 
+                            // selectedMkId={selectedMk} 
+                            // onMkSelect={(id) => setSelectedMk(id)}                 
+                            title="חברי הכנסת המובילים באזכורים במליאות"
+                            countText="אזכורים"
+                        />
+                    </div>
                 </div>
             </div>
-
-        </div>
         </div>
     );
 }

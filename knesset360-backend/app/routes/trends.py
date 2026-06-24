@@ -5,6 +5,15 @@ router = APIRouter(prefix="/api/trends", tags=["Trends"]) #define route
 
 es = Elasticsearch("http://localhost:9200")
 
+KNESSETS = {
+    20: {"start": "2015-03-31", "end": "2019-04-29"},
+    21: {"start": "2019-04-30", "end": "2019-10-03"},
+    22: {"start": "2019-10-03", "end": "2020-03-16"},
+    23: {"start": "2020-03-16", "end": "2021-01-06"},
+    24: {"start": "2021-04-06", "end": "2022-11-14"},
+    25: {"start": "2022-11-15", "end": "2026-10-27"}
+};
+
 # Define our subject keyword maps global state
 SUBJECT_KEYWORDS = {
     "road_safety": [
@@ -13,7 +22,10 @@ SUBJECT_KEYWORDS = {
         "אופניי*", 
         '"הולך רגל"', 
         '"הולכי רגל"', 
-        "קסד*"
+        "קסד*",
+        "אוטובוס*",
+        "רכבת",
+        "רכבות"
     ],
     "transportation": [
         "אוטובוס*", 
@@ -66,10 +78,28 @@ async def get_subject_timeline(subject: str):
 
 
 @router.get("/{doc_type}/{subject}/top_mks")
-async def get_top_mks_by_subject(doc_type: str, subject: str, limit: int = 15):
+async def get_top_mks_by_subject(doc_type: str, subject: str, limit: int = 15, knesset: int = None):
     keywords = SUBJECT_KEYWORDS.get(subject.lower(), [subject])
     compiled_query = " OR ".join([kw if '"' in kw else f"*{kw}*" for kw in keywords])
     formatted_doc_type = doc_type.capitalize() # Capitalize doc_type
+
+    # Base filters
+    filter_conditions = [
+        {"exists": {"field": "PersonID"}}, 
+        {"term": {"DocType": formatted_doc_type}}
+    ]
+
+    #  Only inject range filter if knesset is provided and valid
+    if knesset is not None and knesset in KNESSETS:
+        date_range = KNESSETS[knesset]
+        filter_conditions.append({
+            "range": {
+                "StartDate": {
+                    "gte": date_range["start"],
+                    "lte": date_range["end"]
+                }
+            }
+        })
 
     es_query = {
         "size": 0,
@@ -83,10 +113,7 @@ async def get_top_mks_by_subject(doc_type: str, subject: str, limit: int = 15):
                         }
                     }
                 ],
-                "filter": [ 
-                    {"exists": {"field": "PersonID"}},  # Not Null PersonID, ensures we only count actual MKs
-                    {"term": {"DocType": formatted_doc_type }} 
-                ]
+                "filter": filter_conditions
             }
         },
         "aggs": {
@@ -94,14 +121,6 @@ async def get_top_mks_by_subject(doc_type: str, subject: str, limit: int = 15):
                 "terms": {
                     "field": "PersonID",
                     "size": limit  # Limit the number of top MKs returned based on the query parameter
-                },
-                "aggs": {
-                    "speaker_name": {
-                        "terms": {
-                            "field": "Speaker",
-                            "size": 1
-                        }
-                    }
                 }
             }
         }
@@ -110,22 +129,13 @@ async def get_top_mks_by_subject(doc_type: str, subject: str, limit: int = 15):
     response = es.search(index="quotes", body=es_query)
     buckets = response["aggregations"]["top_speakers"]["buckets"]
     
-    top_mks = []
-    for bucket in buckets:
-        person_id = bucket["key"]
-        mention_count = bucket["doc_count"]
-        
-        # Extract the speaker name from the sub-aggregation bucket list safely
-        name_buckets = bucket["speaker_name"]["buckets"]
-        speaker_name = name_buckets[0]["key"] if name_buckets else "חבר כנסת לא מזוהה"
-        
-        top_mks.append({
-            "id": int(person_id),
-            "name": speaker_name,
-            "count": mention_count
-        })
-        
-    return top_mks
+    return [
+        {
+            "id": int(bucket["key"]),
+            "count": bucket["doc_count"]
+        } 
+        for bucket in buckets
+    ]
 
 
 @router.get("/{doc_type}/{subject}")
