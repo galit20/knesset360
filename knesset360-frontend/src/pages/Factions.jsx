@@ -882,7 +882,7 @@ function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
             return (
               <div key={i} className="mk-card">
                 <span className="mk-rank">{['🥇','🥈','🥉'][i]}</span>
-                <MkAvatar id={mk.personid} name={mk.name} size={36} />
+                <MkAvatar id={mk.personid} name={mk.name} size={48} />
                 <span className="mk-name">{mk.name}</span>
                 <div className="mk-bar-wrap">
                   <div className="mk-bar-fill" style={{ width: `${barWidth}%` }} />
@@ -945,7 +945,7 @@ function VotingDeviations({ data, loading, knesset }) {
       <div className="vd-mk-list">
         {top_mks.map((mk, i) => (
           <div key={i} className="vd-mk-row">
-            <MkAvatar id={mk.personid} name={mk.name} size={32} />
+            <MkAvatar id={mk.personid} name={mk.name} size={48} />
             <span className="vd-mk-name">{mk.name}</span>
             <div className="vd-mk-bar-wrap">
               <div
