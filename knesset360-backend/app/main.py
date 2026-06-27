@@ -316,27 +316,30 @@ app = FastAPI()
 FACTION_NAME_ALIASES = {
     'הליכוד בהנהגת בנימין נתניהו לראשות הממשלה': 'הליכוד',
     'כחול לבן בראשות בנימין גנץ': 'כחול לבן',
-    'הרשימה המשותפת חדש, רעם, תעל, בלד':'הרשימה המשותפת חדש, רעמ, תעל, בלד',
-    'התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצל':'ש"ס',
-    'שס':'ש"ס',
+    'הרשימה המשותפת חדש, רעם, תעל, בלד':'הרשימה המשותפת',
+    'הרשימה המשותפת (חדש, רעם, בלד ותעל)': 'הרשימה המשותפת',
+    'הרשימה המשותפת חדש, רעמ, תעל, בלד':'הרשימה המשותפת',
+    'הרשימה המשותפת (חדש, תעל, בלד)': 'הרשימה המשותפת',
+    'הרשימה המשותפת (חדש, בלד)': 'הרשימה המשותפת',
+    'הרשימה הערבית המאוחדת': 'רעם',
+    'ימינה בראשות נפתלי בנט': 'ימינה',
+    'יהדות התורה והשבת - אגודת ישראל דגל התורה': 'יהדות התורה',
+    'יהדות התורה והשבת אגודת ישראל - דגל התורה': 'יהדות התורה',
+    'דגל התורה': 'יהדות התורה',
+    'התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצל':'שס',
     'הציונות הדתית (נסגרה)': 'הציונות הדתית',
     'הציונות הדתית בראשות בצלאל סמוטריץ\'': 'הציונות הדתית',
-    'הרשימה המשותפת (חדש, רעם, בלד ותעל)': 'הרשימה המשותפת (חד"ש-רע"מ-תע"ל-בל"ד)',
-    'הרשימה המשותפת חדש, רעמ, תעל, בלד':'הרשימה המשותפת (חד"ש-רע"מ-תע"ל-בל"ד)',
     'עוצמה יהודית בראשות איתמר בן גביר': 'עוצמה יהודית',
-    'רעם': 'רע"מ',
-    'רעמ – רשימת האיחוד הערבי ':'רע"מ',
-    'רעמ - רשימת האיחוד הערבי':'רע"מ',
-    'רעמ – רשימת האיחוד הערבי':'רע"מ',
-    'העבודה הישראלית':'העבודה',  
+    'רעמ – רשימת האיחוד הערבי ':'רעם',
+    'רעמ - רשימת האיחוד הערבי':'רעם',
+    'רעמ – רשימת האיחוד הערבי':'רעם',
+    'העבודה הישראלית':'העבודה',
     'תקווה חדשה - אחדות לישראל':'תקווה חדשה',
-    'ישראל ביתנו בראשות אביגדור ליברמן':'ישראל ביתנו', 
-    'חדש תעל בראשות איימן עודה ואחמד טיבי':' חד"ש-תע"ל',
-    'חדש-תעל':' חד"ש-תע"ל',
-    'תקווה חדשה - אחדות לישראל':'תקווה חדשה',
-    'תלם - תנועה לאומית ממלכתית':'תל"ם',
-    'חדש - חזית דמוקרטית לשלום ושוויון':'חד"ש',
-    'חדש':'חד"ש'
+    'ישראל ביתנו בראשות אביגדור ליברמן':'ישראל ביתנו',
+    'חדש תעל בראשות איימן עודה ואחמד טיבי':'חדש-תעל',
+    'חדש-תעל':'חדש-תעל',
+    'תלם - תנועה לאומית ממלכתית':'תלם',
+    'חדש - חזית דמוקרטית לשלום ושוויון':'חדש',
 
     # add more as needed
 }
@@ -344,6 +347,52 @@ FACTION_NAME_ALIASES = {
 def normalize_faction_name(name: str) -> str:
     cleaned = ' '.join(name.split())  # removes all extra whitespace
     return FACTION_NAME_ALIASES.get(cleaned, cleaned)
+
+# Some parties were elected as one joint list but split into separate
+# parliamentary factions mid-term, sharing no common text prefix with the
+# original list name (e.g. "כחול לבן" / "יש עתיד" in Knesset 23). A single
+# alias/prefix can't merge those for matching purposes - this maps
+# {knesset: {canonical_display_name: [name_prefixes_to_match]}} so all data
+# endpoints can correctly aggregate across every sub-faction.
+KNESSET_FACTION_MERGE_GROUPS = {
+    23: {
+        'כחול לבן': ['כחול לבן', 'יש עתיד'],
+        'העבודה - גשר - מרצ': ['העבודה', 'מרצ'],
+    },
+}
+
+def get_faction_match_patterns(faction_name, knesset):
+    if knesset:
+        groups = KNESSET_FACTION_MERGE_GROUPS.get(knesset, {})
+        if faction_name in groups:
+            return groups[faction_name]
+        # faction_name might be any of the original sub-faction names (not the
+        # canonical key) depending on which raw row survived dedup elsewhere -
+        # check membership/prefix against every group's own patterns too.
+        for patterns in groups.values():
+            if any(faction_name.startswith(p) or p.startswith(faction_name) for p in patterns):
+                return patterns
+    return [faction_name]
+
+def faction_match_sql(column_expr, faction_name, knesset, params_list):
+    """Builds '(col ILIKE %s OR col ILIKE %s ...)' for every matching pattern
+    and appends the corresponding '<pattern>%' values to params_list (positional-style)."""
+    patterns = get_faction_match_patterns(faction_name, knesset)
+    conditions = []
+    for p in patterns:
+        conditions.append(f"TRIM({column_expr}) ILIKE %s")
+        params_list.append(f"{p}%")
+    return "(" + " OR ".join(conditions) + ")"
+
+def faction_match_sql_named(column_expr, faction_name, knesset, params_dict):
+    """Same as faction_match_sql but for named (%(key)s) parameter style."""
+    patterns = get_faction_match_patterns(faction_name, knesset)
+    conditions = []
+    for i, p in enumerate(patterns):
+        key = f"faction_pattern_{i}"
+        conditions.append(f"TRIM({column_expr}) ILIKE %({key})s")
+        params_dict[key] = f"{p}%"
+    return "(" + " OR ".join(conditions) + ")"
 
 # --- CORS SETUP ---
 # Allow react+vite app to talk with the API
@@ -431,6 +480,22 @@ def get_factions(knesset: int = None):
         for row in data:
             row['name'] = normalize_faction_name(row['name'])
 
+        # Knesset 23 special case: "יש עתיד" ran as one joint list with
+        # "כחול לבן" in the March 2020 election. The split into separate
+        # factions ("יש עתיד", "יש עתיד-תלם", etc.) happened mid-term, after
+        # the election - so for the original seat breakdown we merge those
+        # splinters back into "כחול לבן". This can't be a global alias since
+        # "יש עתיד" is a real, separate, independent party in other Knessets.
+        if knesset == 23:
+            for row in data:
+                if row['name'] == 'יש עתיד' or 'תלם' in row['name']:
+                    row['name'] = 'כחול לבן'
+                elif row['name'] == 'מרצ' or 'העבודה' in row['name']:
+                    row['name'] = 'העבודה - גשר - מרצ'
+            # רעם wasn't a separate elected list in the original 2020 Knesset 23
+            # election result - exclude it entirely for this Knesset.
+            data = [row for row in data if row['name'] != 'רעם']
+
         # Remove duplicates after normalization
         seen = set()
         unique_data = []
@@ -465,7 +530,11 @@ def get_faction_stats(faction_id: int, knesset: int = None):
 
         faction_name = normalize_faction_name(faction['name'])
         knesset_filter = "AND b.knessetnum = %s" if knesset else ""
-        params_total = (faction_name, knesset) if knesset else (faction_name,)
+
+        params_total = []
+        match_sql = faction_match_sql("p2p.factionname", faction_name, knesset, params_total)
+        if knesset:
+            params_total.append(knesset)
 
         # Total bills by faction name
         cursor.execute(f"""
@@ -473,7 +542,7 @@ def get_faction_stats(faction_id: int, knesset: int = None):
             FROM kns_bill b
             JOIN kns_billinitiator bi ON bi.billid = b.id
             JOIN kns_persontoposition p2p ON p2p.personid = bi.personid
-            WHERE TRIM(p2p.factionname) = TRIM(%s)
+            WHERE {match_sql}
               AND bi.isinitiator = true
               {knesset_filter}
         """, params_total)
@@ -485,7 +554,7 @@ def get_faction_stats(faction_id: int, knesset: int = None):
             FROM kns_bill b
             JOIN kns_billinitiator bi ON bi.billid = b.id
             JOIN kns_persontoposition p2p ON p2p.personid = bi.personid
-            WHERE TRIM(p2p.factionname) = TRIM(%s)
+            WHERE {match_sql}
               AND bi.isinitiator = true
               AND b.statusid = 118
               {knesset_filter}
@@ -524,7 +593,11 @@ def get_faction_topics(faction_id: int, knesset: int = None):
 
         faction_name = normalize_faction_name(faction['name'])
         knesset_filter = "AND b.knessetnum = %s" if knesset else ""
-        params = (faction_name, knesset) if knesset else (faction_name,)
+
+        params = []
+        match_sql = faction_match_sql("p2p.factionname", faction_name, knesset, params)
+        if knesset:
+            params.append(knesset)
 
         cursor.execute(f"""
             SELECT c.name, COUNT(DISTINCT b.id) as bill_count
@@ -532,7 +605,7 @@ def get_faction_topics(faction_id: int, knesset: int = None):
             JOIN kns_committee c ON c.id = b.committeeid
             JOIN kns_billinitiator bi ON bi.billid = b.id
             JOIN kns_persontoposition p2p ON p2p.personid = bi.personid
-            WHERE TRIM(p2p.factionname) = TRIM(%s)
+            WHERE {match_sql}
               AND bi.isinitiator = true
               AND c.name != 'אין ועדה מטפלת'
               {knesset_filter}
@@ -569,7 +642,8 @@ def get_faction_status(faction_id: int, knesset: int = None, committee: str = No
         knesset_filter = "AND b.knessetnum = %s" if knesset else ""
         committee_filter = "AND c.name = %s" if committee else ""
 
-        params = [faction_name]
+        params = []
+        match_sql = faction_match_sql("p2p.factionname", faction_name, knesset, params)
         if knesset:
             params.append(knesset)
         if committee:
@@ -588,7 +662,7 @@ def get_faction_status(faction_id: int, knesset: int = None, committee: str = No
             JOIN kns_billinitiator bi ON bi.billid = b.id
             JOIN kns_persontoposition p2p ON p2p.personid = bi.personid
             LEFT JOIN kns_committee c ON c.id = b.committeeid
-            WHERE TRIM(p2p.factionname) = TRIM(%s)
+            WHERE {match_sql}
               AND bi.isinitiator = true
               {knesset_filter}
               {committee_filter}
@@ -625,7 +699,8 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
         knesset_filter = "AND b.knessetnum = %s" if knesset else ""
         committee_filter = "AND c.name = %s" if committee else ""
 
-        params = [faction_name]
+        params = []
+        match_sql = faction_match_sql("p2p.factionname", faction_name, knesset, params)
         if knesset:
             params.append(knesset)
         if committee:
@@ -640,7 +715,7 @@ def get_faction_top_mks(faction_id: int, knesset: int = None, committee: str = N
             JOIN kns_persontoposition p2p ON p2p.personid = bi.personid
             JOIN kns_person p ON p.id = bi.personid
             LEFT JOIN kns_committee c ON c.id = b.committeeid
-            WHERE TRIM(p2p.factionname) = TRIM(%s)
+            WHERE {match_sql}
               AND bi.isinitiator = true
               {knesset_filter}
               {committee_filter}
@@ -681,15 +756,16 @@ def get_faction_rebels(faction_id: int, knesset: int):
             raise HTTPException(status_code=404, detail="Faction not found")
 
         faction_name = normalize_faction_name(faction['name'])
-        params = {"knesset": knesset, "faction_name": faction_name}
+        params = {"knesset": knesset}
+        match_sql = faction_match_sql_named("factionname", faction_name, knesset, params)
 
-        base_cte = """
+        base_cte = f"""
             WITH faction_members AS (
                 SELECT DISTINCT personid
                 FROM kns_persontoposition
                 WHERE knessetnum = %(knesset)s
                   AND factionname IS NOT NULL
-                  AND TRIM(factionname) = TRIM(%(faction_name)s)
+                  AND {match_sql}
             ),
             faction_votes AS (
                 SELECT vr."MkId" AS mkid,
@@ -945,7 +1021,7 @@ OFFICIAL_SEATS = {
         {'name': 'שס', 'seats': 9},
         {'name': 'ישראל ביתנו', 'seats': 8},
         {'name': 'יהדות התורה', 'seats': 7},
-        {'name': 'העבודה-גשר-מרצ', 'seats': 7},
+        {'name': 'העבודה - גשר - מרצ', 'seats': 7},
         {'name': 'ימינה', 'seats': 7},
         {'name': 'כולנו', 'seats': 4},
     ],
@@ -956,7 +1032,7 @@ OFFICIAL_SEATS = {
         {'name': 'שס', 'seats': 9},
         {'name': 'יהדות התורה', 'seats': 7},
         {'name': 'ישראל ביתנו', 'seats': 7},
-        {'name': 'העבודה-גשר-מרצ', 'seats': 7},
+        {'name': 'העבודה - גשר - מרצ', 'seats': 7},
         {'name': 'ימינה', 'seats': 6},
     ],
     24: [
@@ -964,32 +1040,30 @@ OFFICIAL_SEATS = {
         {'name': 'יש עתיד', 'seats': 17},
         {'name': 'שס', 'seats': 9},
         {'name': 'כחול לבן', 'seats': 8},
+        {'name': 'ימינה', 'seats': 7},
+        {'name': 'העבודה', 'seats': 7},
         {'name': 'יהדות התורה', 'seats': 7},
         {'name': 'ישראל ביתנו', 'seats': 7},
-        {'name': 'העבודה', 'seats': 7},
-        {'name': 'ימינה', 'seats': 7},
         {'name': 'הציונות הדתית', 'seats': 6},
+        {'name': 'הרשימה המשותפת', 'seats': 6},
+        {'name': 'תקווה חדשה', 'seats': 6},
         {'name': 'מרצ', 'seats': 6},
         {'name': 'רעם', 'seats': 4},
-        {'name': 'חדש-תעל', 'seats': 6},
-        {'name': 'עוצמה יהודית', 'seats': 1},
-        {'name': 'בלד', 'seats': 4},
-        {'name': 'תקווה חדשה', 'seats': 6},
-        {'name': 'גשר', 'seats': 1},
-        {'name': 'דרך ארץ', 'seats': 2},
     ],
     25: [
         {'name': 'הליכוד', 'seats': 32},
         {'name': 'יש עתיד', 'seats': 24},
-        {'name': 'המחנה הממלכתי', 'seats': 12},
         {'name': 'שס', 'seats': 11},
+        {'name': 'כחול לבן - המחנה הממלכתי', 'seats': 8},
         {'name': 'הציונות הדתית', 'seats': 7},
         {'name': 'יהדות התורה', 'seats': 7},
         {'name': 'ישראל ביתנו', 'seats': 6},
         {'name': 'עוצמה יהודית', 'seats': 6},
-        {'name': 'העבודה', 'seats': 4},
-        {'name': 'חדש-תעל', 'seats': 6},
         {'name': 'רעם', 'seats': 5},
+        {'name': 'חדש-תעל', 'seats': 5},
+        {'name': 'העבודה', 'seats': 4},
+        {'name': 'הימין הממלכתי', 'seats': 4},
+        {'name': 'נעם', 'seats': 1},
     ],
 }
 

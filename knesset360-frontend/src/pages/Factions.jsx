@@ -551,6 +551,23 @@ import './Factions.css';
 
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
 
+// Display-only formatting overrides. These do NOT affect any DB matching/queries
+// - they just control how a faction's name is *shown* on screen (e.g. with
+// gershayim quote marks for acronym-style party names).
+const DISPLAY_NAME_OVERRIDES = {
+  'חדש-תעל': 'חד"ש-תע"ל',
+  'רעם': 'רע"מ',
+  'שס': 'ש"ס',
+};
+
+function getDisplayName(name) {
+  if (!name) return name;
+  for (const [key, display] of Object.entries(DISPLAY_NAME_OVERRIDES)) {
+    if (name.includes(key)) return name.replace(key, display);
+  }
+  return name;
+}
+
 const FACTION_LOGOS = {
   'הליכוד': '/faction-logos/likud.png',
   'כחול לבן': '/faction-logos/kahol_lavan.png',
@@ -659,14 +676,17 @@ const OFFICIAL_SEATS = {
   25: {
     'הליכוד': 32,
     'יש עתיד': 24,
-    'הציונות הדתית': 14,
-    'המחנה הממלכתי': 12,
     'שס': 11,
+    'כחול לבן - המחנה הממלכתי': 8,
+    'הציונות הדתית': 7,
     'יהדות התורה': 7,
     'ישראל ביתנו': 6,
+    'עוצמה יהודית': 6,
     'רעם': 5,
     'חדש-תעל': 5,
     'עבודה': 4,
+    'הימין הממלכתי': 4,
+    'נעם': 1,
   },
 };
 
@@ -683,20 +703,6 @@ function ParliamentChart({ factions, selectedFaction, onSelect, knessetNum }) {
   const officialSeats = OFFICIAL_SEATS[knessetNum] || {};
 
   const getSeatCount = (f) => {
-    if (knessetNum === 25) {
-      const n = f.name;
-      if (n.includes('ליכוד')) return 32;
-      if (n.includes('יש עתיד')) return 24;
-      if (n.includes('ציונות')) return 14;
-      if (n.includes('ממלכתי') || n.includes('כחול')) return 12;
-      if (n.includes('שס') || n.includes('ש"ס')) return 11;
-      if (n.includes('תורה')) return 7;
-      if (n.includes('ביתנו')) return 6;
-      if (n.includes('רעם') || n.includes('רע"מ')) return 5;
-      if (n.includes('חדש') || n.includes('תעל') || n.includes('תע"ל')) return 5;
-      if (n.includes('עבודה')) return 4;
-      if (n.includes('ימין') || n.includes('עוצמה')) return 0;
-    }
     const match = Object.entries(officialSeats).find(([name]) =>
       f.name.includes(name) || name.includes(f.name)
     );
@@ -748,7 +754,7 @@ function ParliamentChart({ factions, selectedFaction, onSelect, knessetNum }) {
             onClick={() => onSelect(selectedFaction?.id === f.id ? null : f)}
           >
             <span className="parliament-legend-dot" style={{ background: colorMap[f.id] }} />
-            <span className="parliament-legend-name">{f.name}</span>
+            <span className="parliament-legend-name">{getDisplayName(f.name)}</span>
             <span className="parliament-legend-count">{getSeatCount(f)}</span>
           </div>
         ))}
@@ -766,11 +772,11 @@ function FactionBanner({ faction, color }) {
     <div className="faction-banner" style={{ background: bannerColor }}>
       {logoSrc && (
         <div className="faction-banner-logo">
-          <img src={logoSrc} alt={faction.name} />
+          <img src={logoSrc} alt={getDisplayName(faction.name)} />
         </div>
       )}
       <div className="faction-banner-text">
-        <h3 className="faction-banner-name">{faction.name}</h3>
+        <h3 className="faction-banner-name">{getDisplayName(faction.name)}</h3>
         {faction.startdate && (
           <p className="faction-banner-dates">
             {new Date(faction.startdate).getFullYear()}
@@ -882,7 +888,7 @@ function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
             return (
               <div key={i} className="mk-card">
                 <span className="mk-rank">{['🥇','🥈','🥉'][i]}</span>
-                <MkAvatar id={mk.personid} name={mk.name} size={48} />
+                <MkAvatar id={mk.personid} name={mk.name} size={60} />
                 <span className="mk-name">{mk.name}</span>
                 <div className="mk-bar-wrap">
                   <div className="mk-bar-fill" style={{ width: `${barWidth}%` }} />
@@ -945,7 +951,7 @@ function VotingDeviations({ data, loading, knesset }) {
       <div className="vd-mk-list">
         {top_mks.map((mk, i) => (
           <div key={i} className="vd-mk-row">
-            <MkAvatar id={mk.personid} name={mk.name} size={48} />
+            <MkAvatar id={mk.personid} name={mk.name} size={60} />
             <span className="vd-mk-name">{mk.name}</span>
             <div className="vd-mk-bar-wrap">
               <div

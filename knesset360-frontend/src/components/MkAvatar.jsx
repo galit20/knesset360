@@ -3,7 +3,7 @@ import './MkAvatar.css';
 
 const EXTENSIONS = ['jpg', 'png', 'jpeg'];
 
-export default function MkAvatar({ id, name, size = 36 }) {
+export default function MkAvatar({ id, name, size = 48 }) {
   // index into EXTENSIONS to try next; once it exceeds the list, show initials
   const [extIndex, setExtIndex] = useState(0);
 
