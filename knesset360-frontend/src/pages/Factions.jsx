@@ -1077,12 +1077,6 @@ export default function Factions() {
             {k}
           </button>
         ))}
-        <button
-          className={`selector-btn ${selectedKnesset === 'all' ? 'active' : ''}`}
-          onClick={() => setSelectedKnesset('all')}
-        >
-          הכל
-        </button>
       </div>
 
       {error && <div className="stats-error">{error}</div>}

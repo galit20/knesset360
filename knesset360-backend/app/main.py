@@ -685,7 +685,7 @@ def get_faction_rebels(faction_id: int, knesset: int):
 
         base_cte = """
             WITH faction_members AS (
-                SELECT DISTINCT personid, TRIM(factionname) AS factionname
+                SELECT DISTINCT personid
                 FROM kns_persontoposition
                 WHERE knessetnum = %(knesset)s
                   AND factionname IS NOT NULL
@@ -738,7 +738,7 @@ def get_faction_rebels(faction_id: int, knesset: int):
             FROM mk_rebel_counts rc
             JOIN kns_person p ON p.id = rc.mkid
             ORDER BY rc.rebel_count DESC
-            LIMIT 10
+            LIMIT 3
         """, params)
         top_mks = cursor.fetchall()
 
@@ -900,7 +900,7 @@ def get_hot_committees(knesset: int = 25):
               AND cs.startdate IS NOT NULL
             GROUP BY c.name
             ORDER BY session_count DESC
-            LIMIT 5
+            LIMIT 10
         """, (knesset,))
         data = cursor.fetchall()
         cursor.close()
