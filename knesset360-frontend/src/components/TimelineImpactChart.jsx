@@ -92,7 +92,7 @@ const NeedleDot = (props) => {
 const MergedTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
 
-    // 1. Check if we have Bill data in the payload
+    // Check if we have Bill data in the payload
     // We look for a payload item that has the 'name' property (unique to bills)
     
     const data = payload[0].payload;
@@ -100,58 +100,6 @@ const MergedTooltip = ({ active, payload }) => {
     // --- IF HOVERING A BILL_GROUP ---
     if (data.bills) {
         const dotColor = data.bill_count > 1 ? '#4b5563' : STATUS_COLORS[data.bills[0].statusid];
-        // return (
-            // <div className="custom-tooltip bill-tooltip" 
-            //     style={{ 
-            //         backgroundColor: '#ffffff', 
-            //         padding: '15px', 
-            //         border: `2px solid ${dotColor}`,
-            //         borderRadius: '8px',
-            //         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            //         maxWidth: '400px',
-            //         direction: 'rtl',
-            //         textAlign: 'right'
-            //     }}>
-            //     <p style={{ margin: '0 0 5px 0', fontSize: '11px', color: '#6b7280' }}>
-            //         כנסת: {data.knessetnum} | {new Date(data.publishdate).toLocaleDateString('he-IL')}
-            //     </p>
-            
-            //     {data.bills.map((bill, idx) => (
-            //         <div key={bill.id} style={{ marginBottom: idx !== data.bill_count - 1 ? '12px' : '0' }}>
-            //             <span style={{ 
-            //                 display: 'inline-block',
-            //                 padding: '2px 8px', 
-            //                 borderRadius: '10px', 
-            //                 fontSize: '12px', 
-            //                 fontWeight: 'bold',
-            //                 backgroundColor: STATUS_COLORS[bill.statusid],
-            //                 color: '#fff',
-            //                 marginBottom: '10px'
-            //             }}>
-            //                 {STATUS_DESC[bill.statusid]}
-            //             </span>
-            //             <p style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold', color: '#111827'}}>
-            //                 {bill.name}
-            //             </p>
-            //             <div style={{ fontSize: '13px', color: '#4b5563' }}>
-            //                 <strong>👤 יוזמים:</strong>{' '}
-            //                 {bill.initiators_info?.length < 4 ? (
-            //                     /* Show first 3 in a row */
-            //                     bill.initiators_info.map(p => p.name).join(', ')
-            //                 ) : (
-            //                     /* If 4 or more: Show the first 3 + the remaining count */
-            //                     <>
-            //                         {bill.initiators_info.slice(0, 3).map(p => p.name).join(', ')}
-            //                         <span style={{ fontWeight: 'bold', color: '#8884d8' }}>
-            //                             {` +${bill.initiators_info.length - 3}`}
-            //                         </span>
-            //                     </>
-            //                 )}
-            //             </div>
-            //             {idx !== data.bill_count - 1 && <hr style={{ opacity: 0.4, margin: '8px 0' }} />}
-            //         </div>
-            //     ))}
-            // </div>
 
         let passed = 0;
         let stopped = 0;
@@ -217,12 +165,12 @@ const MergedTooltip = ({ active, payload }) => {
                     {data.month}/{data.year}
                 </p>
                 <p style={{ color: '#4273de', margin: '3px 0' }}>
-                    ציון בטיחות: <strong>{data.score}</strong>
+                    ציון : <strong>{data.score}</strong>
                 </p>
                 <hr style={{ border: '0.5px solid #eee' }} />
-                <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>💀 קטלניות: {data.fatal}</p>
+                {/* <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>💀 קטלניות: {data.fatal}</p>
                 <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>🚑 קשות: {data.severe}</p>
-                <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>🤕 קלות: {data.light}</p>
+                <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>🤕 קלות: {data.light}</p> */}
             </div>
         );
     }
@@ -238,150 +186,6 @@ const refineName = (name) => {
     const len = close - open - 1
     return len > 15 ? newName.slice(open + 1, close) : newName
 }
-
-// export default function TimelineImpactChart({ billsData, scoreData, knessetNumber}) {
-//     const [selectedGroup, setSelectedGroup] = useState(null);
-//     useEffect(() => { setSelectedGroup(null); }, [knessetNumber]);
-
-//     const chartData = useMemo(() => {
-//         // 1. Process Scores
-//         const formattedScores = scoreData.map(s => ({
-//             ...s,
-//             timestamp: new Date(s.year, s.month - 1, 28).getTime(), // the 28's of the month to indicate the end of it
-//             type: 'score',
-//         }));
-
-//         const groups = {}; // group bills by same publication date month. (Set in 15 of the month)
-
-//         billsData.forEach(bill => {
-//             const originalDate = new Date(bill.publishdate);
-//             const year = originalDate.getFullYear();
-//             const month = originalDate.getMonth(); // 0 = Jan, 11 = Dec
-            
-//             // 1. Determine if the bill falls in the 1st half or 2nd half of the month
-//             let targetDay = 15;
-            
-//             // 2. Create the normalized half-month date
-//             const halfMonthDate = new Date(year, month, targetDay);
-            
-//             // 3. Format key as YYYY-MM-DD for the unique object dictionary
-//             const halfMonthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-//             const halfMonthTs = halfMonthDate.getTime();
-            
-//             // 4. Group by this bi-weekly boundary
-//             if (!groups[halfMonthKey]) {
-//                 groups[halfMonthKey] = {
-//                     publishdate: halfMonthTs,
-//                     knessetnum: bill.knessetnum,
-//                     timestamp: halfMonthTs, // Everyone in this half-month gets stacked together
-//                     bills: [],
-//                     type: 'bill_group'
-//                 };
-//             }
-            
-//             const newBill = {
-//                 id: bill.id,
-//                 name: bill.name.substring(bill.name.indexOf("(") + 1, bill.name.indexOf("),")), 
-//                 initiators_info: bill.initiators_info,
-//                 statusid: bill.statusid,
-//                 actualPublishDate: bill.publishdate // Keep original date for tooltip lists
-//             };
-            
-//             groups[halfMonthKey].bills.push(newBill);
-//         });
-
-//         const formattedBills = Object.values(groups).map(group => {            
-//             // Calculate the interpolated score once for the whole group
-//             let interpolatedScore = 0;
-//             const nextScoreIndex = formattedScores.findIndex(s => s.timestamp >= group.timestamp);
-//             if (nextScoreIndex === -1) 
-//                 interpolatedScore = formattedScores[formattedScores.length - 1]?.score || 0;
-//             else if (nextScoreIndex <= 0) 
-//                 interpolatedScore = formattedScores[0]?.score || 0;
-//             else {
-//                 const prev = formattedScores[nextScoreIndex - 1];
-//                 const next = formattedScores[nextScoreIndex];
-//                 interpolatedScore = prev.score + (group.timestamp - prev.timestamp) * ((next.score - prev.score) / (next.timestamp - prev.timestamp));
-//             }
-//             let yValue = interpolatedScore + 10 + (group.bills[0]?.id % 25) * 4;
-//             if (Math.abs(yValue - interpolatedScore) < 30)
-//                 yValue += 50;
-//             return {
-//                 ...group,
-//                 bill_count: group.bills.length,
-//                 targetScore: interpolatedScore,
-//                 visualY: yValue,
-//             };
-//         });
-
-//         const merged = [...formattedScores, ...formattedBills].sort((a, b) => a.timestamp - b.timestamp); // for better view
-
-//         // Return all three so we don't have to calculate them again
-//         return { merged, formattedBills, formattedScores };
-//     }, [billsData, scoreData]);
-
-//     //xAxis to show only months - TODO: check combination of filter and map
-//     const scoreTicks = useMemo(() => {
-//         return chartData.formattedScores.filter((d, i) => i % 3 === 0).map(d => d.timestamp);    
-//     },[chartData.formattedScores]);
-
-//     return (
-//         <div className="big-chart-container">
-//             <h2 className='title-content'>השפעת חקיקה על מדד הבטיחות</h2>
-//             <div style={ {height: "500px" }}>
-//             <ResponsiveContainer width="100%" height="100%">
-//                 <ComposedChart data={chartData.merged} margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-//                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.5}/>
-                    
-//                     <XAxis 
-//                         dataKey="timestamp" 
-//                         type="number" 
-//                         scale="time"
-//                         domain={['dataMin', 'dataMax']}
-//                         tickFormatter={(unixTime) => new Date(unixTime).toLocaleDateString('he-IL', { month: 'short', year: '2-digit' })}
-//                         tick={{ fontSize: 12 }}
-//                         ticks={scoreTicks}
-//                     />
-                    
-//                     {/* Y-Axis for the Safety Score (0-100) */}
-//                     <YAxis 
-//                         yAxisId="left"
-//                         domain={[0, 100]} 
-//                         tickCount={6}
-//                         label={{ value: 'ציון בטיחות', angle: -90, position: 'insideLeft' }}
-//                     />
-//                     {/* The Safety Score Line */}
-//                     <Line
-//                         name="score-line"
-//                         yAxisId="left"
-//                         type="monotone"
-//                         dataKey="score"
-//                         stroke="#8884d8"
-//                         strokeWidth={4}
-//                         activeDot={{ r: 8, strokeWidth: 0 }} // Shows when hover
-//                         dot={false}
-//                         connectNulls // for Continuous function view
-//                     />
-//                     {/* The Bills Scatter */}
-//                     <Scatter
-//                         name="bill-dot"
-//                         shape={<NeedleDot />}
-//                         dataKey="visualY"
-//                         onClick={(data) => setSelectedGroup(data.payload)} 
-//                         cursor="pointer"
-//                     />
-//                     <Tooltip 
-//                         content={<MergedTooltip />} 
-//                         shared={false} 
-//                         trigger="item" 
-//                     />                
-//                 </ComposedChart>
-//             </ResponsiveContainer>
-//             </div>
-//         </div>
-        
-//     );
-// }
 
 const MAIN_STATUS = ["עברו", "בתהליך", "נעצרו"];
 
@@ -469,35 +273,30 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                 const next = formattedScores[nextScoreIndex];
                 interpolatedScore = prev.score + (group.timestamp - prev.timestamp) * ((next.score - prev.score) / (next.timestamp - prev.timestamp));
             }
-            // const n = group.bills.length;
-            // const yOffset = 70 * Math.sin(index * 1.618 * Math.PI) * Math.pow(index / n, 0.25);
-            // const yValue = 20 + yOffset;
+
             let yValue = (index % 5) * 7 + (group.bills[0]?.id % 3);
             if (Math.abs(yValue - interpolatedScore) < 50)
                 yValue += 35;
-            // let yValue = 5;
-            // if (Math.abs(yValue - interpolatedScore) < 40)
-            //     yValue += 40;
             if (yValue < interpolatedScore)
                 yValue = interpolatedScore + 1;
-            let score = 0;
+            let successScore = 0;
             for (const bill of group.bills) {
                 const indexScore = getActiveStepIndex(bill.subtypeid, bill.statusid);
                 if (bill.statusid === 118)
-                    score += 30;
+                    successScore += 30;
                 else if (bill.knessetnum === 25 && !isRejectedStatus(bill.statusid))
-                    score += 2.2;
+                    successScore += 2.2;
                 else
-                    score += indexScore;
+                    successScore += indexScore;
                 if (indexScore > 1 && bill.subtypeid === 54)
-                    score += 2;
+                    successScore += 2;
             }
             return {
                 ...group,
                 bill_count: group.bills.length,
                 targetScore: interpolatedScore,
                 visualY: yValue,
-                passingScore: score / group.bills.length
+                passingScore: successScore / group.bills.length
             };
         });
 
@@ -637,7 +436,7 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                                     stroke="#1a334cd4"
                                     strokeWidth={3.5}
                                     activeDot={{ r: 8, strokeWidth: 0 }} 
-                                    dot={false}
+                                    dot={true}
                                     connectNulls 
                                 />
 

@@ -5,6 +5,7 @@
   width: 100%;
   align-items: stretch; /* Forces both boxes to look even in height */
   margin-top: 1rem;
+  max-height: 580px;
 }
 
 /* 80% Allocation for Main Chart Space */
@@ -33,7 +34,7 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 
                 0 8px 10px -6px rgba(0, 0, 0, 0.04);;
   transition: transform 0.2s ease;
-  max-height: 545px; /* Perfectly bounds it to match the chart frame height */
+  max-height: 578px; /* Perfectly bounds it to match the chart frame height */
 }
 
 .sidebar-header {

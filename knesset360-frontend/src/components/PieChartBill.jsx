@@ -23,8 +23,6 @@ const renderHebrewLegend = (props) => {
                 justifyContent: 'flex-start', // Keeps everything aligned to the right edge
                 marginBottom: '10px',
                 flexWrap: 'wrap',
-                
-
                 }}
             >
             <svg width="15" height="15" style={{ marginLeft: '8px', flexShrink: 0 }}>
@@ -53,8 +51,8 @@ export default function StatusPieChart ({ pieData, total, title, onSliceClick })
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        innerRadius={70}  // Creates the donut hole
-                        outerRadius={130}
+                        innerRadius={65}  // Creates the donut hole
+                        outerRadius={120}
                         paddingAngle={3}  // Visual gap between slices
                         onClick={onSliceClick}
                     >
