@@ -1,9 +1,58 @@
 import { useState, useEffect } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
 import './Dashboard.css'
 
 const API = 'http://localhost:8000'
 const KNESSETS = [20, 21, 22, 23, 24, 25]
+
+// Hardcoded historical/security events to mark on the timeline as dashed
+// reference lines. `month` is in the same 'YYYY-MM' format the backend
+// returns, used to find the closest available bar even if no bill happens
+// to be published in that exact month (common at the start/end of a term).
+const TIMELINE_EVENTS = [
+  { month: '2020-03', name: 'קורונה' },
+  { month: '2021-05', name: 'שומר חומות' },
+  { month: '2023-10', name: 'חרבות ברזל' },
+  { month: '2025-06', name: 'עם כלביא' },
+  { month: '2026-02', name: 'שאגת הארי' },
+]
+
+// Only snap to a nearby bar if it's within ~2 months - otherwise this
+// Knesset's term doesn't actually cover the event at all, and it should
+// stay hidden rather than render in a misleading position.
+const MAX_SNAP_MONTHS = 2
+
+function monthDiff(a, b) {
+  const [ay, am] = a.split('-').map(Number)
+  const [by, bm] = b.split('-').map(Number)
+  return Math.abs((ay - by) * 12 + (am - bm))
+}
+
+function findNearestLabel(eventMonth, rows) {
+  let best = null
+  let bestDiff = Infinity
+  for (const row of rows) {
+    const diff = monthDiff(eventMonth, row.month)
+    if (diff < bestDiff) {
+      bestDiff = diff
+      best = row.label
+    }
+  }
+  return bestDiff <= MAX_SNAP_MONTHS ? best : null
+}
+
+function EventPillLabel({ viewBox, value }) {
+  const { x, y } = viewBox
+  const width = value.length * 6 + 16
+  return (
+    <g>
+      <rect x={x - width / 2} y={y - 22} width={width} height={18} rx={9} fill="#e8e8ec" />
+      <text x={x} y={y - 13} textAnchor="middle" dominantBaseline="middle" fontSize={9} fontWeight={600} fill="#1a1a2e">
+        {value}
+      </text>
+    </g>
+  )
+}
 
 const FACTION_COLORS = [
   '#3b82f6', '#10b981', '#a855f7', '#f97316',
@@ -99,7 +148,6 @@ export default function Dashboard() {
             כנסת {k}
           </button>
         ))}
-        <button className={`dash-ksel-btn ${selectedKnesset === null ? 'active' : ''}`} onClick={() => setSelectedKnesset(null)}>הכל</button>
       </div>
 
       {loading ? <div className="dash-loading">טוען נתונים...</div> : (
@@ -114,13 +162,26 @@ export default function Dashboard() {
           <div className="dash-widget dash-widget-full">
             <div className="dash-widget-title">הצעות חוק לפי חודש</div>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={billsPerMonth} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
+              <BarChart data={billsPerMonth} margin={{ top: 28, right: 8, left: -20, bottom: 0 }}>
                 <XAxis dataKey="label" tick={{ fill: '#6b7a99', fontSize: 8 }} axisLine={false} tickLine={false} interval={0} />
                 <YAxis hide />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37,99,235,0.06)' }} />
                 <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                   {billsPerMonth.map((_, i) => <Cell key={i} fill='#2d4a7a' />)}
                 </Bar>
+                {TIMELINE_EVENTS
+                  .map(ev => ({ ...ev, label: findNearestLabel(ev.month, billsPerMonth) }))
+                  .filter(ev => ev.label !== null)
+                  .map(ev => (
+                    <ReferenceLine
+                      key={ev.month}
+                      x={ev.label}
+                      stroke="#1a1a2e"
+                      strokeDasharray="4 3"
+                      strokeWidth={1.5}
+                      label={<EventPillLabel value={ev.name} />}
+                    />
+                  ))}
               </BarChart>
             </ResponsiveContainer>
           </div>

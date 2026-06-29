@@ -78,7 +78,7 @@
 //     'ישראל ביתנו': 8,
 //     'שס': 9,
 //     'יהדות התורה': 7,
-//     'העבודה-גשר-מרצ': 7,
+//     'העבודה - גשר - מרצ': 7,
 //     'ימינה': 7,
 //     'כולנו': 4,
 //     'רעם-בלד': 4,
@@ -90,7 +90,7 @@
 //     'שס': 9,
 //     'יהדות התורה': 7,
 //     'ישראל ביתנו': 7,
-//     'העבודה-גשר-מרצ': 7,
+//     'העבודה - גשר - מרצ': 7,
 //     'ימינה': 6,
 //   },
 //   24: {
@@ -633,7 +633,8 @@ const OFFICIAL_SEATS = {
     'יהדות התורה': 8,
     'ישראל ביתנו': 5,
     'העבודה': 6,
-    'תקווה חדשה': 4,
+    'ימינה': 5,
+    'כולנו': 4,
     'מרצ': 4,
   },
   22: {
@@ -643,10 +644,9 @@ const OFFICIAL_SEATS = {
     'ישראל ביתנו': 8,
     'שס': 9,
     'יהדות התורה': 7,
-    'העבודה-גשר-מרצ': 7,
     'ימינה': 7,
-    'כולנו': 4,
-    'רעם-בלד': 4,
+    'העבודה - גשר': 6,
+    'המחנה הדמוקרטי': 5,
   },
   23: {
     'הליכוד': 36,
@@ -655,7 +655,7 @@ const OFFICIAL_SEATS = {
     'שס': 9,
     'יהדות התורה': 7,
     'ישראל ביתנו': 7,
-    'העבודה-גשר-מרצ': 7,
+    'העבודה - גשר - מרצ': 7,
     'ימינה': 6,
   },
   24: {
@@ -858,8 +858,48 @@ function DonutChart({ statusData, selectedTopic, onClear }) {
   );
 }
 
+function EmptyStateBanner({ type = 'info', children }) {
+  const variants = {
+    success: { bg: '#eaf7ef', color: '#15803d', icon: 'check' },
+    info:    { bg: '#f3f4f6', color: '#555',    icon: 'info' },
+    error:   { bg: '#fdecea', color: '#c0392b', icon: 'error' },
+  };
+  const v = variants[type] || variants.info;
+
+  const icons = {
+    check: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke={v.color} strokeWidth="2" />
+        <path d="M8 12.5l2.5 2.5L16 9.5" stroke={v.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+    info: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke={v.color} strokeWidth="2" />
+        <line x1="12" y1="11" x2="12" y2="16" stroke={v.color} strokeWidth="2" strokeLinecap="round" />
+        <circle cx="12" cy="8" r="1" fill={v.color} />
+      </svg>
+    ),
+    error: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke={v.color} strokeWidth="2" />
+        <line x1="9" y1="9" x2="15" y2="15" stroke={v.color} strokeWidth="2" strokeLinecap="round" />
+        <line x1="15" y1="9" x2="9" y2="15" stroke={v.color} strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  };
+
+  return (
+    <div className="empty-state-banner" style={{ background: v.bg }}>
+      {icons[v.icon]}
+      <span style={{ color: v.color }}>{children}</span>
+    </div>
+  );
+}
+
 function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
   if (!topics.length) return null;
+
 
   return (
     <div className="top-mks-by-subject">
@@ -880,7 +920,7 @@ function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
 
       <div className="top-mks-list">
         {topMKs.length === 0 ? (
-          <p className="no-mks-msg">אין נתונים לתחום זה</p>
+          <EmptyStateBanner type="info">אין נתונים לתחום זה</EmptyStateBanner>
         ) : (
           topMKs.map((mk, i) => {
             const maxCount = topMKs[0].bill_count;
@@ -903,13 +943,13 @@ function TopMKsBySubject({ topics, selectedTopic, onSelectTopic, topMKs }) {
   );
 }
 
-function VotingDeviations({ data, loading, knesset }) {
+function VotingDeviations({ data, loading, knesset, error }) {
   if (knesset === 'all') {
     return (
       <div className="voting-deviations">
         <h3 className="vd-title">חריגות בהצבעות</h3>
         <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
-        <p className="no-mks-msg">בחרו כנסת ספציפית כדי לצפות בחריגות בהצבעות</p>
+        <EmptyStateBanner type="info">בחרו כנסת ספציפית כדי לצפות בחריגות בהצבעות</EmptyStateBanner>
       </div>
     );
   }
@@ -918,12 +958,32 @@ function VotingDeviations({ data, loading, knesset }) {
     return <div className="stats-loading">טוען נתוני הצבעות...</div>;
   }
 
-  if (!data || !data.summary || data.summary.total_rebel_votes === 0) {
+  if (error) {
     return (
       <div className="voting-deviations">
         <h3 className="vd-title">חריגות בהצבעות</h3>
         <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
-        <p className="no-mks-msg">אין נתוני הצבעות מספקים לסיעה זו בכנסת הנבחרת</p>
+        <EmptyStateBanner type="error">שגיאה בטעינת הנתונים: {error}</EmptyStateBanner>
+      </div>
+    );
+  }
+
+  if (!data || !data.summary) {
+    return (
+      <div className="voting-deviations">
+        <h3 className="vd-title">חריגות בהצבעות</h3>
+        <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
+        <EmptyStateBanner type="info">אין נתוני הצבעות מספקים לסיעה זו בכנסת הנבחרת</EmptyStateBanner>
+      </div>
+    );
+  }
+
+  if (data.summary.total_rebel_votes === 0) {
+    return (
+      <div className="voting-deviations">
+        <h3 className="vd-title">חריגות בהצבעות</h3>
+        <p className="vd-subtitle">הצבעות בהן חבר הכנסת חרג מעמדת הרוב בסיעתו</p>
+        <EmptyStateBanner type="success">הסיעה הצביעה באחידות מלאה בכנסת זו</EmptyStateBanner>
       </div>
     );
   }
@@ -983,6 +1043,7 @@ export default function Factions() {
   const [topMKs, setTopMKs] = useState([]);
   const [rebelsData, setRebelsData] = useState(null);
   const [rebelsLoading, setRebelsLoading] = useState(false);
+  const [rebelsError, setRebelsError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -1063,10 +1124,22 @@ export default function Factions() {
   useEffect(() => {
     if (!selectedFaction || selectedKnesset === 'all') return;
     setRebelsLoading(true);
+    setRebelsData(null);
+    setRebelsError(null);
     fetch(`http://localhost:8000/api/faction-rebels?faction_id=${selectedFaction.id}&knesset=${selectedKnesset}`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(async r => {
+        if (!r.ok) {
+          const body = await r.text();
+          throw new Error(`HTTP ${r.status}: ${body}`);
+        }
+        return r.json();
+      })
       .then(data => { setRebelsData(data); setRebelsLoading(false); })
-      .catch(e => { console.error(e); setRebelsLoading(false); });
+      .catch(e => {
+        console.error(e);
+        setRebelsError(e.message);
+        setRebelsLoading(false);
+      });
   }, [selectedFaction, selectedKnesset]);
 
   return (
@@ -1172,6 +1245,7 @@ export default function Factions() {
             data={rebelsData}
             loading={rebelsLoading}
             knesset={selectedKnesset}
+            error={rebelsError}
           />
 
         </div>

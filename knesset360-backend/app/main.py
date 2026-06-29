@@ -323,6 +323,13 @@ FACTION_NAME_ALIASES = {
     'הרשימה המשותפת (חדש, בלד)': 'הרשימה המשותפת',
     'הרשימה הערבית המאוחדת': 'רעם',
     'ימינה בראשות נפתלי בנט': 'ימינה',
+    'הבית היהודי בראשות נפתלי בנט': 'הבית היהודי',
+    'ימינה בראשות איילת שקד הבית היהודי – האיחוד הלאומי – הימין החדש': 'ימינה',
+    'הימין החדש': 'ימינה',
+    'הבית היהודי - האיחוד הלאומי': 'ימינה',
+    'המחנה הדמוקרטי - האיחוד הלאומי': 'המחנה הדמוקרטי',
+    'אגודת ישראל': 'יהדות התורה',
+    'חדש': 'הרשימה המשותפת',
     'יהדות התורה והשבת - אגודת ישראל דגל התורה': 'יהדות התורה',
     'יהדות התורה והשבת אגודת ישראל - דגל התורה': 'יהדות התורה',
     'דגל התורה': 'יהדות התורה',
@@ -338,8 +345,12 @@ FACTION_NAME_ALIASES = {
     'ישראל ביתנו בראשות אביגדור ליברמן':'ישראל ביתנו',
     'חדש תעל בראשות איימן עודה ואחמד טיבי':'חדש-תעל',
     'חדש-תעל':'חדש-תעל',
+    'כולנו בראשות משה כחלון': 'כולנו',
+    'בלד – ברית לאומית דמוקרטית': 'רעם-בלד',
+    'רעם - בלד - הרשימה הערבית המאוחדת ברית לאומית דמוקרטית': 'רעם-בלד',
+    'הרשימה הערבית המאוחדת ברית לאומית דמוקרטית': 'רעם-בלד',
     'תלם - תנועה לאומית ממלכתית':'תלם',
-    'חדש - חזית דמוקרטית לשלום ושוויון':'חדש',
+    'חדש - חזית דמוקרטית לשלום ושוויון':'הרשימה המשותפת',
 
     # add more as needed
 }
@@ -355,6 +366,19 @@ def normalize_faction_name(name: str) -> str:
 # {knesset: {canonical_display_name: [name_prefixes_to_match]}} so all data
 # endpoints can correctly aggregate across every sub-faction.
 KNESSET_FACTION_MERGE_GROUPS = {
+    20: {
+        'המחנה הציוני': ['המחנה הציוני', 'העבודה', 'התנועה'],
+    },
+    21: {
+        'רעם-בלד': ['רעם-בלד', 'רעם', 'בלד'],
+        'חדש-תעל': [
+            'חדש-תעל',
+            'הרשימה המשותפת',
+            'הרשימה המשותפת חדש, רעם, תעל, בלד',
+            'הרשימה המשותפת (חדש, רעם, בלד ותעל)',
+            'הרשימה המשותפת חדש, רעמ, תעל, בלד',
+        ],
+    },
     23: {
         'כחול לבן': ['כחול לבן', 'יש עתיד'],
         'העבודה - גשר - מרצ': ['העבודה', 'מרצ'],
@@ -362,17 +386,31 @@ KNESSET_FACTION_MERGE_GROUPS = {
 }
 
 def get_faction_match_patterns(faction_name, knesset):
+    patterns = [faction_name]
+
+    # Pull in every alias whose target IS this canonical name - this matters
+    # because many renames (e.g. "דגל התורה" -> "יהדות התורה") don't share a
+    # text prefix with their target, so prefix-matching alone would miss the
+    # raw DB rows stored under the original (un-normalized) name.
+    for source, target in FACTION_NAME_ALIASES.items():
+        if target == faction_name and source not in patterns:
+            patterns.append(source)
+
     if knesset:
         groups = KNESSET_FACTION_MERGE_GROUPS.get(knesset, {})
         if faction_name in groups:
-            return groups[faction_name]
-        # faction_name might be any of the original sub-faction names (not the
-        # canonical key) depending on which raw row survived dedup elsewhere -
-        # check membership/prefix against every group's own patterns too.
-        for patterns in groups.values():
-            if any(faction_name.startswith(p) or p.startswith(faction_name) for p in patterns):
-                return patterns
-    return [faction_name]
+            for p in groups[faction_name]:
+                if p not in patterns:
+                    patterns.append(p)
+        else:
+            for group_patterns in groups.values():
+                if any(faction_name.startswith(p) or p.startswith(faction_name) for p in group_patterns):
+                    for p in group_patterns:
+                        if p not in patterns:
+                            patterns.append(p)
+                    break
+
+    return patterns
 
 def faction_match_sql(column_expr, faction_name, knesset, params_list):
     """Builds '(col ILIKE %s OR col ILIKE %s ...)' for every matching pattern
@@ -486,6 +524,18 @@ def get_factions(knesset: int = None):
         # the election - so for the original seat breakdown we merge those
         # splinters back into "כחול לבן". This can't be a global alias since
         # "יש עתיד" is a real, separate, independent party in other Knessets.
+        if knesset == 20:
+            for row in data:
+                if row['name'] in ('העבודה', 'התנועה'):
+                    row['name'] = 'המחנה הציוני'
+
+        if knesset == 21:
+            for row in data:
+                if row['name'].startswith('רעם') or row['name'].startswith('בלד'):
+                    row['name'] = 'רעם-בלד'
+                elif row['name'] == 'הרשימה המשותפת':
+                    row['name'] = 'חדש-תעל'
+
         if knesset == 23:
             for row in data:
                 if row['name'] == 'יש עתיד' or 'תלם' in row['name']:
@@ -649,11 +699,17 @@ def get_faction_status(faction_id: int, knesset: int = None, committee: str = No
         if committee:
             params.append(committee)
 
+        # "בתהליך" (in process) is only a meaningful distinct status for the
+        # current, ongoing Knesset (25) - those bills could still pass. For
+        # concluded terms (20-24), a bill still "in process" when the term
+        # ended effectively died with it, so count it as "נעצרו" instead.
+        in_process_label = 'בתהליך' if knesset == 25 else 'נעצרו'
+
         cursor.execute(f"""
             SELECT 
                 CASE 
                     WHEN b.statusid = 118 THEN 'עברו'
-                    WHEN b.statusid IN (101,108,113,109,167,178,179,130,131,141,111,114,117,106,142,150,181,175,126,169,158,161,162,165,140,143,115,104,120,176) THEN 'בתהליך'
+                    WHEN b.statusid IN (101,108,113,109,167,178,179,130,131,141,111,114,117,106,142,150,181,175,126,169,158,161,162,165,140,143,115,104,120,176) THEN '{in_process_label}'
                     WHEN b.statusid IN (177,122,124,110) THEN 'נעצרו'
                     ELSE 'אחר'
                 END as status_group,
@@ -743,6 +799,13 @@ def get_faction_rebels(faction_id: int, knesset: int):
     votes, for a specific Knesset. A vote only counts if at least 3 faction
     members cast a decisive vote (בעד/נגד) on it, and ties (no clear majority)
     are skipped entirely.
+
+    Majority/rebel status is still detected per individual VoteID (a real,
+    distinct decision point), but the final counts are deduplicated by ItemID -
+    the plenum agenda item a vote belongs to. Multi-clause bills are voted on
+    clause-by-clause, each getting its own VoteID but sharing one ItemID; without
+    this dedup, disagreeing on every clause of one bill would be counted as
+    dozens of separate "rebellions" instead of the one real disagreement it is.
     """
     conn = get_db_connection()
     if conn is None:
@@ -770,6 +833,7 @@ def get_faction_rebels(faction_id: int, knesset: int):
             faction_votes AS (
                 SELECT vr."MkId" AS mkid,
                        vr."VoteID" AS voteid,
+                       pv."ItemID" AS itemid,
                        vr."ResultDesc" AS resultdesc
                 FROM "plenumVoteResult" vr
                 JOIN "plenumVote" pv ON pv."Id" = vr."VoteID"
@@ -794,7 +858,7 @@ def get_faction_rebels(faction_id: int, knesset: int):
                 HAVING COUNT(*) >= 3
             ),
             rebel_votes AS (
-                SELECT fv.mkid, fv.voteid
+                SELECT fv.mkid, fv.voteid, fv.itemid
                 FROM faction_votes fv
                 JOIN vote_majority vm ON vm.voteid = fv.voteid
                 WHERE vm.majority IS NOT NULL
@@ -804,7 +868,7 @@ def get_faction_rebels(faction_id: int, knesset: int):
 
         cursor.execute(base_cte + """
             , mk_rebel_counts AS (
-                SELECT mkid, COUNT(*) AS rebel_count
+                SELECT mkid, COUNT(DISTINCT itemid) AS rebel_count
                 FROM rebel_votes
                 GROUP BY mkid
             )
@@ -820,7 +884,7 @@ def get_faction_rebels(faction_id: int, knesset: int):
 
         cursor.execute(base_cte + """
             SELECT
-                (SELECT COUNT(*) FROM rebel_votes) AS total_rebel_votes,
+                (SELECT COUNT(DISTINCT (mkid, itemid)) FROM rebel_votes) AS total_rebel_votes,
                 (SELECT COUNT(DISTINCT mkid) FROM rebel_votes) AS rebel_mk_count
         """, params)
         summary = cursor.fetchone()
@@ -1005,14 +1069,13 @@ OFFICIAL_SEATS = {
         {'name': 'כחול לבן', 'seats': 35},
         {'name': 'שס', 'seats': 8},
         {'name': 'יהדות התורה', 'seats': 8},
-        {'name': 'חדש-תעל', 'seats': 6},
         {'name': 'העבודה', 'seats': 6},
+        {'name': 'חדש-תעל', 'seats': 6},
         {'name': 'ישראל ביתנו', 'seats': 5},
-        {'name': 'תקווה חדשה', 'seats': 4},
-        {'name': 'רעם-בלד', 'seats': 4},
+        {'name': 'ימינה', 'seats': 5},
+        {'name': 'כולנו', 'seats': 4},
         {'name': 'מרצ', 'seats': 4},
-        {'name': 'ימינה', 'seats': 4},
-        {'name': 'עוצמה יהודית', 'seats': 1},
+        {'name': 'רעם-בלד', 'seats': 4},
     ],
     22: [
         {'name': 'כחול לבן', 'seats': 33},
@@ -1021,9 +1084,9 @@ OFFICIAL_SEATS = {
         {'name': 'שס', 'seats': 9},
         {'name': 'ישראל ביתנו', 'seats': 8},
         {'name': 'יהדות התורה', 'seats': 7},
-        {'name': 'העבודה - גשר - מרצ', 'seats': 7},
         {'name': 'ימינה', 'seats': 7},
-        {'name': 'כולנו', 'seats': 4},
+        {'name': 'העבודה - גשר', 'seats': 6},
+        {'name': 'המחנה הדמוקרטי', 'seats': 5},
     ],
     23: [
         {'name': 'הליכוד', 'seats': 36},

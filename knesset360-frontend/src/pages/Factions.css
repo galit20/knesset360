@@ -673,3 +673,18 @@
   text-align: center;
   flex-shrink: 0;
 }
+
+.empty-state-banner {
+  border-radius: 10px;
+  padding: 28px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.empty-state-banner span {
+  font-size: 16px;
+  font-weight: 600;
+}
