@@ -52,11 +52,11 @@
 
 .box-chart-container {
     display: flex;
-    gap: 20px;
+    gap: 24px;  
     width: 100%;
     direction: rtl;
     margin-bottom: 40px;
-    margin-top: 50px;
+    margin-top: 40px;
 }
 
 .table-container {
@@ -139,6 +139,7 @@
   
   margin-bottom: 1.5rem;
   padding: 10px 10px;
+  background-color: #ffffff;
   box-sizing: border-box;
 
   position: sticky;

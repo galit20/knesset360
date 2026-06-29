@@ -335,19 +335,18 @@ export default function TimelinePage() {
                         />
                     ) : (
                         <>
-                            <div style={{ padding: '20px', maxWidth: '400px', flex: 1 }}>
+                            <div style={{ flex: 1, minWidth: '320px' }}>
                                 <MKLeaderboards mks={topInitiators} title="חברי הכנסת המובילים לפי הצעות חוק" countText="הצעות חוק" />
                             </div>
-                            <div style={{ padding: '20px', maxWidth: '400px', flex: 1 }}>
+                            <div style={{ flex: 1, minWidth: '320px' }}>
                                 <MKLeaderboards mks={topMksCommittee} title="חברי הכנסת המובילים באזכורים בוועדות" countText="אזכורים" />
                             </div>
-                            <div style={{ padding: '20px', maxWidth: '400px', flex: 1 }}>
+                            <div style={{ flex: 1, minWidth: '320px' }}>
                                 <MKLeaderboards mks={topMksPlenum} title="חברי הכנסת המובילים באזכורים במליאות" countText="אזכורים" />
                             </div>
                         </>
                     )}
                 </div>
-
             </div>
         </div>
     );

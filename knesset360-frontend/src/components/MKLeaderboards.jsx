@@ -15,11 +15,13 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
         <div style={{ 
             direction: 'rtl', 
             background: '#fff', 
-            padding: '25px', 
+            padding: 'clamp(16px, 2vw, 25px)',
             borderRadius: '12px', 
             boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-            maxWidth: '600px',
-            margin: '0 auto'
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
         }}>
             <h3 style={{ marginBottom: '20px', color: '#2c3e50', fontSize: '18px', fontWeight: 'bold' }}>
                 {title}
@@ -69,8 +71,8 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '14px',
-                                padding: '10px 12px',
+                                gap: 'clamp(10px, 1.2vw, 14px)',
+                                padding: '10px',
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                                 background: isSelected ? '#f0f7ff' : 'transparent',
@@ -83,7 +85,7 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
                         >
                             {/* Rank Positioning Label */}
                             <span style={{ 
-                                fontSize: '15px', 
+                                fontSize: 'clamp(14px, 1.2vw, 16px)', 
                                 fontWeight: 'bold', 
                                 color: index === 0 ? '#ddb619' : index === 1 ? '#9da5a6' : index === 2 ? '#cc7020' : '#6b69a8',
                                 width: '22px',
@@ -98,8 +100,8 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
                                 alt={cleanName}
                                 onError={handleError}
                                 style={{
-                                    width: '60px',
-                                    height: '60px',
+                                    width: 'clamp(44px, 4vw, 55px)',
+                                    height: 'clamp(44px, 4vw, 55px)',
                                     borderRadius: '50%',
                                     objectFit: 'cover',
                                     border: '3px solid ' + (index === 0 ? '#ddb619' : index === 1 ? '#9da5a6' : index === 2 ? '#cc7020' : '#6b69a8'),
@@ -109,7 +111,7 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
 
                             {/* 3. Graph Bars Layout Engine */}
                             <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <span style={{ fontSize: '16px', fontWeight: '600', color: '#34495e' }}>
+                                <span style={{ fontSize: 'clamp(14px, 1.2vw, 16px)', fontWeight: '600', color: '#34495e' }}>
                                     {cleanName}
                                 </span>
                                 
@@ -126,10 +128,10 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
 
                             {/* 4. Metric Output Label */}
                             <div style={{ minWidth: '70px', textAlign: 'left' }}>
-                                <strong style={{ fontSize: '15px', color: '#2c3e50', display: 'block' }}>
+                                <strong style={{ fontSize: 'clamp(14px, 1.2vw, 15px)', color: '#2c3e50', display: 'block' }}>
                                     {mk.count.toLocaleString()}
                                 </strong>
-                                <span style={{ display: 'block', fontSize: '11px', color: '#95a5a6', marginTop: '-2px' }}>
+                                <span style={{ display: 'block', fontSize: 'clamp(10px, 0.9vw, 11px)', color: '#95a5a6', marginTop: '-2px' }}>
                                     {countText || 'אזכורים'}
                                 </span>
                             </div>
