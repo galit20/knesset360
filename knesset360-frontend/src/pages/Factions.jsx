@@ -560,12 +560,51 @@ const DISPLAY_NAME_OVERRIDES = {
   'שס': 'ש"ס',
 };
 
+const FACTION_LEADERS = {
+  'הליכוד': 'בנימין נתניהו',
+  'יש עתיד': 'יאיר לפיד',
+  'יש עתיד - תלם': 'יאיר לפיד',
+  'שס': 'אריה דרעי',
+  'כחול לבן': 'בני גנץ',
+  'כחול לבן - המחנה הממלכתי': 'בני גנץ',
+  'הימין הממלכתי': 'גדעון סער',
+  'הציונות הדתית': 'בצלאל סמוטריץ\'',
+  'עוצמה יהודית': 'איתמר בן גביר',
+  'יהדות התורה': 'יעקב ליצמן',
+  'ישראל ביתנו': 'אביגדור ליברמן',
+  'רעם': 'מנסור עבאס',
+  'חדש-תעל': 'איימן עודה',
+  'הרשימה המשותפת': 'איימן עודה',
+  'העבודה': 'מירב מיכאלי',
+  'העבודה - גשר': 'עמיר פרץ',
+  'העבודה - גשר - מרצ': 'עמיר פרץ',
+  'מרצ': 'ניצן הורוביץ',
+  'המחנה הדמוקרטי': 'ניצן הורוביץ',
+  'תקווה חדשה': 'גדעון סער',
+  'ימינה': 'נפתלי בנט',
+  'המחנה הציוני': 'יצחק הרצוג',
+  'כולנו': 'משה כחלון',
+  'הבית היהודי': 'נפתלי בנט',
+  'הרשימה הערבית המאוחדת': 'מנסור עבאס',
+  'רעם-בלד': 'מנסור עבאס',
+  'תלם': 'משה יעלון',
+};
+
 function getDisplayName(name) {
   if (!name) return name;
   for (const [key, display] of Object.entries(DISPLAY_NAME_OVERRIDES)) {
     if (name.includes(key)) return name.replace(key, display);
   }
   return name;
+}
+
+function getFactionLeader(factionName) {
+  if (!factionName) return null;
+  if (FACTION_LEADERS[factionName]) return FACTION_LEADERS[factionName];
+  for (const [key, leader] of Object.entries(FACTION_LEADERS)) {
+    if (factionName.startsWith(key) || key.startsWith(factionName)) return leader;
+  }
+  return null;
 }
 
 const FACTION_LOGOS = {
@@ -777,12 +816,9 @@ function FactionBanner({ faction, color }) {
       )}
       <div className="faction-banner-text">
         <h3 className="faction-banner-name">{getDisplayName(faction.name)}</h3>
-        {faction.startdate && (
+        {getFactionLeader(faction.name) && (
           <p className="faction-banner-dates">
-            {new Date(faction.startdate).getFullYear()}
-            {faction.finishdate
-              ? ` – ${new Date(faction.finishdate).getFullYear()}`
-              : ' – היום'}
+            בראשות {getFactionLeader(faction.name)}
           </p>
         )}
       </div>

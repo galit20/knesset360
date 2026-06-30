@@ -60,6 +60,37 @@ const FACTION_COLORS = [
   '#84cc16', '#f43f5e', '#8b5cf6', '#14b8a6',
 ]
 
+function MonthTick({ x, y, payload }) {
+  const label = payload?.value || '';
+  const isJan = label.startsWith('1/');
+  const year = isJan ? '20' + label.slice(-2) : null;
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0} y={0} dy={10}
+        textAnchor="middle"
+        fontSize={8}
+        fill={isJan ? '#1a1a2e' : '#6b7a99'}
+        fontWeight={isJan ? 700 : 400}
+      >
+        {label}
+      </text>
+      {year && (
+        <text
+          x={0} y={0} dy={20}
+          textAnchor="middle"
+          fontSize={8}
+          fill="#888"
+          fontWeight={600}
+        >
+          {year}
+        </text>
+      )}
+    </g>
+  );
+}
+
 function StatCard({ label, value, sub }) {
   return (
     <div className="dash-stat-card">
@@ -116,14 +147,21 @@ export default function Dashboard() {
   }, [selectedKnesset])
 
   useEffect(() => {
-    fetch(`${API}/api/dashboard/committee-calendar?year=${calYear}&month=${calMonth}`)
+    fetch(`${API}/api/dashboard/committee-calendar?year=${calYear}&month=${calMonth}&knesset=${selectedKnesset}`)
       .then(r => r.json()).then(setCalendarData).catch(() => {})
-  }, [calMonth, calYear])
+  }, [calMonth, calYear, selectedKnesset])
 
   const today = new Date()
   const firstDay = new Date(calYear, calMonth - 1, 1).getDay()
   const daysInMonth = new Date(calYear, calMonth, 0).getDate()
-  const eventDays = new Set(calendarData.map(d => new Date(d.session_date).getDate()))
+
+  // Build day → [committee names] map for tooltips
+  const dayCommittees = {}
+  for (const d of calendarData) {
+    const day = new Date(d.session_date).getDate()
+    if (!dayCommittees[day]) dayCommittees[day] = []
+    dayCommittees[day].push(d.committee_name)
+  }
 
   const totalBills = billStatus.reduce((a, b) => a + b.count, 0)
   const statusOrder = ['בתהליך', 'נעצרו', 'עברו', 'אחר']
@@ -135,6 +173,9 @@ export default function Dashboard() {
 
   const prevMonth = () => { if (calMonth === 1) { setCalMonth(12); setCalYear(y => y - 1) } else setCalMonth(m => m - 1) }
   const nextMonth = () => { if (calMonth === 12) { setCalMonth(1); setCalYear(y => y + 1) } else setCalMonth(m => m + 1) }
+
+  // Year range for dropdown: 2015 to current year + 1
+  const calYears = Array.from({ length: new Date().getFullYear() - 2014 + 2 }, (_, i) => 2015 + i)
 
   const sortedFactions = [...factions].sort((a, b) => b.seats - a.seats)
   const maxSeats = sortedFactions[0]?.seats || 1
@@ -162,8 +203,8 @@ export default function Dashboard() {
           <div className="dash-widget dash-widget-full">
             <div className="dash-widget-title">הצעות חוק לפי חודש</div>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={billsPerMonth} margin={{ top: 28, right: 8, left: -20, bottom: 0 }}>
-                <XAxis dataKey="label" tick={{ fill: '#6b7a99', fontSize: 8 }} axisLine={false} tickLine={false} interval={0} />
+              <BarChart data={billsPerMonth} margin={{ top: 28, right: 8, left: -20, bottom: 14 }}>
+                <XAxis dataKey="label" tick={<MonthTick />} axisLine={false} tickLine={false} interval={0} />
                 <YAxis hide />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37,99,235,0.06)' }} />
                 <Bar dataKey="count" radius={[3, 3, 0, 0]}>
@@ -241,9 +282,17 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-widget">
-              <div className="dash-widget-title">
+              <div className="dash-widget-title">דיוני ועדות הכנסת</div>
+              <div className="dash-cal-nav-row">
                 <button className="dash-cal-nav" onClick={prevMonth}>›</button>
-                לוח ועדות — {MONTH_NAMES[calMonth - 1]} {calYear}
+                <div className="dash-cal-selectors">
+                  <select className="dash-cal-select" value={calMonth} onChange={e => setCalMonth(Number(e.target.value))}>
+                    {MONTH_NAMES.map((n, i) => <option key={i+1} value={i+1}>{n}</option>)}
+                  </select>
+                  <select className="dash-cal-select" value={calYear} onChange={e => setCalYear(Number(e.target.value))}>
+                    {calYears.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
                 <button className="dash-cal-nav" onClick={nextMonth}>‹</button>
               </div>
               <div className="dash-cal">
@@ -251,8 +300,21 @@ export default function Dashboard() {
                 {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
                   const isToday = day === today.getDate() && calMonth === today.getMonth() + 1 && calYear === today.getFullYear()
-                  const hasEvent = eventDays.has(day)
-                  return <div key={day} className={`dash-cal-cell ${hasEvent ? 'has-event' : ''} ${isToday ? 'today' : ''}`}>{day}</div>
+                  const committees = dayCommittees[day] || []
+                  const hasEvent = committees.length > 0
+                  return (
+                    <div key={day} className={`dash-cal-cell ${hasEvent ? 'has-event' : ''} ${isToday ? 'today' : ''}`}>
+                      {day}
+                      {hasEvent && (
+                        <>
+                          <span className="dash-cal-dot" />
+                          <div className="dash-cal-tooltip">
+                            {committees.map((c, i) => <div key={i} className="dash-cal-tooltip-row">• {c}</div>)}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )
                 })}
               </div>
             </div>

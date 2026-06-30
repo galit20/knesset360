@@ -1213,7 +1213,7 @@ def get_dashboard_factions(knesset: int = 25):
 
 
 @app.get("/api/dashboard/committee-calendar")
-def get_committee_calendar(year: int = None, month: int = None):
+def get_committee_calendar(year: int = None, month: int = None, knesset: int = 25):
     from datetime import date
     today = date.today()
     y = year or today.year
@@ -1232,10 +1232,10 @@ def get_committee_calendar(year: int = None, month: int = None):
             JOIN kns_committee c ON c.id = cs.committeeid
             WHERE EXTRACT(YEAR FROM cs.startdate) = %s
               AND EXTRACT(MONTH FROM cs.startdate) = %s
-              AND c.knessetnum = 25
+              AND c.knessetnum = %s
             GROUP BY cs.startdate::date, c.name
             ORDER BY cs.startdate::date
-        """, (y, m))
+        """, (y, m, knesset))
         data = cursor.fetchall()
         cursor.close()
         conn.close()

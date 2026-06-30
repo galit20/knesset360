@@ -202,3 +202,89 @@
   .dash-mid-row { grid-template-columns: 1fr; }
   .dash-bottom-row { grid-template-columns: 1fr; }
 }
+.dash-year-bands {
+  display: flex;
+  height: 18px;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.dash-year-band {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #1a3a8f;
+  border-radius: 3px;
+  min-width: 0;
+}
+
+/* Calendar dropdowns */
+.dash-cal-selectors {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dash-cal-select {
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #dde4f0;
+  border-radius: 6px;
+  padding: 3px 6px;
+  background: white;
+  color: #1a2540;
+  cursor: pointer;
+}
+
+/* Dot on days with sessions */
+.dash-cal-cell {
+  position: relative;
+}
+
+.dash-cal-dot {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+
+/* Tooltip */
+.dash-cal-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2540;
+  color: white;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  min-width: 160px;
+  text-align: right;
+}
+
+.dash-cal-cell:hover .dash-cal-tooltip {
+  display: block;
+}
+
+.dash-cal-tooltip-row {
+  padding: 1px 0;
+  line-height: 1.4;
+}
+
+.dash-cal-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
