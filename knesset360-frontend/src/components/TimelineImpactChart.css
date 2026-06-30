@@ -1,0 +1,437 @@
+/* Container holding the graph and sidebar side by side */
+.split-view-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  align-items: stretch; /* Forces both boxes to look even in height */
+  margin-top: 1rem;
+  max-height: 580px;
+}
+
+/* 80% Allocation for Main Chart Space */
+.chart-main-frame {
+  flex: 4; 
+  min-width: 0; /* Prevents recharts from breaking container widths */
+}
+
+.chart-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-items: center;
+  margin: 0 20px 0 70px;
+}
+
+/* 20% Allocation for Sidebar Registry */
+.bill-sidebar-panel {
+  flex: 1;
+  background: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 
+                0 8px 10px -6px rgba(0, 0, 0, 0.04);;
+  transition: transform 0.2s ease;
+  max-height: 578px; /* Perfectly bounds it to match the chart frame height */
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: right;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.sidebar-count-badge {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.clear-circle-btn {
+  background: none;
+  border: none;
+  color: #1a3a8f;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+.clear-circle-btn:hover { text-decoration: underline; }
+
+/* The independent viewport scrolling container */
+.sidebar-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 4px; /* Prevent scrollbar track overlapping text */
+}
+
+/* Custom Scrollbar styled matching dashboard aesthetics */
+.sidebar-scrollable-content::-webkit-scrollbar { width: 5px; }
+.sidebar-scrollable-content::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+/* Micro Card Layout configurations inside panel */
+.sidebar-bill-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  text-align: right;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.sidebar-bill-card:hover {
+  border-color: #cbd5e1;
+  transform: translateX(-2px); /* Moves left slightly in RTL when hovered */
+}
+
+.sidebar-bill-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.empty-sidebar-text {
+  text-align: right;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}
+
+
+.bill-card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.bill-card-top-row h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+    font-weight: 600;
+    line-height: 1.4;
+    flex: 1;
+    text-align: right;
+}
+
+/* Badges for Bill Types */
+.bill-type-badge {
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+.bill-type-badge.private { background: #f1f5f9; color: #475569; }
+.bill-type-badge.gov { background: #f0f1ff; color: #3239c3; }
+.bill-type-badge.committee { background: #f0fdf4; color: #15803d; }
+
+.bill-card-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 8px;
+}
+
+.bill-card-date {
+    font-size: 1rem;
+    color: #6b7685;
+}
+
+/* Progress Layout matching official Knesset view */
+.bill-progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    gap: 4px;
+}
+
+.status-text-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #64748b;
+    text-align: right;
+}
+.status-text-label.rejected {
+    color: #ef4444;
+}
+
+.knesset-progress-bar {
+    display: flex;
+    gap: 3px;
+    /* Keeps the logic reading cleanly right to left */
+    flex-direction: row; 
+}
+
+/* The actual steps design */
+.progress-block {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px; /* Slight roundness like the source screenshot */
+    transition: all 0.2s ease;
+}
+
+/* Status coloring mapping states */
+.progress-block.pending {
+    background: #e2e8f0; /* Muted gray */
+}
+
+/* .progress-block.completed {
+    background: #5a846e; Muted dark green from the official site */
+/* } */
+
+.progress-block.active-dot {
+    background: #f59e0b; /* Vibrant active orange */
+    border-radius: 50%;   /* Makes it a distinct circle matching the example image */
+}
+
+.progress-block.rejected-dot {
+    background: #d97706; /* Fallback orange or change to red below if dropped */
+    background: #ef4444; /* Bright Red for failed bills */
+    border-radius: 50%;
+}
+
+.status-text-label.success {
+    color: #034e0f; /* Muted dark green matching the passed blocks */
+}
+
+.status-text-label.inactive-knesset {
+  color: #c2410c; /* Deep, authoritative legislative dark orange */
+}
+
+.progress-block.inactive-knesset-dot {
+    background: #fc5800; /* Rich orange active circle marker */
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(234, 88, 12, 0.3);
+}
+
+/* Ensure the background override works on completed blocks */
+.progress-block.completed {
+    /* We remove the fallback solid background color so the dynamic inline RGBA style can paint the gradient step effectively */
+    background: none; 
+}
+
+.selector-btn {
+  border: 1px solid #e2e8f0; /* Softer border color */
+  border-radius: 9999px; /* Perfectly pill-shaped */
+  background: #ffffff;
+  color: #64748b; /* Muted text color for inactive state */
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle depth */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selector-btn:hover {
+  border-color: #cbd5e1;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.selector-btn.active {
+  background: #1a3a8f;
+  color: #ffffff;
+  border-color: #1a3a8f;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(41, 27, 233, 0.25); /* Colored glow effect */
+}
+
+
+
+/* Accordion Container Modifiers */
+.sidebar-bill-card.accordion-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #e2e8f0;
+}
+
+.sidebar-bill-card.accordion-card:hover {
+    border-color: #cbd5e1;
+    background-color: #fdfdfd;
+}
+
+.sidebar-bill-card.accordion-card.expanded {
+    border-color: #94a3b8;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Expanded Inside Drawer Styling */
+.bill-card-drawer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: default; /* Keeps text selection simple inside the card */
+}
+
+.drawer-section h5 {
+    margin: 0 0 4px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.initiators-text {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.4;
+}
+
+.summary-section {
+    background: #f8fafc;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-right: 3px solid #5a846e; /* Elegant green edge marker indicating successful passage */
+}
+
+.summary-text {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.summary-text.italicized {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+
+/* Layout helper for down arrow wrapping alignment */
+.bill-title-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1;
+}
+
+/* down arrow indicator layout mechanics */
+.accordion-arrow {
+    font-size: 0.8rem;
+    color: #6b7685;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+/* Rotates arrow cleanly downward when active drawer is invoked */
+.accordion-arrow.rotated {
+    transform: rotate(180deg);
+    color: #475569;
+}
+
+/* Dark Orange layout structure specialized for stopped reason blocks */
+.stopped-reason-section {
+    background: #fffcf9; /* Light warning orange background tint */
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-right: 3px solid #ea580c; /* Deep legislative orange alert border line */
+}
+
+.stopped-reason-text {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #c2410c; /* Deep contrasting dark orange text */
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+
+.custom-chart-tooltip {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    backdrop-filter: blur(4px);
+    min-width: 180px;
+}
+
+.tooltip-date-header {
+    margin: 0 0 6px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+}
+
+.tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #475569;
+    margin: 4px 0;
+}
+
+.tooltip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.tooltip-dot.score-indicator { background: #8884d8; }
+.tooltip-dot.bill-indicator { background: #5a846e; }
+
+.tooltip-value {
+    margin-right: auto; /* Pushes number cleanly to the left in RTL layout */
+    color: #0f172a;
+}
+
+.tooltip-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 6px 0;
+}
+
+.tooltip-breakdown-box {
+    display: flex;
+    gap: 6px;
+    font-size: 0.75rem;
+    background: #f8fafc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+    color: #64748b;
+    justify-content: center;
+}
+
+.breakdown-stat.passed { color: #15803d; font-weight: 600; font-size: large;}
+.breakdown-stat.stopped { color: #b42b09; font-weight: 600; font-size: large;}
+.breakdown-stat.inprogress { color: #0931b4; font-weight: 600; font-size: large;}
+.breakdown-stat.separator { font-weight: 600; font-size: large;}
+
+
+.tooltip-click-prompt {
+    margin: 6px 0 0 0;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    text-align: center;
+    font-style: italic;
+}

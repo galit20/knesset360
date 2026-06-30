@@ -1,0 +1,33 @@
+.initiator-card {
+    background: white;
+    border: 1.2px solid #cfd1d4;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.initiator-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: #3b82f6;
+}
+
+.initiator-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #f3f4f6;
+}
+
+.initiator-card h4 {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.initiator-card.selected {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}

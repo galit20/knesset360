@@ -308,8 +308,9 @@
     
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from psycopg2.extras import RealDictCursor
-from db import get_db_connection
+from routes import timeline, trends, scores
+
+import pandas as pd
 
 app = FastAPI()
 
@@ -481,37 +482,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(timeline.router)
+app.include_router(trends.router)
+app.include_router(scores.router)
+
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Knesset360 API! hello"}
+    return {"message": "Welcome to the Knesset360 API!"}
 
-@app.get("/api/timeline")
-def get_timeline():
-    conn = get_db_connection()
-    if conn is None:
-        raise HTTPException(status_code=500, detail="Could not connect to the database")
-    
-    try:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)  # read as JSON for better react functionallity
-        
-        cursor.execute("""
-            
-        """)
-        
-        timeline_data = cursor.fetchall()
-        
-        # 4. Clean up and return the data!
-        cursor.close()
-        conn.close()
-        
-        return timeline_data
-
-    except Exception as e:
-        if conn:
-            conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @app.get("/api/factions")
 def get_factions(knesset: int = None):
     conn = get_db_connection()

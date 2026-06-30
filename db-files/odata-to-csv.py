@@ -242,9 +242,9 @@ def fetch_knesset_table_odata_to_csv_general(url_part: str, csv_headers: list[st
                         page_count += 1
                         
                         # Random sleep to look like a human clicking "Next Page"
-                        sleep_time = random.uniform(1.5, 3.0)
-                        print(f"Sleeping for {sleep_time:.2f} seconds...")
-                        time.sleep(sleep_time)
+                        # sleep_time = random.uniform(1.5, 3.0)
+                        # print(f"Sleeping for {sleep_time:.2f} seconds...")
+                        # time.sleep(sleep_time)
                     else:
                         url = None # No more pages, exit loop
                     
@@ -434,9 +434,49 @@ def fetch_knesset_KNS_BillHistoryInitiator_odata_to_csv():
     fetch_knesset_table_odata_to_csv_general("KNS_BillHistoryInitiator?$filter=KNS_Bill/KnessetNum%20ge%2019", csv_headers, "BillHistoryInitiator")
 
 
+def fetch_knesset_KNS_PlenumVote_odata_to_csv():
+    csv_headers = [ "Id",
+                    "VoteDateTime",
+                    "SessionID",
+                    "ItemID",
+                    "Ordinal",
+                    "VoteMethodID",
+                    "VoteMethodDesc",
+                    "VoteStatusCode",
+                    "VoteStatusDesc",
+                    "VoteTitle",
+                    "VoteSubject",
+                    "IsNoConfidenceInGov",
+                    "LastUpdatedDate",
+                    "ForOptionID",
+                    "ForOptionDesc",
+                    "AgainstOptionID",
+                    "AgainstOptionDesc"]
+    fetch_knesset_table_odata_to_csv_general("KNS_PlenumVote?$filter=KNS_PlenumSession/KnessetNum%20ge%2019", csv_headers, "PlenumVote")
+
+
+def fetch_knesset_KNS_PlenumVoteResult_odata_to_csv():
+    csv_headers = [ "Id",
+                    "MkId",
+                    "VoteID",
+                    "VoteDate",
+                    "ResultCode",
+                    "ResultDesc",
+                    "LastUpdatedDate",
+                    "LastName",
+                    "FirstName",
+                    "SessionID",
+                    "ItemID"]
+    fetch_knesset_table_odata_to_csv_general("KNS_PlenumVoteResult?$filter=VoteDate%20ge%202026-03-29T00:00:00Z&VoteDate%20lt%202026-04-01T00:00:00Z&$orderby=VoteDate", csv_headers, "PlenumVoteResult")
+
+
+
 if __name__ == "__main__":
     # fetch_knesset_table_odata_to_csv_general("KNS_Faction?$filter=KnessetNum%20ge%2019", [ "Id", "Name", "KnessetNum", "StartDate", "FinishDate", "IsCurrent", "LastUpdatedDate"], "Faction") # faction data
     # fetch_knesset_document_committee_session_odata_to_csv()
     # fetch_knesset_KNS_IsraelLawClassificiation_odata_to_csv()
     # fetch_knesset_KNS_IsraelLawMinistry_odata_to_csv()
-    fetch_knesset_KNS_BillHistoryInitiator_odata_to_csv()
+    # fetch_knesset_KNS_BillHistoryInitiator_odata_to_csv()
+
+    fetch_knesset_KNS_PlenumVote_odata_to_csv()
+    fetch_knesset_KNS_PlenumVoteResult_odata_to_csv()

@@ -1,0 +1,310 @@
+/* .subject-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4rem 10rem;
+  background-color: #f9f9f7;
+  background: linear-gradient(135deg, #f9f9f7 0%, #f0f2f5 100%);
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+  direction: rtl; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Shadow drops downward now */
+/* } */
+
+/* .subject-banner-content {
+  max-width: 60%;
+} */
+
+/* .subject-title {
+  font-size: 6rem;
+  font-weight: 900;
+  letter-spacing: -2px;
+  color: #1a3a8f;
+  margin-bottom: 1.5rem;
+  text-align: right;
+} */
+
+/* .subject-description {
+  font-size: 1.5rem;
+  text-align: right;
+  line-height: 2;
+  color: #4b5563;
+  max-width: 1000px;
+} */
+/* 
+.subject-illustration {
+  width: 250px;
+  height: auto;
+  filter: drop-shadow(10px 10px 0px rgba(0,0,0,0.1));
+}
+
+@media (max-width: 768px) {
+  .subject-banner {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  .subject-banner-content {
+    max-width: 100%;
+  }
+} */
+
+
+.subject-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8rem 10rem; /* Taller padding for a premium hero look */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-bottom: 1px solid var(--k-border, #e2e8f0);
+  margin-bottom: 3rem;
+  direction: rtl; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 🎨 The Magic Transparent Overlay */
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to left, rgba(52, 62, 85, 0.85) 0%, rgba(49, 60, 85, 0.4) 100%);
+  z-index: 1;
+}
+
+.subject-banner-content {
+  position: relative;
+  z-index: 2;
+  max-width: 60%;
+}
+
+.subject-title {
+  font-family: var(--font-display, 'Rubik', sans-serif);
+  font-size: clamp(3.5rem, 6vw, 5.5rem); /* Scales dynamically */
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #ffffff; /* White text for contrast against the overlay */
+  margin-bottom: 1.5rem;
+  text-align: right;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.3); /* Helps it pop */
+}
+
+.subject-description {
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  text-align: right;
+  line-height: 1.6;
+  color: #f8fafc; /* Very light gray/white */
+  max-width: 800px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* 📱 Mobile Responsiveness */
+@media (max-width: 768px) {
+  .subject-banner {
+    padding: 4rem 2rem;
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .subject-banner-content {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .subject-title, .subject-description {
+    text-align: center; /* Center text on phones */
+  }
+
+  /* Make overlay slightly more solid on mobile so centered text is readable */
+  .banner-overlay {
+    background: rgba(15, 23, 42, 0.75); 
+  }
+}
+
+.box-chart-container {
+    display: flex;
+    gap: 24px;  
+    width: 100%;
+    direction: rtl;
+    margin-bottom: 40px;
+    margin-top: 40px;
+}
+
+.table-container {
+    border: 2px solid #e5e7eb; 
+    border-radius: 12px; 
+    padding: 20px; 
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+
+.table-top-container {
+    display: flex; 
+    flex-direction: row-reverse;
+    align-items: center; 
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 12px;
+    position: sticky;        
+    top: 0;                     
+    z-index: 10; 
+}
+
+.close-button-style {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;                /* Space between the text and the X */
+    transition: background-color 0.2s;
+}
+
+.close-button-style:hover {
+    background-color: #2563eb; /* Darker blue on hover */
+}
+
+.table-div-scroll{
+    max-height: 400px;
+    overflow-y: auto; 
+}
+
+.table-content {
+    width: 100%;
+    text-align: right;
+    border-collapse: collapse;
+    direction: rtl;
+}
+
+.initiator-section {
+  align-items: center;
+  align-self: center;
+}
+
+.initiator-grid {
+    direction: rtl;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.filter-section-wrapper {
+  display: flex;
+  flex-direction: column;
+  
+  /* Force the content alignment to the right */
+  align-items: flex-end; 
+  text-align: right;
+  
+  /* Ensure it takes the full width available inside your 95vw container */
+  width: 100%; 
+  
+  margin-bottom: 1.5rem;
+  padding: 10px 10px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+
+  position: sticky;
+  top: 50px;
+  z-index: 100;
+
+}
+
+.selector-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start; 
+  direction: rtl; 
+}
+
+.bar-label {
+  text-align: right;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  color: #1e293b; /* Dark slate matching professional themes */
+  font-size: 1.2rem;
+}
+
+.selector-btn {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #e2e8f0; /* Softer border color */
+  border-radius: 9999px; /* Perfectly pill-shaped */
+  background: #ffffff;
+  color: #64748b; /* Muted text color for inactive state */
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle depth */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selector-btn:hover {
+  border-color: #cbd5e1;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.selector-btn.active {
+  background: #1a3a8f;
+  color: #ffffff;
+  border-color: #1a3a8f;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(41, 27, 233, 0.25); /* Colored glow effect */
+}
+
+
+/* Add to Timeline.css */
+.empty-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--k-canvas, #ffffff);
+    border: 2px dashed var(--k-border, #e2e8f0);
+    border-radius: 16px;
+    padding: 60px 24px;
+    margin: 20px 0;
+    text-align: center;
+    width: 100%;
+    min-height: 250px;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.empty-state-text {
+    font-family: var(--font-display, 'Rubik', sans-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--k-navy, #0f172a);
+    margin: 0 0 8px;
+}
+
+.empty-state-subtext {
+    font-family: var(--font-body, system-ui, sans-serif);
+    font-size: 0.95rem;
+    color: var(--k-muted, #64748b);
+    max-width: 400px;
+    line-height: 1.5;
+    margin: 0;
+}
