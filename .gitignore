@@ -15,3 +15,11 @@ db-files/__pycache__/config.cpython-314.pyc
 knesset360-backend/app/ollama_check.py
 knesset360-backend/app/ollama_check2.py
 knesset360-backend/app/quotes.py
+knesset360-backend/app/__pycache__/config.cpython-312.pyc
+knesset360-backend/app/__pycache__/db.cpython-312.pyc
+knesset360-backend/app/__pycache__/main.cpython-312.pyc
+knesset360-backend/app/__pycache__/main.cpython-313.pyc
+knesset360-backend/app/__pycache__/db.cpython-313.pyc
+knesset360-backend/app/__pycache__/config.cpython-313.pyc
+.claude/calude.md
+.claude/settings.local.json
