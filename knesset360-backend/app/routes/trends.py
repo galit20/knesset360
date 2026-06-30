@@ -168,7 +168,7 @@ async def get_subject_trend_by_doctype(doc_type: str, subject: str):
                 "date_histogram": {
                     "field": "StartDate",
                     "calendar_interval": "month",
-                    "format": "yyyy-MM"
+                    "format": "MM/yy"
                 }
             }
         }

@@ -1,16 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import './Timeline.css'
+import './Timeline.css';
 
-import StatusPieChart       from '../components/PieChartBill'
-import StatusBarChart       from '../components/BarChartBill'
-import TimelineImpactChart  from '../components/TimelineImpactChart'
-import TrendsChart          from '../components/trendCharts'
-import MKLeaderboards       from '../components/MKleaderboards'
-import LoadingSpinner       from '../components/LoadingSpinner'
+import StatusPieChart       from '../components/PieChartBill';
+import StatusBarChart       from '../components/BarChartBill';
+import TimelineImpactChart  from '../components/TimelineImpactChart';
+import TrendsChart          from '../components/trendCharts';
+import MKLeaderboards       from '../components/MKleaderboards';
+import LoadingSpinner       from '../components/LoadingSpinner';
+import AnalysisCards        from '../components/AnalysisCards';
 
-import { POSTPONEMENT_DESC, POSTPONEMENT_COLORS, STATUS_COLORS_SHORT, getShortStatus } from '../utils/billStatus'
-import { SUBJECTS_DICT } from '../utils/subjects'
+import { POSTPONEMENT_DESC, POSTPONEMENT_COLORS, STATUS_COLORS_SHORT, getShortStatus } from '../utils/billStatus';
+import { SUBJECTS_DICT } from '../utils/subjects';
 
 import roadSafetyImg    from '/banners/traffic4.jpg';
 import educationImg     from '/banners/library.jpg';
@@ -57,6 +58,7 @@ export default function TimelinePage() {
     const [plenumData, setPlenumData] = useState([]);
     const [topMksCommittee, setTopMksCommittee] = useState([]);
     const [topMksPlenum, setTopMksPlenum] = useState([]);
+    const [textAnalysis, setTextAnalysis] = useState(null);
 
     // UI Interaction States
     const [selectedKnesset, setSelectedKnesset] = useState(null);
@@ -71,7 +73,7 @@ export default function TimelinePage() {
     const [trendsError, setTrendsError] = useState(false);
     const [mksError, setMksError] = useState(false);
 
-    // 🚀 1. Fetch Core Bills Data (Independent)
+    // Fetch Core Bills Data (Independent)
     useEffect(() => {
         setBillsLoading(true);
         setMainError(false);
@@ -89,7 +91,7 @@ export default function TimelinePage() {
             .finally(() => setBillsLoading(false));
     }, [currentSubject]);
 
-    // 🚀 2. Fetch Impact Scores (Loads silently in the background)
+    // Fetch Impact Scores (Loads silently in the background)
     useEffect(() => {
         fetch(`${API_ADDR}/api/scores/${currentSubject}`)
             .then(r => r.ok ? r.json() : [])
@@ -97,7 +99,14 @@ export default function TimelinePage() {
             .catch(err => console.error("Error fetching scores:", err));
     }, [currentSubject]);
 
-    // 🚀 3. Fetch Trends Charts with Promise.allSettled
+    useEffect(() => {
+        fetch(`${API_ADDR}/api/scores/analysis/${currentSubject}`)
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setTextAnalysis(data))
+            .catch(err => console.error("Error fetching score analytics:", err));
+    }, [currentSubject]);
+
+    // Fetch Trends Charts with Promise.allSettled
     useEffect(() => {
         setTrendsLoading(true);
         setTrendsError(false);
@@ -117,7 +126,7 @@ export default function TimelinePage() {
         .finally(() => setTrendsLoading(false));
     }, [currentSubject]);
 
-    // 🚀 4. Fetch MK Leaderboards (Updates every time Knesset filter changes)
+    // Fetch MK Leaderboards (Updates every time Knesset filter changes)
     useEffect(() => {
         setMksLoading(true);
         setMksError(false);
@@ -205,21 +214,33 @@ export default function TimelinePage() {
 
     const filteredBillsData = selectedKnesset ? billsData.filter(b => b.knessetnum === selectedKnesset) : billsData;
     
-    const filteredScores = selectedKnesset ? scoreData.filter(s => {
-        const startDate = new Date(KNESSETS[selectedKnesset].start);
-        const endDate = new Date(KNESSETS[selectedKnesset].end);
-        startDate.setMonth(startDate.getMonth() - 2);
-        endDate.setMonth(endDate.getMonth() + 1);
-        const scoreTime = new Date(s.year, s.month - 1, 28).getTime();
-        return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
-    }) : scoreData;
+    const filteredScores = 
+    selectedKnesset ? 
+        scoreData.length > 15 ? 
+            scoreData.filter(s => {
+                const startDate = new Date(KNESSETS[selectedKnesset].start);
+                const endDate = new Date(KNESSETS[selectedKnesset].end);
+                startDate.setMonth(startDate.getMonth() - 2);
+                endDate.setMonth(endDate.getMonth() + 1);
+                const scoreTime = new Date(s.year, s.month - 1, 28).getTime();
+                return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
+            }) : 
+            scoreData.filter(s => {
+                const startDate = new Date(KNESSETS[selectedKnesset].start);
+                const endDate = new Date(KNESSETS[selectedKnesset].end);
+                startDate.setFullYear(startDate.getFullYear() - 1);
+                endDate.setFullYear(endDate.getFullYear() + 1);
+                const scoreTime = new Date(s.year, s.month - 1, 28).getTime();
+                return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
+            })
+        : scoreData;
 
     const filteredCommitteeData = selectedKnesset ? committeeData.filter(s => {
         const startDate = new Date(KNESSETS[selectedKnesset].start);
         const endDate = new Date(KNESSETS[selectedKnesset].end);
         startDate.setMonth(startDate.getMonth() - 2);
         endDate.setMonth(endDate.getMonth() + 1);
-        const [month, year] = s.name.split('/').map(Number);
+        const [month, year] = s.name.split('-').map(Number);
         const scoreTime = new Date(2000 + year, month - 1, 1).getTime();
         return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
     }) : committeeData;
@@ -229,7 +250,7 @@ export default function TimelinePage() {
         const endDate = new Date(KNESSETS[selectedKnesset].end);
         startDate.setMonth(startDate.getMonth() - 2);
         endDate.setMonth(endDate.getMonth() + 1);
-        const [month, year] = s.name.split('/').map(Number);
+        const [month, year] = s.name.split('-').map(Number);
         const scoreTime = new Date(2000 + year, month - 1, 1).getTime();
         return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
     }) : plenumData;
@@ -238,15 +259,6 @@ export default function TimelinePage() {
     return (
         <div style={{ width: '100vw', margin: '0 auto'}} >
             {/* Banner Section */}
-            {/* <div className="subject-banner">
-                <div className="subject-banner-content">
-                    <h1 className="subject-title">{config.label}</h1>
-                    <p className="subject-description">{config.description}</p>
-                </div>
-                <div className="subject-banner-visual">
-                    <img src={subjectImage} alt={config.label} className="subject-illustration" />
-                </div>
-            </div> */}
             <div 
                 className="subject-banner" 
                 style={{ backgroundImage: `url(${subjectImage})` }}
@@ -304,7 +316,8 @@ export default function TimelinePage() {
                 ) : (
                     <>
                         <TimelineImpactChart billsData={filteredBillsData} scoreData={filteredScores} knessetNumber={selectedKnesset}/>
-                        
+                        <AnalysisCards analysis={textAnalysis} />
+
                         <div className="box-chart-container">
                             <StatusPieChart pieData={statusPieData} total={totalBills} title="התפלגות סטטוס הצעות חוק" />
                             <StatusBarChart barData={barData} title="התפלגות הצעות חוק על פי כנסות" />
