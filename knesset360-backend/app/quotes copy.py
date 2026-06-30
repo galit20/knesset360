@@ -4,7 +4,6 @@ import re
 import requests
 import docx
 import pandas as pd
-from IPython.display import display
 import sqlalchemy
 from io import BytesIO
 from datetime import datetime
@@ -17,8 +16,6 @@ import re
 
 # LOCAL ENGINES 
 ES_HOST = "http://localhost:9200"
-OLLAMA_HOST = "http://localhost:11434/api/generate"
-# Match your actual database parameters here
 
 relevant_tags = ['דובר-המשך', 'קריאות', 'יור', 'דובר', 'קריאה', 'דובר_המשך']
 re_remove = re.compile(r'<<.+?>>|/(.+?/)|היו"ר|[^\sא-ת]')
@@ -233,9 +230,8 @@ if __name__ == "__main__":
                 }
             }
         })
-        print("🎯 Success! Native Hebrew N-gram index created without any fragile external downloads.")
 
-    print("⚡ Pulling documents from PostgreSQL...")
+    print("Pulling documents from PostgreSQL...")
     
     # Load person table
     mks = pd.read_sql(
@@ -261,7 +257,7 @@ if __name__ == "__main__":
         JOIN KNS_DocumentCommitteeSession d on d.CommitteeSessionID = s.id
         WHERE d.ApplicationID = 1
         AND d.GroupTypeID = 23
-        AND s.StartDate >= Timestamp '23/03/2023'
+        AND s.StartDate >= Timestamp '15/06/2026'
         ORDER BY s.StartDate ASC
     """
 
@@ -271,14 +267,14 @@ if __name__ == "__main__":
         JOIN KNS_DocumentPlenumSession d on d.PlenumSessionID = s.id
         WHERE d.ApplicationID = 1
         AND d.GroupTypeID = 28
-        AND s.StartDate >= Timestamp '01/01/2015'
+        AND s.StartDate >= Timestamp '15/06/2026'
         ORDER BY s.StartDate ASC
     """
     finished_urls = 0
 
-    for chunk_df in pd.read_sql(sql_urls_plenums, engine, chunksize=100):
+    for chunk_df in pd.read_sql(sql_urls_comittees, engine, chunksize=100):
 
-        quotes = process_protocols(chunk_df, doc_type="Plenum")
+        quotes = process_protocols(chunk_df, doc_type="Committee")
         if quotes.empty:
             continue
 

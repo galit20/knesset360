@@ -343,7 +343,7 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
             <div className="chart-main-frame">
                 <div className="big-chart-container">
                     <div className='chart-top-row'>
-                        <h2 className='title-content-side'>השפעת חקיקה על מדד הבטיחות</h2>
+                        <h2 className='title-content-side'>השפעת חקיקה על מדד הלאומי</h2>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-start' }}>
                             <button
                                 className={`selector-btn ${statusFilter === null ? 'active' : ''}`}
