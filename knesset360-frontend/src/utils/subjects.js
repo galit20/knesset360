@@ -4,42 +4,24 @@ export const SUBJECTS_ARRAY = [
         label: 'בטיחות בדרכים', 
         path: '/timeline/road_safety', 
         keywords: ["תעבורה", "תאונות דרכים", "בטיחות בדרכים", "חוק הדרכים"],
-        description: "נראה נתונים על תעבורה ובטיחות בדרכים...."
     },
     { 
         id: 'education', 
         label: 'חינוך', 
         path: '/timeline/education', 
         keywords: ["חינוך", "בתי ספר", "מורים", "השכלה גבוהה", "מעונות יום"],
-        description: "נציג לכם על אודות החינוך ...."
     }, 
     { 
         id: 'health', 
         label: 'בריאות', 
         path: '/timeline/health', 
         keywords: ["תחלואה", "חיסונים", "קורונה", "בתי חולים", "חולים", "חיסונים", "חיסון"],
-        description: "..." 
     },
     { 
         id: 'crime', 
         label: 'פשיעה', 
         path: '/timeline/crime', 
         keywords: ["משטרה", "שוטר", "פשע", "נשק", "פציעה"],
-        description: "..."
-    },
-    { 
-        id: 'migration', 
-        label: 'עלייה ותפוצות', 
-        path: '/timeline/migration', 
-        keywords: ["עולה חדש", "עלייה", "הגירה", "מהגר"],
-        description: "..." 
-    },
-    { 
-        id: 'environment', 
-        label: 'איכות הסביבה', 
-        path: '/timeline/environment', 
-        keywords: ["זיהום", "סביבה", "מחזור", "אנרגיה", "אקלים"],
-        description: "..." 
     }
 ];
 
@@ -60,14 +42,5 @@ export const SUBJECTS_DICT = {
     'crime': { 
         label: 'פשיעה', 
         description: "..."
-    },
-    'migration': { 
-        
-        label: 'עלייה ותפוצות', 
-        description: "..." 
-    },
-    'environment': { 
-        label: 'איכות הסביבה', 
-        description: "..." 
     }
 };

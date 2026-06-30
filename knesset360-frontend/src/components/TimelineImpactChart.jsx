@@ -89,6 +89,8 @@ const NeedleDot = (props) => {
     }
 };
 
+
+
 const MergedTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
 
@@ -308,7 +310,8 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
 
     // xAxis to show only months
     const scoreTicks = useMemo(() => {
-        return chartData.formattedScores.filter((d, i) => i % 6 === 0).map(d => d.timestamp);    
+        return chartData.formattedScores.length < 15 ? chartData.formattedScores.map(d => d.timestamp) :
+                chartData.formattedScores.filter((d, i) => i % 6 === 0).map(d => d.timestamp);    
     }, [chartData.formattedScores]);
 
     // --- SIDEBAR DATA LOGIC ---
@@ -424,7 +427,7 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                                     yAxisId="left"
                                     domain={[0, 100]} 
                                     tickCount={6}
-                                    label={{ value: 'ציון בטיחות', angle: -90, position: 'insideLeft' }}
+                                    label={{ value: 'מדד לאומי', angle: -90, position: 'insideLeft' }}
                                 />
 
                                 {/* The Safety Score Line */}
@@ -435,8 +438,8 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
                                     dataKey="score"
                                     stroke="#1a334cd4"
                                     strokeWidth={3.5}
-                                    activeDot={{ r: 8, strokeWidth: 0 }} 
-                                    dot={true}
+                                    activeDot={{ r: 8, strokeWidth: 1 }} 
+                                    dot={scoreTicks.length < 15}
                                     connectNulls 
                                 />
 

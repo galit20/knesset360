@@ -12,20 +12,16 @@ import LoadingSpinner       from '../components/LoadingSpinner'
 import { POSTPONEMENT_DESC, POSTPONEMENT_COLORS, STATUS_COLORS_SHORT, getShortStatus } from '../utils/billStatus'
 import { SUBJECTS_DICT } from '../utils/subjects'
 
-import roadSafetyImg    from '../assets/categories/road-safety.svg';
-import educationImg     from '../assets/categories/education.svg';
-import healthImg        from '../assets/categories/health.svg';
-import crimeImg         from '../assets/categories/crime.svg';
-import migrationImg     from '../assets/categories/migration.svg';
-import environmentImg   from '../assets/categories/environment.svg';
+import roadSafetyImg    from '/banners/traffic4.jpg';
+import educationImg     from '/banners/library.jpg';
+import healthImg        from '/banners/health1.jpg';
+import crimeImg         from '/banners/crime.jpg';
 
 const imageMap = {
     'road_safety':  roadSafetyImg,
     'education':    educationImg,
     'health':       healthImg,
-    'crime':        crimeImg,
-    'migration':    migrationImg,
-    'environment':  environmentImg,
+    'crime':        crimeImg
 };
 
 const API_ADDR = "http://localhost:8000"
@@ -242,13 +238,23 @@ export default function TimelinePage() {
     return (
         <div style={{ width: '100vw', margin: '0 auto'}} >
             {/* Banner Section */}
-            <div className="subject-banner">
+            {/* <div className="subject-banner">
                 <div className="subject-banner-content">
                     <h1 className="subject-title">{config.label}</h1>
                     <p className="subject-description">{config.description}</p>
                 </div>
                 <div className="subject-banner-visual">
                     <img src={subjectImage} alt={config.label} className="subject-illustration" />
+                </div>
+            </div> */}
+            <div 
+                className="subject-banner" 
+                style={{ backgroundImage: `url(${subjectImage})` }}
+            >
+                <div className="banner-overlay"></div>                
+                <div className="subject-banner-content">
+                    <h1 className="subject-title">{config.label}</h1>
+                    <p className="subject-description">{config.description}</p>
                 </div>
             </div>
 
