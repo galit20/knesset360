@@ -558,6 +558,8 @@ const DISPLAY_NAME_OVERRIDES = {
   'חדש-תעל': 'חד"ש-תע"ל',
   'רעם': 'רע"מ',
   'שס': 'ש"ס',
+  'כחול לבן - המחנה הממלכתי': 'כחול לבן',
+  'הציונות הדתית (נסגרה)': 'הציונות הדתית',
 };
 
 const FACTION_LEADERS = {
@@ -1069,7 +1071,7 @@ function VotingDeviations({ data, loading, knesset, error }) {
 }
 
 export default function Factions() {
-  const [selectedKnesset, setSelectedKnesset] = useState(23);
+  const [selectedKnesset, setSelectedKnesset] = useState(25);
   const [factions, setFactions] = useState([]);
   const [selectedFaction, setSelectedFaction] = useState(null);
   const [stats, setStats] = useState(null);

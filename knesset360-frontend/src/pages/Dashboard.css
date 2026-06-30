@@ -4,6 +4,7 @@
   background: #f4f6fa;
   color: #1a2540;
   padding: 28px 32px;
+  zoom: 0.82;
   font-family: 'IBM Plex Sans Hebrew', 'Segoe UI', system-ui, sans-serif;
   direction: rtl;
   box-sizing: border-box;
@@ -132,14 +133,17 @@
 .dash-committee-row { display: flex; align-items: center; gap: 8px; }
 
 .dash-committee-name {
-  font-size: 22px;
+  font-size: 16px;
   color: #1a2540;
-  width: 300px;
-  min-width: 300px;
+  width: 340px;
+  min-width: 340px;
   text-align: right;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
   flex-shrink: 0;
 }
 
@@ -287,4 +291,151 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+.dash-week-summary {
+  background: #ffffff;
+  border-color: #e2e8f5;
+}
+
+.dash-week-summary .dash-widget-title {
+  color: #1a2540;
+  justify-content: flex-start;
+  text-align: right;
+}
+
+.dash-week-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dash-week-cell {
+  text-align: center;
+  padding: 10px 6px;
+  background: #f4f6fb;
+  border-radius: 8px;
+}
+
+.dash-week-cell-blue { background: #e6f1fb; }
+.dash-week-cell-blue .dash-week-value,
+.dash-week-cell-blue .dash-week-label { color: #0c447c; }
+
+.dash-week-cell-purple { background: #eeedfe; }
+.dash-week-cell-purple .dash-week-value,
+.dash-week-cell-purple .dash-week-label { color: #3c3489; }
+
+.dash-week-cell-green { background: #eaf3de; }
+.dash-week-cell-green .dash-week-value,
+.dash-week-cell-green .dash-week-label { color: #27500a; }
+
+.dash-week-cell-amber { background: #faeeda; }
+.dash-week-cell-amber .dash-week-value,
+.dash-week-cell-amber .dash-week-label { color: #633806; }
+
+.dash-week-cell-red { background: #fcebeb; }
+.dash-week-cell-red .dash-week-value,
+.dash-week-cell-red .dash-week-label { color: #791f1f; }
+
+.dash-week-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a2540;
+}
+
+.dash-week-label {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.dash-week-section {
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid #e2e8f5;
+}
+
+.dash-week-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2540;
+  margin-bottom: 10px;
+  text-align: right;
+}
+
+.dash-week-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-week-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-week-bar-label {
+  font-size: 12px;
+  color: #1a2540;
+  width: 200px;
+  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-week-bar-bg {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #e8ecf6;
+  overflow: hidden;
+}
+
+.dash-week-bar-fill {
+  height: 100%;
+  background: #1a2540;
+  border-radius: 4px;
+}
+
+.dash-week-bar-count {
+  font-size: 12px;
+  color: #64748b;
+  width: 16px;
+  text-align: left;
+}
+
+.dash-week-mks {
+  display: flex;
+  gap: 14px;
+}
+
+.dash-week-mk-card {
+  flex: 1;
+  background: #f4f6fb;
+  border-radius: 8px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.dash-week-mk-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2540;
+}
+
+.dash-week-mk-count {
+  font-size: 12px;
+  color: #64748b;
+}
+
+@media (max-width: 700px) {
+  .dash-week-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-week-mks { flex-direction: column; }
 }

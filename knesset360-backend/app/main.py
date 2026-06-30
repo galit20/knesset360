@@ -1243,3 +1243,131 @@ def get_committee_calendar(year: int = None, month: int = None, knesset: int = 2
     except Exception as e:
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+
+# Bill status buckets (statusid -> bucket), based on kns_status typeid=2 (הצעת חוק)
+BILL_PASSED_STATUSES = (118,)
+BILL_FAILED_STATUSES = (110, 176, 177, 122, 140, 143)
+
+
+@app.get("/api/dashboard/last-week-summary")
+def get_last_week_summary():
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        # Determine the latest date present in the DB across the relevant tables
+        cursor.execute("""
+            SELECT GREATEST(
+                (SELECT MAX(startdate) FROM kns_plenumsession),
+                (SELECT MAX(startdate) FROM kns_committeesession),
+                (SELECT MAX(lastupdateddate) FROM kns_bill)
+            ) AS latest_date
+        """)
+        latest_date = cursor.fetchone()["latest_date"]
+        if latest_date is None:
+            cursor.close()
+            conn.close()
+            return {"week_start": None, "week_end": None}
+
+        week_end = latest_date
+        week_start_param = "(%s::timestamptz - interval '6 days')"
+
+        # Committee sessions held
+        cursor.execute(f"""
+            SELECT COUNT(*) AS count
+            FROM kns_committeesession
+            WHERE startdate BETWEEN {week_start_param} AND %s
+        """, (week_end, week_end))
+        committee_sessions = cursor.fetchone()["count"]
+
+        # Plenum sessions held
+        cursor.execute(f"""
+            SELECT COUNT(*) AS count
+            FROM kns_plenumsession
+            WHERE startdate BETWEEN {week_start_param} AND %s
+        """, (week_end, week_end))
+        plenum_sessions = cursor.fetchone()["count"]
+
+        # Bills with a status change this week, bucketed by current status
+        cursor.execute(f"""
+            SELECT
+                CASE
+                    WHEN statusid = ANY(%s) THEN 'passed'
+                    WHEN statusid = ANY(%s) THEN 'failed'
+                    ELSE 'in_process'
+                END AS bucket,
+                COUNT(*) AS count
+            FROM kns_bill
+            WHERE lastupdateddate BETWEEN {week_start_param} AND %s
+            GROUP BY bucket
+        """, (list(BILL_PASSED_STATUSES), list(BILL_FAILED_STATUSES), week_end, week_end))
+        bucket_rows = cursor.fetchall()
+        bill_status_counts = {"passed": 0, "failed": 0, "in_process": 0}
+        for row in bucket_rows:
+            bill_status_counts[row["bucket"]] = row["count"]
+
+        # Active committees this week (top 5 by session count)
+        cursor.execute(f"""
+            SELECT c.name AS committee_name, COUNT(*) AS session_count
+            FROM kns_committeesession cs
+            JOIN kns_committee c ON c.id = cs.committeeid
+            WHERE cs.startdate BETWEEN {week_start_param} AND %s
+            GROUP BY c.name
+            ORDER BY session_count DESC
+            LIMIT 5
+        """, (week_end, week_end))
+        active_committees = cursor.fetchall()
+
+        # Most active MKs (by bill-initiator count, among bills with a status change this week)
+        cursor.execute(f"""
+            SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count
+            FROM kns_billinitiator bi
+            JOIN kns_bill b ON b.id = bi.billid
+            JOIN kns_person p ON p.id = bi.personid
+            WHERE bi.isinitiator = true
+              AND b.lastupdateddate BETWEEN {week_start_param} AND %s
+            GROUP BY p.id, p.firstname, p.lastname
+            ORDER BY bill_count DESC
+            LIMIT 3
+        """, (week_end, week_end))
+        top_mks = cursor.fetchall()
+
+        # Fallback: many bills (especially government bills) have no kns_billinitiator
+        # row, so the status-change-based query above can come back empty even in an
+        # active week. In that case, fall back to MKs whose bills are handled by a
+        # committee that held a session this week.
+        if not top_mks:
+            cursor.execute(f"""
+                SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count
+                FROM kns_committeesession cs
+                JOIN kns_bill b ON b.committeeid = cs.committeeid
+                JOIN kns_billinitiator bi ON bi.billid = b.id AND bi.isinitiator = true
+                JOIN kns_person p ON p.id = bi.personid
+                WHERE cs.startdate BETWEEN {week_start_param} AND %s
+                GROUP BY p.id, p.firstname, p.lastname
+                ORDER BY bill_count DESC
+                LIMIT 3
+            """, (week_end, week_end))
+            top_mks = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "week_start": (week_end - __import__("datetime").timedelta(days=6)),
+            "week_end": week_end,
+            "committee_sessions": committee_sessions,
+            "plenum_sessions": plenum_sessions,
+            "bills": {
+                "passed": bill_status_counts["passed"],
+                "failed": bill_status_counts["failed"],
+                "in_process": bill_status_counts["in_process"],
+            },
+            "active_committees": active_committees,
+            "top_mks": top_mks,
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))

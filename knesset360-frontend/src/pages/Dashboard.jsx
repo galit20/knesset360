@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
+import MkAvatar from '../components/MkAvatar'
 import './Dashboard.css'
 
 const API = 'http://localhost:8000'
@@ -10,7 +11,6 @@ const KNESSETS = [20, 21, 22, 23, 24, 25]
 // returns, used to find the closest available bar even if no bill happens
 // to be published in that exact month (common at the start/end of a term).
 const TIMELINE_EVENTS = [
-  { month: '2020-03', name: 'קורונה' },
   { month: '2021-05', name: 'שומר חומות' },
   { month: '2023-10', name: 'חרבות ברזל' },
   { month: '2025-06', name: 'עם כלביא' },
@@ -63,7 +63,7 @@ const FACTION_COLORS = [
 function MonthTick({ x, y, payload }) {
   const label = payload?.value || '';
   const isJan = label.startsWith('1/');
-  const year = isJan ? '20' + label.slice(-2) : null;
+  const year = isJan ? label.split('/')[1] : null;
 
   return (
     <g transform={`translate(${x},${y})`}>
@@ -113,6 +113,12 @@ function CustomTooltip({ active, payload, label }) {
   return null
 }
 
+function formatWeekDate(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 export default function Dashboard() {
   const [selectedKnesset, setSelectedKnesset] = useState(25)
   const [stats, setStats] = useState(null)
@@ -124,6 +130,7 @@ export default function Dashboard() {
   const [calMonth, setCalMonth] = useState(new Date().getMonth() + 1)
   const [calYear, setCalYear] = useState(new Date().getFullYear())
   const [loading, setLoading] = useState(true)
+  const [weekSummary, setWeekSummary] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -137,7 +144,7 @@ export default function Dashboard() {
       setStats(s)
       setBillsPerMonth(bpm.map(row => ({
         ...row,
-        label: (parseInt(row.month?.slice(5, 7)) || '') + '/' + (row.month?.slice(2, 4) || ''),
+        label: (parseInt(row.month?.slice(5, 7)) || '') + '/' + (row.month?.slice(0, 4) || ''),
       })))
       setBillStatus(bs)
       setHotCommittees(hc)
@@ -150,6 +157,15 @@ export default function Dashboard() {
     fetch(`${API}/api/dashboard/committee-calendar?year=${calYear}&month=${calMonth}&knesset=${selectedKnesset}`)
       .then(r => r.json()).then(setCalendarData).catch(() => {})
   }, [calMonth, calYear, selectedKnesset])
+
+  useEffect(() => {
+    if (selectedKnesset !== 25) {
+      setWeekSummary(null)
+      return
+    }
+    fetch(`${API}/api/dashboard/last-week-summary`)
+      .then(r => r.json()).then(setWeekSummary).catch(() => {})
+  }, [selectedKnesset])
 
   const today = new Date()
   const firstDay = new Date(calYear, calMonth - 1, 1).getDay()
@@ -200,6 +216,71 @@ export default function Dashboard() {
             <StatCard label="הצעות חוק" value={stats?.total_bills?.toLocaleString() ?? '—'} />
           </div>
 
+          {selectedKnesset === 25 && weekSummary && weekSummary.week_end && (
+            <div className="dash-widget dash-widget-full dash-week-summary">
+              <div className="dash-widget-title">
+                סיכום השבוע האחרון ({formatWeekDate(weekSummary.week_start)} – {formatWeekDate(weekSummary.week_end)})
+              </div>
+              <div className="dash-week-grid">
+                <div className="dash-week-cell dash-week-cell-blue">
+                  <div className="dash-week-value">{weekSummary.plenum_sessions}</div>
+                  <div className="dash-week-label">ישיבות מליאה</div>
+                </div>
+                <div className="dash-week-cell dash-week-cell-purple">
+                  <div className="dash-week-value">{weekSummary.committee_sessions}</div>
+                  <div className="dash-week-label">ישיבות וועדות</div>
+                </div>
+                <div className="dash-week-cell dash-week-cell-green">
+                  <div className="dash-week-value">{weekSummary.bills?.passed ?? 0}</div>
+                  <div className="dash-week-label">חוקים שעברו</div>
+                </div>
+                <div className="dash-week-cell dash-week-cell-amber">
+                  <div className="dash-week-value">{weekSummary.bills?.in_process ?? 0}</div>
+                  <div className="dash-week-label">חוקים בתהליך חקיקה</div>
+                </div>
+                <div className="dash-week-cell dash-week-cell-red">
+                  <div className="dash-week-value">{weekSummary.bills?.failed ?? 0}</div>
+                  <div className="dash-week-label">הצעות חוק שנפלו</div>
+                </div>
+              </div>
+
+              {weekSummary.active_committees && weekSummary.active_committees.length > 0 && (
+                <div className="dash-week-section">
+                  <div className="dash-week-section-title">דיוני הוועדות המובילות</div>
+                  <div className="dash-week-bars">
+                    {weekSummary.active_committees.map(c => {
+                      const max = weekSummary.active_committees[0].session_count || 1
+                      return (
+                        <div key={c.committee_name} className="dash-week-bar-row">
+                          <span className="dash-week-bar-label">{c.committee_name}</span>
+                          <div className="dash-week-bar-bg">
+                            <div className="dash-week-bar-fill" style={{ width: `${(c.session_count / max) * 100}%` }} />
+                          </div>
+                          <span className="dash-week-bar-count">{c.session_count}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {weekSummary.top_mks && weekSummary.top_mks.length > 0 && (
+                <div className="dash-week-section">
+                  <div className="dash-week-section-title">חברי הכנסת המובילים</div>
+                  <div className="dash-week-mks">
+                    {weekSummary.top_mks.map(m => (
+                      <div key={m.personid} className="dash-week-mk-card">
+                        <MkAvatar id={m.personid} name={`${m.firstname} ${m.lastname}`} size={48} />
+                        <div className="dash-week-mk-name">{m.firstname} {m.lastname}</div>
+                        <div className="dash-week-mk-count">{m.bill_count} הצעות</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="dash-widget dash-widget-full">
             <div className="dash-widget-title">הצעות חוק לפי חודש</div>
             <ResponsiveContainer width="100%" height={160}>
@@ -233,7 +314,7 @@ export default function Dashboard() {
               <div className="dash-factions">
                 {sortedFactions.map((f, i) => (
                   <div key={f.name} className="dash-faction-row">
-                    <span className="dash-faction-name">{f.name}</span>
+                    <span className="dash-faction-name">{f.name.replace('כחול לבן - המחנה הממלכתי', 'כחול לבן').replace('הציונות הדתית (נסגרה)', 'הציונות הדתית')}</span>
                     <div className="dash-faction-bar-bg">
                       <div
                         className="dash-faction-bar"
@@ -250,7 +331,7 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-widget">
-              <div className="dash-widget-title">ועדות פעילות</div>
+              <div className="dash-widget-title">וועדות פעילות</div>
               <div className="dash-committees">
                 {hotCommittees.map((c) => (
                   <div key={c.name} className="dash-committee-row">
@@ -282,7 +363,7 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-widget">
-              <div className="dash-widget-title">דיוני ועדות הכנסת</div>
+              <div className="dash-widget-title">לוח וועדות</div>
               <div className="dash-cal-nav-row">
                 <button className="dash-cal-nav" onClick={prevMonth}>›</button>
                 <div className="dash-cal-selectors">
