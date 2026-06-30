@@ -28,10 +28,10 @@ const KNESSETS = [
 
 const HISTORICAL_EVENTS = [
     { name: "קורונה",           date: "2020-02-27",},
+    { name: "שומר חומות",       date: "2021-05-10",},
     { name: "מלחמת חרבות ברזל",date: "2023-10-07",},
     { name: "עם כלביא",         date: "2025-06-13",},
     { name: "שאגת הארי",        date: "2026-02-28",},
-    { name: "שומר חומות",       date: "2021-05-10",},
 ];
 
 const getProgressColor = (passingScore) => {

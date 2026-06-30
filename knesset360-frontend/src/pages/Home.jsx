@@ -4,6 +4,8 @@ import buildingLogo from '../assets/building.svg';
 import innerRingLogo from '../assets/inner-ring.svg';
 import outerRingLogo from '../assets/outer-ring.svg';
 
+import backgroundImg from '/banners/knesset2.jpg'
+
 import './Home.css';
 
 const TOPICS = [
@@ -60,7 +62,7 @@ const TOPICS = [
 const FACTS = [
   '120 חברי כנסת משרתים במשכן מאז קום המדינה בשנת 1949',
   '5 מחזורי בחירות רצופים נותחו והוזנו במסגרת הפרויקט',
-  'ירידה של 38% במספר תאונות הדרכים הקטלניות לאורך עשור',
+  'עלייה במספר תאונות הדרכים הקטלניות לאורך עשור',
   '32 מפלגות שונות התמודדו באופן רשמי על מושבים בכנסת ה-25',
   'ההוצאה הממשלתית לבריאות צמחה ב-61% לאורך תקופת המעקב',
   'מדינת ישראל קיימה 5 מערכות בחירות סוערות בין 2019 ל-2022',
@@ -192,7 +194,9 @@ export default function Home() {
         </div>
       </div>
 
-      <section className="hero-section">
+      <section className="hero-section" style={{ backgroundImage: `url(${backgroundImg})` }}>
+        <div className="hero-overlay"></div>
+        
         <div className="hero-bg-grid" />
         
         <div className="hero-container">

@@ -50,9 +50,7 @@ html, body {
   justify-content: center;
 }
 
-/* ════════════════════════════
-   TOP FAST-FACTS TICKER
-════════════════════════════ */
+
 .ticker-wrap {
   display: flex;
   align-items: center;
@@ -80,7 +78,7 @@ html, body {
 }
 .ticker-track {
   flex: 1;
-  min-width: 0; /* 💡 THIS IS THE FIX FOR THE HORIZONTAL BLOWOUT */
+  min-width: 0;
   overflow: hidden;
   width: 100%;
 }
@@ -106,9 +104,6 @@ html, body {
   to { transform: translateX(50%); }
 }
 
-/* ════════════════════════════
-   HERO CONTAINER FIXES
-════════════════════════════ */
 .hero-section {
   position: relative;
   min-height: calc(100vh - 120px);
@@ -117,22 +112,30 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Changed from space-between to center it properly */
-  background: var(--k-canvas);
+  justify-content: center;
+  
+  /* 🖼️ הגדרות מתיחה ומיקום של תמונת הרקע */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
   overflow: hidden;
   padding: 40px 24px 20px; 
 }
 
-.hero-bg-grid {
+.hero-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle, rgba(6, 10, 54, 0.064) 1.2px, transparent 1.2px);
-  background-size: 28px 28px;
-  pointer-events: none;
-  z-index: 1;
+  background: radial-gradient(ellipse at center, rgba(243, 249, 255, 0.921) 20%, rgba(248, 250, 252, 0.3) 100%);
+  z-index: 2;
+}
+
+/* 🏁 נדאג שרשת הנקודות הקיימת שלך תשב מעל שכבת המסכה למראה עמוק יותר */
+.hero-bg-grid { 
+  display: none;
 }
 
 .hero-container {
@@ -145,6 +148,7 @@ html, body {
   max-width: 750px; 
   margin: auto 0;
 }
+
 
 .logo-container {
   position: relative;
@@ -160,7 +164,7 @@ html, body {
   max-width: 100%;
 }
 .static {
-  width: 55%;
+  width: 60%;
   z-index: 3;
 }
 .spin-counter {
@@ -182,10 +186,9 @@ html, body {
   to { transform: rotate(-360deg); }
 }
 
-/* 💡 REVERTED ROW-REVERSE SO TEXT SPELLS CORRECTLY */
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 9vw, 4.5rem);
+  font-size: clamp(3rem, 10vw, 5rem);
   font-weight: 900;
   letter-spacing: -0.02em;
   color: var(--k-navy);
@@ -201,31 +204,32 @@ html, body {
 
 .hero-tagline {
   font-family: var(--font-body);
-  font-size: clamp(1.2rem, 2vw, 1.2rem);
-  color: var(--k-muted);
-  max-width: 580px;
+  font-size: clamp(1.4rem, 2vw, 1.2rem);
+  font-weight: 600;
+  color: var(--k-text);
+  max-width: 700px;
   line-height: 1.5;
   margin: 0 0 24px;
 }
 
 .election-box {
-  background: var(--k-bg);
-  border: 1px solid var(--k-border);
+  background: var(--k-canvas);
+  border: 2px solid var(--k-border);
   border-radius: 14px;
   padding: 12px 28px;
   margin-bottom: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-  width: 45%;
+  width: 60%;
 }
 .election-label {
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   font-weight: 500;
   color: var(--k-muted);
   margin: 0 0 8px;
 }
 .countdown-display {
   display: flex;
-  gap: 20px;
+  gap: 25px;
   justify-content: center;
 }
 .time-block {
@@ -236,14 +240,14 @@ html, body {
 }
 .time-block span {
   font-family: var(--font-data);
-  font-size: 2.2rem;
+  font-size: 2.6rem;
   font-weight: 800;
   color: var(--k-navy);
   line-height: 1;
 }
 .time-block small {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--k-muted);
   margin-top: 4px;
 }
@@ -260,7 +264,7 @@ html, body {
   align-items: center;
   justify-content: center;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 500;
   text-decoration: none;
   padding: 12px 28px;
