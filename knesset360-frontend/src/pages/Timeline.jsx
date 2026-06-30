@@ -240,7 +240,7 @@ export default function TimelinePage() {
         const endDate = new Date(KNESSETS[selectedKnesset].end);
         startDate.setMonth(startDate.getMonth() - 2);
         endDate.setMonth(endDate.getMonth() + 1);
-        const [month, year] = s.name.split('-').map(Number);
+        const [month, year] = s.name.split('/').map(Number);
         const scoreTime = new Date(2000 + year, month - 1, 1).getTime();
         return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
     }) : committeeData;
@@ -250,7 +250,7 @@ export default function TimelinePage() {
         const endDate = new Date(KNESSETS[selectedKnesset].end);
         startDate.setMonth(startDate.getMonth() - 2);
         endDate.setMonth(endDate.getMonth() + 1);
-        const [month, year] = s.name.split('-').map(Number);
+        const [month, year] = s.name.split('/').map(Number);
         const scoreTime = new Date(2000 + year, month - 1, 1).getTime();
         return scoreTime >= startDate.getTime() && scoreTime <= endDate.getTime();
     }) : plenumData;
