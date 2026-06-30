@@ -8,7 +8,7 @@ from config import config
 
 def yesterday_odata_format():
     today = datetime.now(timezone.utc)
-    yesterday = today - timedelta(days=1)
+    yesterday = today - timedelta(days=16)
     yesterday_midnight = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
     new_date = yesterday_midnight.strftime("%Y-%m-%dT%H:%M:%SZ")
     print(f"Fetching records updated since: {new_date}")
@@ -56,7 +56,10 @@ def fetch_by_last_update_date_from_odata(conn, cursor):
                     "KNS_PersonToPosition",
                     "KNS_Bill",
                     "KNS_BillInitiator",
-                    "KNS_BillHistoryInitiator"]
+                    "KNS_BillHistoryInitiator",
+                    "KNS_PlenumVote",
+                    "KNS_PlenumVoteResult"]
+
     data_since_date = yesterday_odata_format()
     for table in table_names:
         print(f"\n --- Fetching data for: {table} ---")
@@ -136,7 +139,9 @@ def fetch_knesset_table_odata_to_DB(conn, cursor, table_name: str, date):
                         ON CONFLICT (id) 
                         DO UPDATE SET {update_set};
                     """
-                    values_to_insert = [[record.get(col) for col in columns] for record in records] # get values only
+                    deduplicated_records = list({record.get('Id'): record for record in records}.values())
+                    values_to_insert = [[record.get(col) for col in columns] for record in deduplicated_records] # get values only
+                    # values_to_insert = [[record.get(col) for col in columns] for record in records] # get values only
 
                     if values_to_insert:
                         try:
@@ -160,9 +165,9 @@ def fetch_knesset_table_odata_to_DB(conn, cursor, table_name: str, date):
                     page_count += 1
                     
                     # Random sleep to look like a human clicking "Next Page"
-                    sleep_time = random.uniform(1.5, 3.0)
-                    print(f"Sleeping for {sleep_time:.2f} seconds...")
-                    time.sleep(sleep_time)
+                    # sleep_time = random.uniform(1.5, 3.0)
+                    # print(f"Sleeping for {sleep_time:.2f} seconds...")
+                    # time.sleep(sleep_time)
                 else:
                     url = None # No more pages, exit loop
                 
@@ -268,9 +273,9 @@ def fetch_knesset_table_odata_to_DB_by_specific_id(conn, cursor, table_name: str
                     page_count += 1
                     
                     # Random sleep to look like a human clicking "Next Page"
-                    sleep_time = random.uniform(1.5, 3.0)
-                    print(f"Sleeping for {sleep_time:.2f} seconds...")
-                    time.sleep(sleep_time)
+                    # sleep_time = random.uniform(1.5, 3.0)
+                    # print(f"Sleeping for {sleep_time:.2f} seconds...")
+                    # time.sleep(sleep_time)
                 else:
                     url = None # No more pages, exit loop
                 

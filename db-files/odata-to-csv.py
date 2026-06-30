@@ -478,5 +478,5 @@ if __name__ == "__main__":
     # fetch_knesset_KNS_IsraelLawMinistry_odata_to_csv()
     # fetch_knesset_KNS_BillHistoryInitiator_odata_to_csv()
 
-    # fetch_knesset_KNS_PlenumVote_odata_to_csv()
+    fetch_knesset_KNS_PlenumVote_odata_to_csv()
     fetch_knesset_KNS_PlenumVoteResult_odata_to_csv()

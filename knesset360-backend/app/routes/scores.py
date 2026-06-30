@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
+import json
 
 router = APIRouter(prefix="/api/scores", tags=["Scores"]) #define route
 
@@ -164,3 +165,14 @@ async def get_crime_scores():
     df['score'] = ((df['score'] / 100) * 60).round(1)
 
     return df[['year', 'month', 'score']].to_dict(orient="records")
+
+
+
+@router.get("/analysis/{subject}")
+async def get_subject_trend_by_doctype(subject: str):
+    json_path = f'../static_data/analysis_{subject}.json'
+    with open(json_path, encoding='utf-8') as f:
+        analysis_data = json.load(f)
+    
+    return analysis_data
+
