@@ -6,7 +6,7 @@ import StatusPieChart       from '../components/PieChartBill';
 import StatusBarChart       from '../components/BarChartBill';
 import TimelineImpactChart  from '../components/TimelineImpactChart';
 import TrendsChart          from '../components/trendCharts';
-import MKLeaderboards       from '../components/MKleaderboards';
+import MKLeaderboards       from '../components/MKLeaderboards';
 import LoadingSpinner       from '../components/LoadingSpinner';
 import AnalysisCards        from '../components/AnalysisCards';
 
