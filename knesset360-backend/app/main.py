@@ -477,12 +477,18 @@ def faction_match_sql_named(column_expr, faction_name, knesset, params_dict):
 
 # --- CORS SETUP ---
 # Allow react+vite app to talk with the API
+origins = [
+    "http://localhost:5173",       # Local Vite development
+    "https://knesset360.vercel.app" # Your live production Vercel frontend!
+]
+
+# 2. Add the middleware to your FastAPI application
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], 
+    allow_origins=origins,         # Tells the backend to trust these domains
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],           # Allows GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],           # Allows all custom headers
 )
 
 app.include_router(timeline.router)
