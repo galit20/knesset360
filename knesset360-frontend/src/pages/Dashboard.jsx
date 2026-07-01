@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Refere
 import MkAvatar from '../components/MkAvatar'
 import './Dashboard.css'
 
-const API = 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const KNESSETS = [20, 21, 22, 23, 24, 25]
 
 // Hardcoded historical/security events to mark on the timeline as dashed
