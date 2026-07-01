@@ -7,7 +7,7 @@ import os
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Build the exact dynamic paths to your static files
-STATS_DIR = os.path.normpath(os.path.join(CURRENT_DIR, "..", "static_data"))
+STATS_DIR = os.path.normpath(os.path.join(CURRENT_DIR, "..", "..", "static_data"))
 
 router = APIRouter(prefix="/api/scores", tags=["Scores"]) #define route
 
