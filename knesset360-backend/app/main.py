@@ -309,6 +309,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from routes import timeline, trends, scores
+from psycopg2.extras import RealDictCursor
+from db import get_db_connection
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -574,9 +577,11 @@ def get_factions(knesset: int = None):
 
         return unique_data
     except Exception as e:
+        import traceback
+        traceback.print_exc() # This prints the beautiful, detailed error to your terminal!
         if conn:
             conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Database or server error: {str(e)}")
 
 @app.get("/api/faction-stats")
 def get_faction_stats(faction_id: int, knesset: int = None):
@@ -860,16 +865,16 @@ def get_faction_rebels(faction_id: int, knesset: int):
                   AND {match_sql}
             ),
             faction_votes AS (
-                SELECT vr."MkId" AS mkid,
-                       vr."VoteID" AS voteid,
-                       pv."ItemID" AS itemid,
-                       vr."ResultDesc" AS resultdesc
-                FROM "plenumVoteResult" vr
-                JOIN "plenumVote" pv ON pv."Id" = vr."VoteID"
-                JOIN kns_plenumsession ps ON ps.id = pv."SessionID"
-                JOIN faction_members fm ON fm.personid = vr."MkId"
+                SELECT vr."mkid" AS mkid,
+                       vr."voteid" AS voteid,
+                       pv."itemid" AS itemid,
+                       vr."resultdesc" AS resultdesc
+                FROM "kns_plenumvoteresult" vr
+                JOIN "kns_plenumvote" pv ON pv."id" = vr."voteid"
+                JOIN kns_plenumsession ps ON ps.id = pv."sessionid"
+                JOIN faction_members fm ON fm.personid = vr."mkid"
                 WHERE ps.knessetnum = %(knesset)s
-                  AND vr."ResultDesc" IN ('בעד', 'נגד')
+                  AND vr."resultdesc" IN ('בעד', 'נגד')
             ),
             vote_majority AS (
                 SELECT voteid,
@@ -1236,22 +1241,12 @@ def get_last_week_summary():
     try:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-        # Determine the latest date present in the DB across the relevant tables
-        cursor.execute("""
-            SELECT GREATEST(
-                (SELECT MAX(startdate) FROM kns_plenumsession),
-                (SELECT MAX(startdate) FROM kns_committeesession),
-                (SELECT MAX(lastupdateddate) FROM kns_bill)
-            ) AS latest_date
-        """)
-        latest_date = cursor.fetchone()["latest_date"]
-        if latest_date is None:
-            cursor.close()
-            conn.close()
-            return {"week_start": None, "week_end": None}
-
-        week_end = latest_date
-        week_start_param = "(%s::timestamptz - interval '6 days')"
+        # 1. Establish the timeframe based on 'today' instead of the database max date
+        week_end = datetime.now(timezone.utc)
+        week_start = week_end - timedelta(days=7)
+        
+        # Keep your string parameter format matching your existing logic
+        week_start_param = "(%s::timestamptz - interval '7 days')"
 
         # Committee sessions held
         cursor.execute(f"""
@@ -1313,10 +1308,7 @@ def get_last_week_summary():
         """, (week_end, week_end))
         top_mks = cursor.fetchall()
 
-        # Fallback: many bills (especially government bills) have no kns_billinitiator
-        # row, so the status-change-based query above can come back empty even in an
-        # active week. In that case, fall back to MKs whose bills are handled by a
-        # committee that held a session this week.
+        # Fallback for bills with no explicitly tracked initiator
         if not top_mks:
             cursor.execute(f"""
                 SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count
@@ -1335,7 +1327,7 @@ def get_last_week_summary():
         conn.close()
 
         return {
-            "week_start": (week_end - __import__("datetime").timedelta(days=6)),
+            "week_start": week_start,
             "week_end": week_end,
             "committee_sessions": committee_sessions,
             "plenum_sessions": plenum_sessions,

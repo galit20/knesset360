@@ -1,9 +1,24 @@
+import os
 from fastapi import APIRouter, HTTPException
 from elasticsearch import Elasticsearch
 
 router = APIRouter(prefix="/api/trends", tags=["Trends"]) #define route
 
-es = Elasticsearch("http://localhost:9200")
+elastic_url = os.environ.get("ELASTIC_URL")
+elastic_user = os.environ.get("ELASTIC_USER")
+elastic_password = os.environ.get("ELASTIC_PASSWORD")
+
+# 2. Check if we are running on Render or Locally
+if elastic_url and elastic_user and elastic_password:
+    # Production: Connect to Elastic Cloud using SSL and Basic Auth
+    es = Elasticsearch(
+        [elastic_url],
+        basic_auth=(elastic_user, elastic_password)
+    )
+else:
+    # Local Development: Fallback to your local localhost setup
+    es = Elasticsearch(["http://localhost:9200"])
+
 
 KNESSETS = {
     20: {"start": "2015-03-31", "end": "2019-04-29"},
