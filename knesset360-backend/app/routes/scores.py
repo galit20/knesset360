@@ -1,6 +1,13 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 import json
+import os
+
+# Get the absolute path of the folder where THIS python file lives
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Build the exact dynamic paths to your static files
+STATS_DIR = os.path.normpath(os.path.join(CURRENT_DIR, "..", "static_data"))
 
 router = APIRouter(prefix="/api/scores", tags=["Scores"]) #define route
 
@@ -16,7 +23,7 @@ def normalize(series: pd.Series, invert: bool = False) -> pd.Series:
 
 @router.get("/road_safety")
 async def get_road_safety_scores():
-    df = pd.read_csv("../static_data/population.csv") # using static data before API integration to the DB
+    df = pd.read_csv(os.path.join(STATS_DIR, "population.csv")) # using static data before API integration to the DB
     df['weighted_points'] = (df['fatal'] * 15) + (df['severe'] * 8) + (df['light'] * 2) # weights for each severity
     df['ratio'] = (df['weighted_points'] / df['population_thousands']) * 100  #calculating accidents for 100,000 people
     df['score'] = 100 - (df['ratio'] * 2) # Calibration factoring
@@ -26,7 +33,7 @@ async def get_road_safety_scores():
 
 @router.get("/education")
 async def get_education_scores():
-    df = pd.read_csv("../static_data/Education_data.csv") # using static data before API integration to the DB
+    df = pd.read_csv(os.path.join(STATS_DIR, "Education_data.csv")) # using static data before API integration to the DB
     df = df.sort_values('year').ffill() # fill unknown values with the last known value (forward fill)
     
     # we prefer low values teacher students ratio
@@ -65,7 +72,7 @@ async def get_education_scores():
 
 @router.get("/health")
 async def get_health_scores():
-    df = pd.read_csv("../static_data/health.csv") # using static data before API integration to the DB    
+    df = pd.read_csv(os.path.join(STATS_DIR, "health.csv")) # using static data before API integration to the DB    
 
     df = df.sort_values(by=['year', 'month']).reset_index(drop=True)
     df = df.ffill()
@@ -127,7 +134,7 @@ async def get_health_scores():
 @router.get("/crime")
 async def get_crime_scores():
     
-    df = pd.read_csv("../static_data/crime_data.csv") # using static data before API integration to the DB
+    df = pd.read_csv(os.path.join(STATS_DIR, "crime_data.csv")) # using static data before API integration to the DB
     df = df.ffill().bfill()
 
     df['total_women_murder'] = (
@@ -170,7 +177,7 @@ async def get_crime_scores():
 
 @router.get("/analysis/{subject}")
 async def get_subject_trend_by_doctype(subject: str):
-    json_path = f'../static_data/analysis_{subject}.json'
+    json_path = os.path.join(STATS_DIR, f'analysis_{subject}.json')
     with open(json_path, encoding='utf-8') as f:
         analysis_data = json.load(f)
     
