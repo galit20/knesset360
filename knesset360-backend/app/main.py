@@ -310,7 +310,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import timeline, trends, scores
 from psycopg2.extras import RealDictCursor
-from db import get_db_connection
+from app.db import get_db_connection
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
