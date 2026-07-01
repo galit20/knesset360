@@ -25,7 +25,7 @@ const imageMap = {
     'crime':        crimeImg
 };
 
-const API_ADDR = "http://localhost:8000"
+const API_ADDR = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
 const KNESSETS = {
     "20": {start: "2015-03-31", end: "2019-04-29"},
