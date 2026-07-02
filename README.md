@@ -14,7 +14,9 @@ The platform is fully deployed and accessible at:
 **[https://knesset360.vercel.app](https://knesset360.vercel.app)**
 
 No installation or local setup is needed to view the project — everything runs in the cloud.
-Disclaimer: App might take time to load and fetch data
+
+> **Note:** The app may take a few seconds to load on first visit as the backend wakes from sleep.
+
 ---
 
 ## What is Knesset360?
@@ -31,7 +33,11 @@ The project covers Knessets 20–25 (2015 to present) and presents hundreds of t
 Overview of the project, key facts, a countdown to the next election, and entry points to the four analysis topics: Health, Education, Crime, and Road Safety.
 
 ### Timeline
-An interactive timeline displaying data trends by topic alongside significant Knesset events. Users can filter by topic and see how legislation and social reality correlate over time.
+An interactive timeline that correlates parliamentary activity with real-world social indicators across four domains:
+- **Topic filtering** — switch between Health, Education, Crime, and Road Safety; each topic loads its own dataset and visualizations
+- **Dual-axis charts** — overlay Knesset legislation volume with external indicators (e.g. hospital wait times, crime rates, road fatality counts) to surface correlations over time
+- **Historical event markers** — key Knesset milestones (elections, wars, government formations) are pinned on the timeline so trends can be interpreted in political context
+- **Data sourced from multiple agencies** — CBS, Ministry of Health, Ministry of Education, Israel Police, and Data.gov.il, all normalized and aligned to the same time axis
 
 ### Factions
 An in-depth analysis of parliamentary factions:
@@ -61,20 +67,22 @@ Project description, data sources, tech stack, and the data processing pipeline.
 ┌─────────────────────┐        ┌─────────────────────┐
 │   React Frontend    │◄──────►│   FastAPI Backend   │
 │   (Vite, Recharts)  │  HTTP  │   (Python, uvicorn) │
+│      Vercel         │        │       Render        │
 └─────────────────────┘        └──────────┬──────────┘
                                           │
                                ┌──────────▼───────────┐
                                │  PostgreSQL Database │
+                               │        Neon          │
                                │  (20 tables, 1M+     │
-                               │   records)           │
+                               │      records)        │
                                └──────────────────────┘
                                           │
                                ┌──────────▼───────────┐
-                               │    ElasticSearch     │
-                               │       Database       │
-                               │    MKs Committees &  │
-                               │    Plenums records   │
-                               │        (5GB)         │
+                               │    Elasticsearch     │
+                               │    Elastic Cloud     │
+                               │  MKs, Committees &   │
+                               │  Plenums records     │
+                               │       (5GB)          │
                                └──────────────────────┘
 ```
 
@@ -95,11 +103,33 @@ Project description, data sources, tech stack, and the data processing pipeline.
 | Source | Content |
 |---|---|
 | Knesset OData API | Bills, votes, committees, MKs, factions |
-| CBS (Central Bureau of Statistics) | Health, education, crime,population data |
+| CBS (Central Bureau of Statistics) | Health, education, crime, population data |
 | Ministry of Health | Public health indicators |
 | Ministry of Education | Budgets and education metrics |
 | Israel Police | Crime and road safety statistics |
-| Data Gov | Crime and road safety statistics |
+| Data.gov.il | Crime and road safety statistics |
+
+---
+
+## Deployment & Infrastructure
+
+The project is fully deployed using cloud-managed services with zero local dependencies.
+
+| Layer | Service | Details |
+|---|---|---|
+| **Frontend** | [Vercel](https://vercel.com) | React/Vite app, auto-deployed from GitHub on every push. Global CDN, zero-config HTTPS. |
+| **Backend** | [Render](https://render.com) | FastAPI Python server running on a free-tier web service. Spins up on request. |
+| **Database** | [Neon](https://neon.tech) | Serverless PostgreSQL. Hosts all 20 relational tables with 1M+ records. Scales automatically. |
+| **Search** | [Elastic Cloud](https://cloud.elastic.co) | Managed Elasticsearch cluster (~5GB) indexing MK speeches, committee sessions, and plenum records for full-text search. |
+
+### Deployment Flow
+```
+GitHub push
+    └─► Vercel (frontend auto-build)
+    └─► Render (backend, manual or auto-deploy)
+             └─► Neon PostgreSQL  (always-on serverless DB)
+             └─► Elastic Cloud    (managed search cluster)
+```
 
 ---
 
@@ -133,7 +163,7 @@ Import data from the SQL file:
 ```bash
 psql -U postgres -d knesset360 -f db-files/whole_knesset_db.sql
 ```
-Please Contact Us for the SQL file if needed.
+> Please contact us for the SQL file if needed.
 
 ---
 
