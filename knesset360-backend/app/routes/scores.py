@@ -28,7 +28,13 @@ async def get_road_safety_scores():
     df['ratio'] = (df['weighted_points'] / df['population_thousands']) * 100  #calculating accidents for 100,000 people
     df['score'] = 100 - (df['ratio'] * 2) # Calibration factoring
     df['score'] = df['score'].clip(0, 100).round(2) # change to this later maybe (100 - df['score'].clip(0, 100)).round(2)
-    return df[['year', 'month', 'score', 'fatal', 'severe', 'light']].to_dict(orient="records")
+
+    df['breakdown'] = df.apply(lambda row: {
+        "קטלניות": row['fatal'],
+        "קשות": row['severe'],
+        "קלות": row['light'],
+    }, axis=1)
+    return df[['year', 'month', 'score', 'breakdown']].to_dict(orient="records")
 
 
 @router.get("/education")
@@ -67,7 +73,15 @@ async def get_education_scores():
     df['score'] = (infra_score * 0.3) + (teachers_score * 0.3) + (success_score * 0.4)
     df['score'] = (df['score'] - 20).round(1)
 
-    return df[['year', 'month', 'score', 'bargut_eligibility', 'Dropout_rate_country']].to_dict(orient="records") # return to react
+
+    df['breakdown'] = df.apply(lambda row: {
+        "ממוצע תלמידים בכיתה-גנים": round(row['K-avg_students_per_class'], 1),
+        'ממוצע תלמידים בכיתה-בתיה"ס': round(row['S-avg_students_per_class'], 1),
+        "זכאות לבגרות": f"{round(row['bargut_eligibility'], 1)}%",
+        "נשירה מלימודים ארצי": f"{round(row['Dropout_rate_country'], 1)}%"
+    }, axis=1)
+
+    return df[['year', 'month', 'score', 'breakdown']].to_dict(orient="records") # return to react
 
 
 @router.get("/health")
@@ -85,7 +99,6 @@ async def get_health_scores():
 
     total_beds = (df['hospital_beds_general_1000'] + df['hospital_beds_psychic_1000'] + 
                   df['hospital_beds_geriatric_1000'] + df['hospital_beds_rehab_1000'])
-    
     total_interns = (df['interns_israel_grad'] + df['interns_abroad_official'] + 
                      df['interns_aboard_unofficial'])
 
@@ -126,8 +139,16 @@ async def get_health_scores():
     )
     df['score'] = (df['score'] - 20).round(1)
 
+    df['breakdown'] = df.apply(lambda row: {
+        "תחושת דיכאון בקרב בני 20+": round(row['depression_feel_20year_up'], 1),
+        'רופאים ל1000 איש': round(row['doctors_per_1000'], 1),
+        "אחיות ל1000 איש": round(row['nurses_per_1000'], 1),
+        "תת משקל ילדים כיתה ז": f"{round(row['underweight_seventh_grade'], 1)}%",
+        "עודף משקל ילדים כיתה ז": f"{round(row['overweight_seventh_grade'], 1)}%",
+        "אמינות במערכת הבריאות": f"{round(row['trust_health_system_percent'], 1)}%",
+    }, axis=1)
     # return to react chart
-    return df[['year', 'month', 'score', 'birth_death_rate_1000', 'smoking_adults', 'doctors_per_1000']].to_dict(orient="records")
+    return df[['year', 'month', 'score', 'breakdown']].to_dict(orient="records")
 
 
 
@@ -171,7 +192,17 @@ async def get_crime_scores():
     )
     df['score'] = ((df['score'] / 100) * 60).round(1)
 
-    return df[['year', 'month', 'score']].to_dict(orient="records")
+    df['breakdown'] = df.apply(lambda row: {
+        "שיעור עבירות ל־1,000 תושבים": round(row['crime_rate_cases_1000'], 1),
+        "עבירות ביטחון": row['Security_Offenses'],
+        "עבירות נגד אדם": row['Offenses_Against_the_Body'],
+        "עבירות מין": row['Sexual_Offenses'],
+        "תחושת ביטחון בהליכה לבד בלילה (גברים)": f"{round(row['safe_feel_walk_alone_atnight_neighberhood_man'], 1)}%",
+        'תחושת ביטחון בהליכה לבד בלילה (נשים)': f"{round(row['safe_feel_walk_alone_atnight_neighberhood_woman'], 1)}%",
+        'רצח נשים': row['total_women_murder']
+    }, axis=1)
+
+    return df[['year', 'month', 'score', 'breakdown']].to_dict(orient="records")
 
 
 
