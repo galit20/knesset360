@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Refere
 import MkAvatar from '../components/MkAvatar'
 import './Dashboard.css'
 
-const API = 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const KNESSETS = [20, 21, 22, 23, 24, 25]
 
 // Hardcoded historical/security events to mark on the timeline as dashed
@@ -63,7 +63,6 @@ const FACTION_COLORS = [
 function MonthTick({ x, y, payload }) {
   const label = payload?.value || '';
   const isJan = label.startsWith('1/');
-  const year = isJan ? label.split('/')[1] : null;
 
   return (
     <g transform={`translate(${x},${y})`}>
@@ -76,17 +75,6 @@ function MonthTick({ x, y, payload }) {
       >
         {label}
       </text>
-      {year && (
-        <text
-          x={0} y={0} dy={20}
-          textAnchor="middle"
-          fontSize={8}
-          fill="#888"
-          fontWeight={600}
-        >
-          {year}
-        </text>
-      )}
     </g>
   );
 }
@@ -119,6 +107,46 @@ function formatWeekDate(iso) {
   return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
+const FACTION_NAME_OVERRIDES = {
+  'חדש-תעל': 'חד"ש-תע"ל',
+  'רעם': 'רע"מ',
+  'שס': 'ש"ס',
+  'כחול לבן - המחנה הממלכתי': 'כחול לבן',
+  'הציונות הדתית (נסגרה)': 'הציונות הדתית',
+  'התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצל': 'ש"ס',
+  'עוצמה יהודית בראשות איתמר בן גביר': 'עוצמה יהודית',
+  'הציונות הדתית בראשות בצלאל סמוטריץ\'': 'הציונות הדתית',
+  'הליכוד בהנהגת בנימין נתניהו לראשות הממשלה': 'הליכוד',
+  'ימינה בראשות נפתלי בנט': 'ימינה',
+  'יהדות התורה והשבת - אגודת ישראל דגל התורה': 'יהדות התורה',
+  'הרשימה הערבית המאוחדת': 'רע"מ',
+  'כחול לבן בראשות בנימין גנץ': 'כחול לבן',
+  'הרשימה המשותפת חדש, רעמ, תעל, בלד': 'הרשימה המשותפת',
+  'יהדות התורה והשבת אגודת ישראל - דגל התורה': 'יהדות התורה',
+  'ישראל ביתנו בראשות אביגדור ליברמן': 'ישראל ביתנו',
+  'הרשימה המשותפת חדש, רעם, תעל, בלד': 'הרשימה המשותפת',
+  'ימינה בראשות איילת שקד הבית היהודי – האיחוד הלאומי – הימין החדש': 'ימינה',
+  'חדש תעל בראשות איימן עודה ואחמד טיבי': 'חד"ש תע"ל',
+  'הבית היהודי - האיחוד הלאומי': 'ימינה',
+  'כולנו בראשות משה כחלון': 'כולנו',
+  'רעם - בלד - הרשימה הערבית המאוחדת ברית לאומית דמוקרטית': 'רע"מ - בל"ד',
+  'הבית היהודי בראשות נפתלי בנט': 'הבית היהודי',
+  'תקווה חדשה - אחדות לישראל': 'תקווה חדשה',
+  'נעם - בראשות חהכ אבי מעוז': 'נעם',
+  'נעם - בראשות אבי מעוז': 'נעם',
+  'תלם - תנועה לאומית ממלכתית': 'תלם',
+  'תעל – בראשות אחמד טיבי': 'תע"ל',
+}
+
+function normalizeFactionName(name) {
+  if (!name) return name
+  const trimmed = name.trim()
+  for (const [key, display] of Object.entries(FACTION_NAME_OVERRIDES)) {
+    if (trimmed.includes(key)) return display
+  }
+  return trimmed
+}
+
 export default function Dashboard() {
   const [selectedKnesset, setSelectedKnesset] = useState(25)
   const [stats, setStats] = useState(null)
@@ -129,6 +157,19 @@ export default function Dashboard() {
   const [calendarData, setCalendarData] = useState([])
   const [calMonth, setCalMonth] = useState(new Date().getMonth() + 1)
   const [calYear, setCalYear] = useState(new Date().getFullYear())
+
+  useEffect(() => {
+    fetch(`${API}/api/dashboard/latest-committee-date`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.latest_date) {
+          const d = new Date(data.latest_date)
+          setCalYear(d.getFullYear())
+          setCalMonth(d.getMonth() + 1)
+        }
+      })
+      .catch(() => {})
+  }, [])
   const [loading, setLoading] = useState(true)
   const [weekSummary, setWeekSummary] = useState(null)
 
@@ -171,7 +212,7 @@ export default function Dashboard() {
   const firstDay = new Date(calYear, calMonth - 1, 1).getDay()
   const daysInMonth = new Date(calYear, calMonth, 0).getDate()
 
-  // Build day → [committee names] map for tooltips
+  // Build day → [committee names] map for tooltips (top 3 + count of rest)
   const dayCommittees = {}
   for (const d of calendarData) {
     const day = new Date(d.session_date).getDate()
@@ -190,8 +231,8 @@ export default function Dashboard() {
   const prevMonth = () => { if (calMonth === 1) { setCalMonth(12); setCalYear(y => y - 1) } else setCalMonth(m => m - 1) }
   const nextMonth = () => { if (calMonth === 12) { setCalMonth(1); setCalYear(y => y + 1) } else setCalMonth(m => m + 1) }
 
-  // Year range for dropdown: 2015 to current year + 1
-  const calYears = Array.from({ length: new Date().getFullYear() - 2014 + 2 }, (_, i) => 2015 + i)
+  // Year range for dropdown: 2015 to 2027
+  const calYears = Array.from({ length: 2027 - 2015 + 1 }, (_, i) => 2015 + i)
 
   const sortedFactions = [...factions].sort((a, b) => b.seats - a.seats)
   const maxSeats = sortedFactions[0]?.seats || 1
@@ -228,7 +269,7 @@ export default function Dashboard() {
                 </div>
                 <div className="dash-week-cell dash-week-cell-purple">
                   <div className="dash-week-value">{weekSummary.committee_sessions}</div>
-                  <div className="dash-week-label">ישיבות וועדות</div>
+                  <div className="dash-week-label">ישיבות ועדות</div>
                 </div>
                 <div className="dash-week-cell dash-week-cell-green">
                   <div className="dash-week-value">{weekSummary.bills?.passed ?? 0}</div>
@@ -272,6 +313,7 @@ export default function Dashboard() {
                       <div key={m.personid} className="dash-week-mk-card">
                         <MkAvatar id={m.personid} name={`${m.firstname} ${m.lastname}`} size={48} />
                         <div className="dash-week-mk-name">{m.firstname} {m.lastname}</div>
+                        {m.faction_name && <div className="dash-week-mk-faction">{normalizeFactionName(m.faction_name)}</div>}
                         <div className="dash-week-mk-count">{m.bill_count} הצעות</div>
                       </div>
                     ))}
@@ -331,7 +373,7 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-widget">
-              <div className="dash-widget-title">וועדות פעילות</div>
+              <div className="dash-widget-title">ועדות פעילות</div>
               <div className="dash-committees">
                 {hotCommittees.map((c) => (
                   <div key={c.name} className="dash-committee-row">
@@ -363,7 +405,7 @@ export default function Dashboard() {
             </div>
 
             <div className="dash-widget">
-              <div className="dash-widget-title">לוח וועדות</div>
+              <div className="dash-widget-title">לוח ועדות</div>
               <div className="dash-cal-nav-row">
                 <button className="dash-cal-nav" onClick={prevMonth}>›</button>
                 <div className="dash-cal-selectors">
@@ -390,7 +432,8 @@ export default function Dashboard() {
                         <>
                           <span className="dash-cal-dot" />
                           <div className="dash-cal-tooltip">
-                            {committees.map((c, i) => <div key={i} className="dash-cal-tooltip-row">• {c}</div>)}
+                            {committees.slice(0, 3).map((c, i) => <div key={i} className="dash-cal-tooltip-row">• {c}</div>)}
+                            {committees.length > 3 && <div className="dash-cal-tooltip-row" style={{opacity:0.6}}>+{committees.length - 3} נוספות</div>}
                           </div>
                         </>
                       )}

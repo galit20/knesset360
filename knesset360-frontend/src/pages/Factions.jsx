@@ -549,6 +549,8 @@ import { useState, useEffect } from 'react';
 import MkAvatar from '../components/MkAvatar';
 import './Factions.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
 
 // Display-only formatting overrides. These do NOT affect any DB matching/queries
@@ -560,6 +562,36 @@ const DISPLAY_NAME_OVERRIDES = {
   'שס': 'ש"ס',
   'כחול לבן - המחנה הממלכתי': 'כחול לבן',
   'הציונות הדתית (נסגרה)': 'הציונות הדתית',
+  // כנסת 25
+  'התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצל': 'ש"ס',
+  'עוצמה יהודית בראשות איתמר בן גביר': 'עוצמה יהודית',
+  'הציונות הדתית בראשות בצלאל סמוטריץ\'': 'הציונות הדתית',
+  // כנסת 24
+  'הליכוד בהנהגת בנימין נתניהו לראשות הממשלה': 'הליכוד',
+  'ימינה בראשות נפתלי בנט': 'ימינה',
+  'יהדות התורה והשבת - אגודת ישראל דגל התורה': 'יהדות התורה',
+  'הרשימה הערבית המאוחדת': 'רע"מ',
+  'תקווה חדשה - אחדות לישראל': 'תקווה חדשה',
+  'נעם - בראשות חהכ אבי מעוז': 'נעם',
+  // כנסת 23
+  'כחול לבן בראשות בנימין גנץ': 'כחול לבן',
+  'הרשימה המשותפת חדש, רעמ, תעל, בלד': 'הרשימה המשותפת (חד"ש, רע"מ, תע"ל, בל"ד)',
+  'יהדות התורה והשבת אגודת ישראל - דגל התורה': 'יהדות התורה',
+  'ישראל ביתנו בראשות אביגדור ליברמן': 'ישראל ביתנו',
+  'תלם - תנועה לאומית ממלכתית': 'תלם',
+  // כנסת 22
+  'הרשימה המשותפת חדש, רעם, תעל, בלד': 'הרשימה המשותפת (חד"ש, רע"מ, תע"ל, בל"ד)',
+  'ימינה בראשות איילת שקד הבית היהודי – האיחוד הלאומי – הימין החדש': 'ימינה',
+  // כנסת 21
+  'חדש תעל בראשות איימן עודה ואחמד טיבי': 'חד"ש תע"ל',
+  'הבית היהודי - האיחוד הלאומי': 'ימינה',
+  'כולנו בראשות משה כחלון': 'כולנו',
+  'רעם - בלד - הרשימה הערבית המאוחדת ברית לאומית דמוקרטית': 'רע"מ - בל"ד',
+  'נעם - בראשות אבי מעוז': 'נעם',
+  // כנסת 20
+  'הבית היהודי בראשות נפתלי בנט': 'הבית היהודי',
+  'כולנו בראשות משה כחלון': 'כולנו',
+  'תעל – בראשות אחמד טיבי': 'תע"ל',
 };
 
 const FACTION_LEADERS = {
@@ -594,10 +626,11 @@ const FACTION_LEADERS = {
 
 function getDisplayName(name) {
   if (!name) return name;
+  const trimmed = name.trim();
   for (const [key, display] of Object.entries(DISPLAY_NAME_OVERRIDES)) {
-    if (name.includes(key)) return name.replace(key, display);
+    if (trimmed.includes(key)) return trimmed.replace(key, display);
   }
-  return name;
+  return trimmed;
 }
 
 function getFactionLeader(factionName) {
@@ -613,7 +646,7 @@ const FACTION_LOGOS = {
   'הליכוד': '/faction-logos/likud.png',
   'כחול לבן': '/faction-logos/kahol_lavan.png',
   'יש עתיד': '/faction-logos/yesh_atid.png',
-  'המחנה הציוני': '/faction-logos/hamahane_hazioni.png',
+  'המחנה הציוני': '/faction-logos/hamahane_hazioni.jpg',
   'המחנה הדמוקרטי': '/faction-logos/hamahane_hademokrati.png',
   'המחנה הממלכתי': '/faction-logos/kahol_lavan.png',
   'הרשימה המשותפת': '/faction-logos/Joint_List.png',
@@ -805,8 +838,20 @@ function ParliamentChart({ factions, selectedFaction, onSelect, knessetNum }) {
 }
 
 
+function getLogoSrc(name) {
+  if (!name) return null;
+  const trimmed = name.trim();
+  const display = getDisplayName(trimmed);
+  if (FACTION_LOGOS[display]) return FACTION_LOGOS[display];
+  if (FACTION_LOGOS[trimmed]) return FACTION_LOGOS[trimmed];
+  for (const [key, src] of Object.entries(FACTION_LOGOS)) {
+    if (trimmed.includes(key) || display.includes(key)) return src;
+  }
+  return null;
+}
+
 function FactionBanner({ faction, color }) {
-  const logoSrc = FACTION_LOGOS[faction.name];
+  const logoSrc = getLogoSrc(faction.name);
   const bannerColor = color || '#1a3a8f';
 
   return (
@@ -1095,8 +1140,8 @@ export default function Factions() {
     setRebelsData(null);
     setError(null);
     const url = selectedKnesset === 'all'
-      ? 'http://localhost:8000/api/factions'
-      : `http://localhost:8000/api/factions?knesset=${selectedKnesset}`;
+      ? `${API_URL}/api/factions`
+      : `${API_URL}/api/factions?knesset=${selectedKnesset}`;
     fetch(url)
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -1120,22 +1165,22 @@ export default function Factions() {
     setRebelsData(null);
     const knessetParam = selectedKnesset === 'all' ? '' : `&knesset=${selectedKnesset}`;
 
-    fetch(`http://localhost:8000/api/faction-stats?faction_id=${selectedFaction.id}${knessetParam}`)
+    fetch(`${API_URL}/api/faction-stats?faction_id=${selectedFaction.id}${knessetParam}`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(data => { setStats(data); setLoading(false); })
       .catch(e => { console.error(e); setLoading(false); });
 
-    fetch(`http://localhost:8000/api/faction-topics?faction_id=${selectedFaction.id}${knessetParam}`)
+    fetch(`${API_URL}/api/faction-topics?faction_id=${selectedFaction.id}${knessetParam}`)
       .then(r => r.json())
       .then(setTopics)
       .catch(console.error);
 
-    fetch(`http://localhost:8000/api/faction-status?faction_id=${selectedFaction.id}${knessetParam}`)
+    fetch(`${API_URL}/api/faction-status?faction_id=${selectedFaction.id}${knessetParam}`)
       .then(r => r.json())
       .then(setStatusData)
       .catch(console.error);
 
-    fetch(`http://localhost:8000/api/faction-top-mks?faction_id=${selectedFaction.id}${knessetParam}`)
+    fetch(`${API_URL}/api/faction-top-mks?faction_id=${selectedFaction.id}${knessetParam}`)
       .then(r => r.json())
       .then(setTopMKs)
       .catch(console.error);
@@ -1147,12 +1192,12 @@ export default function Factions() {
     const knessetParam = selectedKnesset === 'all' ? '' : `&knesset=${selectedKnesset}`;
     const committeeParam = selectedTopic ? `&committee=${encodeURIComponent(selectedTopic)}` : '';
 
-    fetch(`http://localhost:8000/api/faction-status?faction_id=${selectedFaction.id}${knessetParam}${committeeParam}`)
+    fetch(`${API_URL}/api/faction-status?faction_id=${selectedFaction.id}${knessetParam}${committeeParam}`)
       .then(r => r.json())
       .then(setStatusData)
       .catch(console.error);
 
-    fetch(`http://localhost:8000/api/faction-top-mks?faction_id=${selectedFaction.id}${knessetParam}${committeeParam}`)
+    fetch(`${API_URL}/api/faction-top-mks?faction_id=${selectedFaction.id}${knessetParam}${committeeParam}`)
       .then(r => r.json())
       .then(setTopMKs)
       .catch(console.error);
@@ -1164,7 +1209,7 @@ export default function Factions() {
     setRebelsLoading(true);
     setRebelsData(null);
     setRebelsError(null);
-    fetch(`http://localhost:8000/api/faction-rebels?faction_id=${selectedFaction.id}&knesset=${selectedKnesset}`)
+    fetch(`${API_URL}/api/faction-rebels?faction_id=${selectedFaction.id}&knesset=${selectedKnesset}`)
       .then(async r => {
         if (!r.ok) {
           const body = await r.text();

@@ -315,6 +315,14 @@
   padding: 10px 6px;
   background: #f4f6fb;
   border-radius: 8px;
+  transition: filter 0.15s;
+}
+
+.dash-week-cell:hover { filter: brightness(0.96); }
+
+.dash-week-cell-active {
+  border-radius: 8px 8px 0 0 !important;
+  border-bottom: 2px solid currentColor;
 }
 
 .dash-week-cell-blue { background: #e6f1fb; }
@@ -336,6 +344,75 @@
 .dash-week-cell-red { background: #fcebeb; }
 .dash-week-cell-red .dash-week-value,
 .dash-week-cell-red .dash-week-label { color: #791f1f; }
+
+.dash-week-panel {
+  border-radius: 0 0 8px 8px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.dash-week-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px 6px;
+}
+
+.dash-week-panel-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-week-panel-item {
+  font-size: 12px;
+  padding: 8px 10px;
+  background: white;
+  border-radius: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dash-week-panel-item-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.dash-week-panel-item-date {
+  font-size: 11px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.dash-week-panel-item-sub {
+  font-size: 11px;
+  opacity: 0.75;
+  width: 100%;
+}
+
+.dash-week-panel-plenum  { background: #ddeefa; border: 0.5px solid #9ecbf0; }
+.dash-week-panel-plenum .dash-week-panel-title { color: #0c447c; }
+.dash-week-panel-plenum .dash-week-panel-item  { border: 0.5px solid #b5d4f4; color: #0c447c; }
+
+.dash-week-panel-committees  { background: #f0eefe; border: 0.5px solid #ccc8f0; }
+.dash-week-panel-committees .dash-week-panel-title { color: #3c3489; }
+.dash-week-panel-committees .dash-week-panel-item  { border: 0.5px solid #ded9f8; color: #3c3489; }
+
+.dash-week-panel-passed  { background: #e4f1d4; border: 0.5px solid #b8d98a; }
+.dash-week-panel-passed .dash-week-panel-title { color: #27500a; }
+.dash-week-panel-passed .dash-week-panel-item  { border: 0.5px solid #c0dd97; color: #27500a; }
+
+.dash-week-panel-in_process  { background: #faeeda; border: 0.5px solid #f4c87a; }
+.dash-week-panel-in_process .dash-week-panel-title { color: #633806; }
+.dash-week-panel-in_process .dash-week-panel-item  { border: 0.5px solid #fac775; color: #633806; }
+
+.dash-week-panel-failed  { background: #fce8e8; border: 0.5px solid #f5b0b0; }
+.dash-week-panel-failed .dash-week-panel-title { color: #791f1f; }
+.dash-week-panel-failed .dash-week-panel-item  { border: 0.5px solid #f7c1c1; color: #791f1f; }
 
 .dash-week-value {
   font-size: 22px;
@@ -428,6 +505,11 @@
   font-size: 13px;
   font-weight: 700;
   color: #1a2540;
+}
+
+.dash-week-mk-faction {
+  font-size: 11px;
+  color: #4f6aa0;
 }
 
 .dash-week-mk-count {

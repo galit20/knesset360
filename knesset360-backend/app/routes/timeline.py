@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from psycopg2.extras import RealDictCursor
-from db import get_db_connection
+from app.db import get_db_connection
 
 router = APIRouter(prefix="/api/timeline", tags=["Timeline"]) #define route
 
