@@ -601,16 +601,16 @@ def get_faction_rebels(faction_id: int, knesset: int):
 
         cursor.execute(base_cte + """
             , mk_rebel_counts AS (
-                SELECT mkid, COUNT(DISTINCT itemid) AS rebel_count
-                FROM rebel_votes
-                GROUP BY mkid
+                SELECT p.id AS personid,
+                       p.firstname || ' ' || p.lastname AS name,
+                       COUNT(DISTINCT rv.itemid) AS rebel_count
+                FROM rebel_votes rv
+                JOIN kns_person p ON p.id = rv.mkid
+                GROUP BY p.id, p.firstname, p.lastname
             )
-            SELECT p.id AS personid,
-                   p.firstname || ' ' || p.lastname AS name,
-                   rc.rebel_count
-            FROM mk_rebel_counts rc
-            JOIN kns_person p ON p.id = rc.mkid
-            ORDER BY rc.rebel_count DESC
+            SELECT personid, name, rebel_count
+            FROM mk_rebel_counts
+            ORDER BY rebel_count DESC
             LIMIT 3
         """, params)
         top_mks = cursor.fetchall()
