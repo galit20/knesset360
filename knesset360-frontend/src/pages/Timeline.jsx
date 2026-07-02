@@ -6,7 +6,7 @@ import StatusPieChart       from '../components/PieChartBill';
 import StatusBarChart       from '../components/BarChartBill';
 import TimelineImpactChart  from '../components/TimelineImpactChart';
 import TrendsChart          from '../components/trendCharts';
-import MKLeaderboards       from '../components/MKleaderboards';
+import MKLeaderboards       from '../components/MKLeaderboards';
 import LoadingSpinner       from '../components/LoadingSpinner';
 import AnalysisCards        from '../components/AnalysisCards';
 
@@ -25,7 +25,7 @@ const imageMap = {
     'crime':        crimeImg
 };
 
-const API_ADDR = "http://localhost:8000"
+const API_ADDR = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const KNESSET_OPTIONS = [20, 21, 22, 23, 24, 25];
 const KNESSETS = {
     "20": {start: "2015-03-31", end: "2019-04-29"},
