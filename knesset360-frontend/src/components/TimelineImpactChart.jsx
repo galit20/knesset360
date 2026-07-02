@@ -167,12 +167,21 @@ const MergedTooltip = ({ active, payload }) => {
                     {data.month}/{data.year}
                 </p>
                 <p style={{ color: '#4273de', margin: '3px 0' }}>
-                    ציון : <strong>{data.score}</strong>
+                    ציון: <strong>{data.score}</strong>
                 </p>
-                <hr style={{ border: '0.5px solid #eee' }} />
-                {/* <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>💀 קטלניות: {data.fatal}</p>
-                <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>🚑 קשות: {data.severe}</p>
-                <p style={{ fontSize: '0.9rem', margin: '3px 0' }}>🤕 קלות: {data.light}</p> */}
+                {data.breakdown && (
+                <>
+                    <hr style={{ border: '0.5px solid #e2e8f0', margin: '8px 0' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {Object.entries(data.breakdown).map(([key, value]) => (
+                            <p key={key} style={{ fontSize: '0.85rem', margin: '2px 0', color: '#475569' }}>
+                                🔹 {key}: <strong style={{ color: '#0f172a' }}>{value}</strong>
+                            </p>
+                        ))}
+                    </div>
+                </>
+            )}
+
             </div>
         );
     }
@@ -343,7 +352,7 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
             <div className="chart-main-frame">
                 <div className="big-chart-container">
                     <div className='chart-top-row'>
-                        <h2 className='title-content-side'>השפעת חקיקה על מדד הלאומי</h2>
+                        <h2 className='title-content-side'>השפעת חקיקה על המדד הלאומי</h2>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-start' }}>
                             <button
                                 className={`selector-btn ${statusFilter === null ? 'active' : ''}`}

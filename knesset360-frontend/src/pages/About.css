@@ -31,6 +31,7 @@
   box-sizing: border-box;
 }
 
+
 /* ════════════════════════════
    HERO SECTION
 ════════════════════════════ */
@@ -441,4 +442,51 @@
   .sources-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ════════════════════════════
+   VISION BACKGROUND WRAPPER (Hero + Who We Are + Goals)
+════════════════════════════ */
+.vision-background-wrapper {
+  position: relative;
+  width: 100%;
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed; /* יוצר אפקט Parallax */
+}
+
+/* המסכה ששומרת על התמונה בהירה ומאפשרת קריאה של הטקסט */
+.vision-background-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(248, 250, 252, 0.85); /* 85% לבן שקוף */
+  z-index: 1;
+}
+
+/* שולף את האלמנטים מעל המסכה, ומנקה רקע שהיה קודם ל-section */
+.transparent-section {
+  background: transparent !important;
+  position: relative;
+  z-index: 2;
+  border-bottom: none !important;
+}
+
+/* 🎨 אפקט "זכוכית חלבית" לכרטיסיות שיושבות על הרקע המשותף */
+.vision-card, .goal-card {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* איפוס של ה-hero-section כדי שלא יסתיר את רקע המעטפת הכללית */
+.about-hero {
+  position: relative;
+  width: 100%;
+  padding: 100px 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }

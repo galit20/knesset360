@@ -3,8 +3,7 @@ import Countdown from 'react-countdown';
 import buildingLogo from '../assets/building.svg';
 import innerRingLogo from '../assets/inner-ring.svg';
 import outerRingLogo from '../assets/outer-ring.svg';
-
-import backgroundImg from '/banners/knesset2.jpg'
+import backgroundImg from '/banners/background3.jpg'
 
 import './Home.css';
 
@@ -16,9 +15,9 @@ const TOPICS = [
     color: '#eff6ff',
     textColor: '#1e3a8a',
     accentColor: '#3b82f6',
-    stat: '150',
-    statLabel: 'מדדי בריאות לאורך 5 כנסות',
-    blurb: 'ניתוח תקציבי, זמני המתנה בפריפריה וחקיקה רפואית שפתחו את שערי המערכת.',
+    stat: '25%',
+    statLabel: 'עלייה יחסית בעשור האחרון בתחושת דיכאון בקרב בני 20 ומעלה',
+    blurb: 'מבוסס על נתוני: אמון במערכת הבריאות, מדדי קבילות, מיטות חולים, בריאות הנפש ועוד.',
     href: '/timeline/health',
   },
   {
@@ -28,9 +27,9 @@ const TOPICS = [
     color: '#fef2f2',
     textColor: '#991b1b',
     accentColor: '#ef4444',
-    stat: '150',
-    statLabel: 'נתון כלשהו בין השנים (2015-2025)',
-    blurb: 'סקירת חוקי ענישה, תקציבי שיטור ומדדי פשיעה בחברה הישראלית.',
+    stat: '67%',
+    statLabel: 'עלייה בעשור האחרון בעבירות נגד אדם ',
+    blurb: 'מבוסס על נתוני: סקירת פתיחת תיקים, תחושת ביטחון כללית ומדדי פשיעה בחברה הישראלית.',
     href: '/timeline/crime',
   },
   {
@@ -40,21 +39,21 @@ const TOPICS = [
     color: '#f0fdf4',
     textColor: '#166534',
     accentColor: '#22c55e',
-    stat: '92%',
-    statLabel: 'ממוצע השקעה פר תלמיד',
-    blurb: 'רפורמות בחינוך, חלוקת משאבים אופקית והשפעת חוקי יסוד על מערכת הלמידה.',
+    stat: '27',
+    statLabel: 'ממוצע תלמידים בכיתה',
+    blurb: 'מבוסס על נתוני: רפורמות בחינוך, זכאות לבגרות והשפעת חוקי יסוד על מערכת הלמידה.',
     href: '/timeline/education',
   },
   {
     id: 'road-safety',
-    label: 'בטיחות בדרכים ותשתיות',
+    label: 'בטיחות בדרכים',
     icon: '🛣️',
     color: '#fffbeb',
     textColor: '#92400e',
     accentColor: '#f59e0b',
-    stat: '-38%',
-    statLabel: 'שינוי בתאונות הדרכים',
-    blurb: 'הקצאות לתשתיות לאומיות, דיוני ועדות הכלכלה ומדדי אכיפה בכבישים.',
+    stat: '37%',
+    statLabel: 'עלייה במספר תאונות הדרכים הקטלניות בעשור האחרון',
+    blurb: 'מבוסס על נתוני: תאונות דרכים על פי סיווג רמות חומרה שונות.',
     href: '/timeline/road_safety',
   },
 ];
@@ -64,8 +63,7 @@ const FACTS = [
   '5 מחזורי בחירות רצופים נותחו והוזנו במסגרת הפרויקט',
   'עלייה במספר תאונות הדרכים הקטלניות לאורך עשור',
   '32 מפלגות שונות התמודדו באופן רשמי על מושבים בכנסת ה-25',
-  'ההוצאה הממשלתית לבריאות צמחה ב-61% לאורך תקופת המעקב',
-  'מדינת ישראל קיימה 5 מערכות בחירות סוערות בין 2019 ל-2022',
+  'מדינת ישראל קיימה 5 מערכות בחירות בין מ2015',
 ];
 
 const renderer = ({ days, hours, minutes, seconds, completed }) => {
@@ -183,7 +181,7 @@ export default function Home() {
 
   return (
     <div className="home-wrapper">
-      <div className="ticker-wrap" dir="rtl">
+      {/* <div className="ticker-wrap" dir="rtl">
         <div className="ticker-label">מבט מהיר למשכן</div>
         <div className="ticker-track">
           <div className="ticker-inner">
@@ -192,9 +190,18 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </div>
-
-      <section className="hero-section" style={{ backgroundImage: `url(${backgroundImg})` }}>
+      </div> */}
+    
+      <section className="hero-section" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div style={{ 
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundImage: `url(${backgroundImg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 1,
+          zIndex: 1
+        }}></div>
         <div className="hero-overlay"></div>
         
         <div className="hero-bg-grid" />
@@ -209,7 +216,6 @@ export default function Home() {
             </div>
             <Title />
           </div>
-          
 
           <p className="hero-tagline">
             עשור של נתונים, תובנות ומגמות על פעילות הכנסת והחלטות הממשלה
@@ -257,14 +263,14 @@ export default function Home() {
         <section className="callout-section">
           <div className="callout-inner">
             <p className="callout-eyebrow">היקף פרויקט הנתונים</p>
-            <h2 className="callout-heading">תשובות המבוססות על נתוני המקור<br />קבלו את התמונה המלאה.</h2>
+            <h2 className="callout-heading">תשובות המבוססות על נתוני המקור,<br />קבלו את התמונה המלאה.</h2>
             <p className="callout-body">
               עקבנו אחר כל הצעות החוקים, הצבעות מליאה ופרוטוקולי ועדות ומליאות החל מהכנסת ה-20 ועד היום, תוך הצלבה עם שינויים בשטח ומדדים אובייקטיביים.
             </p>
             <div className="callout-stats">
               <div className="callout-stat"><span>12+</span><small>מקורות מידע</small></div>
               <div className="callout-stat"><span>4</span><small>תחומי ליבה</small></div>
-              <div className="callout-stat"><span>5</span><small>תקופות כנסת</small></div>
+              <div className="callout-stat"><span>6</span><small>כנסות</small></div>
               <div className="callout-stat"><span>10+</span><small>שנות פעילות</small></div>
             </div>
           </div>
