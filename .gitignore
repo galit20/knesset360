@@ -10,7 +10,6 @@ db-schema.pgerd
 knesset360-backend/app/output.csv
 knesset360-backend/app/routes/__pycache__/
 knesset360-backend/app/__pycache__/
-knesset360-frontend/public/mk-photos/
 db-files/__pycache__/config.cpython-314.pyc
 knesset360-backend/app/ollama_check.py
 knesset360-backend/app/ollama_check2.py
