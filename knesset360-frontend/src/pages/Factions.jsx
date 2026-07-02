@@ -560,6 +560,36 @@ const DISPLAY_NAME_OVERRIDES = {
   'שס': 'ש"ס',
   'כחול לבן - המחנה הממלכתי': 'כחול לבן',
   'הציונות הדתית (נסגרה)': 'הציונות הדתית',
+  // כנסת 25
+  'התאחדות הספרדים שומרי תורה תנועתו של מרן הרב עובדיה יוסף זצל': 'ש"ס',
+  'עוצמה יהודית בראשות איתמר בן גביר': 'עוצמה יהודית',
+  'הציונות הדתית בראשות בצלאל סמוטריץ\'': 'הציונות הדתית',
+  // כנסת 24
+  'הליכוד בהנהגת בנימין נתניהו לראשות הממשלה': 'הליכוד',
+  'ימינה בראשות נפתלי בנט': 'ימינה',
+  'יהדות התורה והשבת - אגודת ישראל דגל התורה': 'יהדות התורה',
+  'הרשימה הערבית המאוחדת': 'רע"מ',
+  'תקווה חדשה - אחדות לישראל': 'תקווה חדשה',
+  'נעם - בראשות חהכ אבי מעוז': 'נעם',
+  // כנסת 23
+  'כחול לבן בראשות בנימין גנץ': 'כחול לבן',
+  'הרשימה המשותפת חדש, רעמ, תעל, בלד': 'הרשימה המשותפת (חד"ש, רע"מ, תע"ל, בל"ד)',
+  'יהדות התורה והשבת אגודת ישראל - דגל התורה': 'יהדות התורה',
+  'ישראל ביתנו בראשות אביגדור ליברמן': 'ישראל ביתנו',
+  'תלם - תנועה לאומית ממלכתית': 'תלם',
+  // כנסת 22
+  'הרשימה המשותפת חדש, רעם, תעל, בלד': 'הרשימה המשותפת (חד"ש, רע"מ, תע"ל, בל"ד)',
+  'ימינה בראשות איילת שקד הבית היהודי – האיחוד הלאומי – הימין החדש': 'ימינה',
+  // כנסת 21
+  'חדש תעל בראשות איימן עודה ואחמד טיבי': 'חד"ש תע"ל',
+  'הבית היהודי - האיחוד הלאומי': 'ימינה',
+  'כולנו בראשות משה כחלון': 'כולנו',
+  'רעם - בלד - הרשימה הערבית המאוחדת ברית לאומית דמוקרטית': 'רע"מ - בל"ד',
+  'נעם - בראשות אבי מעוז': 'נעם',
+  // כנסת 20
+  'הבית היהודי בראשות נפתלי בנט': 'הבית היהודי',
+  'כולנו בראשות משה כחלון': 'כולנו',
+  'תעל – בראשות אחמד טיבי': 'תע"ל',
 };
 
 const FACTION_LEADERS = {
@@ -594,10 +624,11 @@ const FACTION_LEADERS = {
 
 function getDisplayName(name) {
   if (!name) return name;
+  const trimmed = name.trim();
   for (const [key, display] of Object.entries(DISPLAY_NAME_OVERRIDES)) {
-    if (name.includes(key)) return name.replace(key, display);
+    if (trimmed.includes(key)) return trimmed.replace(key, display);
   }
-  return name;
+  return trimmed;
 }
 
 function getFactionLeader(factionName) {
@@ -613,7 +644,7 @@ const FACTION_LOGOS = {
   'הליכוד': '/faction-logos/likud.png',
   'כחול לבן': '/faction-logos/kahol_lavan.png',
   'יש עתיד': '/faction-logos/yesh_atid.png',
-  'המחנה הציוני': '/faction-logos/hamahane_hazioni.png',
+  'המחנה הציוני': '/faction-logos/hamahane_hazioni.jpg',
   'המחנה הדמוקרטי': '/faction-logos/hamahane_hademokrati.png',
   'המחנה הממלכתי': '/faction-logos/kahol_lavan.png',
   'הרשימה המשותפת': '/faction-logos/Joint_List.png',
@@ -805,8 +836,20 @@ function ParliamentChart({ factions, selectedFaction, onSelect, knessetNum }) {
 }
 
 
+function getLogoSrc(name) {
+  if (!name) return null;
+  const trimmed = name.trim();
+  const display = getDisplayName(trimmed);
+  if (FACTION_LOGOS[display]) return FACTION_LOGOS[display];
+  if (FACTION_LOGOS[trimmed]) return FACTION_LOGOS[trimmed];
+  for (const [key, src] of Object.entries(FACTION_LOGOS)) {
+    if (trimmed.includes(key) || display.includes(key)) return src;
+  }
+  return null;
+}
+
 function FactionBanner({ faction, color }) {
-  const logoSrc = FACTION_LOGOS[faction.name];
+  const logoSrc = getLogoSrc(faction.name);
   const bannerColor = color || '#1a3a8f';
 
   return (

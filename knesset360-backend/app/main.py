@@ -1212,6 +1212,23 @@ def get_dashboard_factions(knesset: int = 25):
     return data
 
 
+@app.get("/api/dashboard/latest-committee-date")
+def get_latest_committee_date():
+    conn = get_db_connection()
+    if conn is None:
+        raise HTTPException(status_code=500, detail="DB connection failed")
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT MAX(startdate)::date AS latest_date FROM kns_committeesession")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return row
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/dashboard/committee-calendar")
 def get_committee_calendar(year: int = None, month: int = None, knesset: int = 25):
     from datetime import date
@@ -1232,10 +1249,9 @@ def get_committee_calendar(year: int = None, month: int = None, knesset: int = 2
             JOIN kns_committee c ON c.id = cs.committeeid
             WHERE EXTRACT(YEAR FROM cs.startdate) = %s
               AND EXTRACT(MONTH FROM cs.startdate) = %s
-              AND c.knessetnum = %s
             GROUP BY cs.startdate::date, c.name
             ORDER BY cs.startdate::date
-        """, (y, m, knesset))
+        """, (y, m))
         data = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -1308,7 +1324,44 @@ def get_last_week_summary():
         for row in bucket_rows:
             bill_status_counts[row["bucket"]] = row["count"]
 
-        # Active committees this week (top 5 by session count)
+        # Plenum sessions detail
+        cursor.execute(f"""
+            SELECT id, number, name, startdate::date AS date
+            FROM kns_plenumsession
+            WHERE startdate BETWEEN {week_start_param} AND %s
+            ORDER BY startdate
+        """, (week_end, week_end))
+        plenum_sessions_detail = cursor.fetchall()
+
+        # Committee sessions detail
+        cursor.execute(f"""
+            SELECT cs.id, c.name AS committee_name, cs.startdate::date AS date, cs.note
+            FROM kns_committeesession cs
+            JOIN kns_committee c ON c.id = cs.committeeid
+            WHERE cs.startdate BETWEEN {week_start_param} AND %s
+            ORDER BY cs.startdate
+        """, (week_end, week_end))
+        committee_sessions_detail = cursor.fetchall()
+
+        # Bills detail per bucket
+        cursor.execute(f"""
+            SELECT b.id, b.name,
+                CASE
+                    WHEN b.statusid = ANY(%s) THEN 'passed'
+                    WHEN b.statusid = ANY(%s) THEN 'failed'
+                    ELSE 'in_process'
+                END AS bucket,
+                b.lastupdateddate::date AS date,
+                s."Desc" AS status_desc
+            FROM kns_bill b
+            LEFT JOIN kns_status s ON s.id = b.statusid
+            WHERE b.lastupdateddate BETWEEN {week_start_param} AND %s
+            ORDER BY b.lastupdateddate DESC
+        """, (list(BILL_PASSED_STATUSES), list(BILL_FAILED_STATUSES), week_end, week_end))
+        bills_detail_rows = cursor.fetchall()
+        bills_detail = {'passed': [], 'failed': [], 'in_process': []}
+        for row in bills_detail_rows:
+            bills_detail[row['bucket']].append(row)
         cursor.execute(f"""
             SELECT c.name AS committee_name, COUNT(*) AS session_count
             FROM kns_committeesession cs
@@ -1322,7 +1375,10 @@ def get_last_week_summary():
 
         # Most active MKs (by bill-initiator count, among bills with a status change this week)
         cursor.execute(f"""
-            SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count
+            SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count,
+                (SELECT p2p.factionname FROM kns_persontoposition p2p
+                 WHERE p2p.personid = p.id AND p2p.factionname IS NOT NULL
+                 ORDER BY p2p.startdate DESC LIMIT 1) AS faction_name
             FROM kns_billinitiator bi
             JOIN kns_bill b ON b.id = bi.billid
             JOIN kns_person p ON p.id = bi.personid
@@ -1340,7 +1396,10 @@ def get_last_week_summary():
         # committee that held a session this week.
         if not top_mks:
             cursor.execute(f"""
-                SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count
+                SELECT p.id AS personid, p.firstname, p.lastname, COUNT(DISTINCT bi.billid) AS bill_count,
+                    (SELECT p2p.factionname FROM kns_persontoposition p2p
+                     WHERE p2p.personid = p.id AND p2p.factionname IS NOT NULL
+                     ORDER BY p2p.startdate DESC LIMIT 1) AS faction_name
                 FROM kns_committeesession cs
                 JOIN kns_bill b ON b.committeeid = cs.committeeid
                 JOIN kns_billinitiator bi ON bi.billid = b.id AND bi.isinitiator = true
@@ -1367,6 +1426,11 @@ def get_last_week_summary():
             },
             "active_committees": active_committees,
             "top_mks": top_mks,
+            "details": {
+                "plenum_sessions": plenum_sessions_detail,
+                "committee_sessions": committee_sessions_detail,
+                "bills": bills_detail,
+            },
         }
     except Exception as e:
         if conn: conn.close()
