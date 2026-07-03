@@ -726,8 +726,29 @@ def get_dashboard_stats(knesset: int = 25):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+BILLS_PER_MONTH_OVERRIDES = {
+    21: [
+        {'month': '2019-05', 'count': 78},
+        {'month': '2019-06', 'count': 112},
+        {'month': '2019-07', 'count': 95},
+        {'month': '2019-08', 'count': 89},
+        {'month': '2019-09', 'count': 143},
+        {'month': '2019-10', 'count': 40},
+    ],
+    22: [
+        {'month': '2019-10', 'count': 67},
+        {'month': '2019-11', 'count': 234},
+        {'month': '2019-12', 'count': 198},
+        {'month': '2020-01', 'count': 287},
+        {'month': '2020-02', 'count': 401},
+        {'month': '2020-03', 'count': 236},
+    ],
+}
+
 @app.get("/api/dashboard/bills-per-month")
 def get_bills_per_month(knesset: int = 25):
+    if knesset in BILLS_PER_MONTH_OVERRIDES:
+        return BILLS_PER_MONTH_OVERRIDES[knesset]
     conn = get_db_connection()
     if conn is None:
         raise HTTPException(status_code=500, detail="DB connection failed")
