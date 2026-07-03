@@ -873,10 +873,10 @@ function FactionBanner({ faction, color }) {
 
 function DonutChart({ statusData, selectedTopic, onClear }) {
   const total = statusData.reduce((sum, s) => sum + s.count, 0);
-  const radius = 60;
-  const cx = 80;
-  const cy = 80;
-  const strokeWidth = 22;
+  const radius = 85;
+  const cx = 110;
+  const cy = 110;
+  const strokeWidth = 28;
   let cumulative = 0;
 
   return (
@@ -898,7 +898,7 @@ function DonutChart({ statusData, selectedTopic, onClear }) {
         </div>
 
         <div className="donut-svg-wrap">
-          <svg width="160" height="160" viewBox="0 0 160 160">
+          <svg width="220" height="220" viewBox="0 0 220 220">
             {statusData.map((s, i) => {
               const pct = s.count / total;
               const circumference = 2 * Math.PI * radius;
