@@ -611,7 +611,6 @@ def get_faction_rebels(faction_id: int, knesset: int):
             SELECT personid, name, rebel_count
             FROM mk_rebel_counts
             ORDER BY rebel_count DESC
-            LIMIT 3
         """, params)
         top_mks = cursor.fetchall()
 
