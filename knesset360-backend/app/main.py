@@ -744,6 +744,15 @@ BILLS_PER_MONTH_OVERRIDES = {
     ],
 }
 
+KNESSETS = {
+    20: {"start": "2015-03-31", "end": "2019-04-29"},
+    21: {"start": "2019-04-30", "end": "2019-10-03"},
+    22: {"start": "2019-10-03", "end": "2020-03-16"},
+    23: {"start": "2020-03-16", "end": "2021-01-06"},
+    24: {"start": "2021-04-06", "end": "2022-11-14"},
+    25: {"start": "2022-11-15", "end": "2026-10-27"}
+}
+
 @app.get("/api/dashboard/bills-per-month")
 def get_bills_per_month(knesset: int = 25):
     if knesset in BILLS_PER_MONTH_OVERRIDES:
@@ -755,14 +764,31 @@ def get_bills_per_month(knesset: int = 25):
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("""
             SELECT
-                TO_CHAR(DATE_TRUNC('month', publicationdate), 'YYYY-MM') as month,
-                COUNT(*) as count
-            FROM kns_bill
-            WHERE knessetnum = %s
-              AND publicationdate IS NOT NULL
-            GROUP BY DATE_TRUNC('month', publicationdate)
-            ORDER BY DATE_TRUNC('month', publicationdate)
-        """, (knesset,))
+                TO_CHAR(DATE_TRUNC('month', publishdate), 'YYYY-MM') AS month,
+                COUNT(*) AS count
+            FROM (
+                SELECT
+                    LEAST(
+                        COALESCE(
+                            DATE_TRUNC('day', B.publicationdate),
+                            DATE_TRUNC('day', MIN(BI.lastupdateddate)),
+                            DATE_TRUNC('day', B.lastupdateddate)
+                        ),
+                        %s::date
+                    ) AS publishdate
+                FROM kns_bill AS B
+                LEFT JOIN kns_billinitiator AS BI
+                    ON BI.billid = B.id
+                WHERE B.knessetnum = %s
+                GROUP BY
+                    B.id,
+                    B.publicationdate,
+                    B.lastupdateddate
+            ) t
+            WHERE publishdate IS NOT NULL
+            GROUP BY DATE_TRUNC('month', publishdate)
+            ORDER BY DATE_TRUNC('month', publishdate)
+        """, (KNESSETS[knesset]["end"], knesset,))
         data = cursor.fetchall()
         cursor.close()
         conn.close()
