@@ -227,7 +227,7 @@ export default function Home() {
           </div>
 
           <div className="cta-button-group">
-            <a href="/dashboard" className="cta-btn secondary-btn">
+            <a href="/factions" className="cta-btn secondary-btn">
               לדף המפלגות
             </a>
             <a href="/dashboard" className="cta-btn primary-btn">
