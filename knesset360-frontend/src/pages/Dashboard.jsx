@@ -223,7 +223,35 @@ export default function Dashboard() {
   const totalBills = billStatus.reduce((a, b) => a + b.count, 0)
   const statusOrder = ['בתהליך', 'נעצרו', 'עברו', 'אחר']
   const statusColors = { 'בתהליך': '#2563eb', 'נעצרו': '#94a3b8', 'עברו': '#16a34a', 'אחר': '#888' }
-  const sortedStatus = [...billStatus].sort((a, b) => statusOrder.indexOf(a.status_group) - statusOrder.indexOf(b.status_group))
+
+  const displayStatus = selectedKnesset !== 25
+    ? billStatus.reduce((acc, s) => {
+        const group = s.status_group === 'בתהליך' ? 'נעצרו' : s.status_group
+        const existing = acc.find(x => x.status_group === group)
+        if (existing) existing.count += s.count
+        else acc.push({ ...s, status_group: group })
+        return acc
+      }, [])
+    : billStatus
+
+  const sortedStatus = [...displayStatus].sort((a, b) => statusOrder.indexOf(a.status_group) - statusOrder.indexOf(b.status_group))
+
+  // Compute percentages using largest-remainder method so they always sum to 100
+  const visibleStatus = sortedStatus.filter(s => s.status_group !== 'אחר')
+  const visibleTotal = visibleStatus.reduce((a, b) => a + b.count, 0)
+  const rawPcts = visibleStatus.map(s => ({ ...s, raw: visibleTotal ? (s.count / visibleTotal) * 100 : 0 }))
+  const floored = rawPcts.map(s => ({ ...s, pct: Math.floor(s.raw), rem: s.raw - Math.floor(s.raw) }))
+  const remainder = 100 - floored.reduce((a, b) => a + b.pct, 0)
+  const sorted_by_rem = [...floored].sort((a, b) => b.rem - a.rem)
+  sorted_by_rem.forEach((s, i) => { if (i < remainder) s.pct += 1 })
+  // Ensure no 0% values: bump each to 1 and subtract from the largest
+  sorted_by_rem.forEach(s => { if (s.pct === 0) s.pct = 1 })
+  const total_pct = sorted_by_rem.reduce((a, b) => a + b.pct, 0)
+  if (total_pct > 100) {
+    const largest = sorted_by_rem.reduce((a, b) => a.pct > b.pct ? a : b)
+    largest.pct -= (total_pct - 100)
+  }
+  const pctMap = Object.fromEntries(sorted_by_rem.map(s => [s.status_group, s.pct]))
 
   const DAY_LABELS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש']
   const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
@@ -394,10 +422,10 @@ export default function Dashboard() {
               <div className="dash-status-list">
                 {sortedStatus.filter(s => s.status_group !== 'אחר').map(s => (
                   <div key={s.status_group} className="dash-status-row">
-                    <span className="dash-status-pct">{totalBills ? Math.round((s.count / totalBills) * 100) : 0}%</span>
+                    <span className="dash-status-pct">{pctMap[s.status_group] ?? 0}%</span>
                     <span className="dash-status-label">{s.status_group}</span>
                     <div className="dash-status-bar-bg">
-                      <div className="dash-status-bar-fill" style={{ width: `${totalBills ? (s.count / totalBills) * 100 : 0}%`, background: statusColors[s.status_group] }} />
+                      <div className="dash-status-bar-fill" style={{ width: `${pctMap[s.status_group] ?? 0}%`, background: statusColors[s.status_group] }} />
                     </div>
                   </div>
                 ))}
