@@ -14,6 +14,7 @@ import { useMemo, useEffect, useState } from 'react';
 
 import './ChartUI.css'
 import './TimelineImpactChart.css'
+import InfoTooltip  from '../components/InfoTooltip';
 
 import { STATUS_COLORS, STATUS_DESC, STATUS_COLORS_SHORT, getShortStatus, BILL_TYPE_CONFIG, isRejectedStatus, getActiveStepIndex, POSTPONEMENT_DESC } from '../utils/billStatus'
 
@@ -352,7 +353,18 @@ export default function TimelineImpactChart({ billsData, scoreData, knessetNumbe
             <div className="chart-main-frame">
                 <div className="big-chart-container">
                     <div className='chart-top-row'>
-                        <h2 className='title-content-side'>השפעת חקיקה על המדד הלאומי</h2>
+                        <h2 className='title-content-side'>השפעת חקיקה על המדד הלאומי  
+                            <InfoTooltip 
+                                text={
+                                    <div style={{ textAlign: 'right', direction: 'rtl' }}>
+                                        <strong>כיצד לקרוא את הגרף?</strong><br/><br/>
+                                        <strong>• מדד לאומי (הקו):</strong> ציון משוקלל המבוסס על נתונים אובייקטיביים. ציון גבוה = מצב טוב יותר.<br/>
+                                        <strong>• הצעות חוק (הנקודות):</strong> מייצגות כמות הצעות בחודש. ככל שהנקודה ירוקה יותר, כך יותר הצעות מאותו חודש עברו בהצלחה. אדום/צהוב מעיד על עצירה או תהליך <br/>
+                                        <strong>• ציר הזמן:</strong> הקווים האנכיים מחלקים את הנתונים לפי כנסות ואירועי מפתח.
+                                    </div>
+                                } 
+                            />
+                        </h2>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-start' }}>
                             <button
                                 className={`selector-btn ${statusFilter === null ? 'active' : ''}`}

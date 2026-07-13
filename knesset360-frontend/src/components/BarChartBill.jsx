@@ -9,14 +9,15 @@ import {
 } from 'recharts';
 
 import './ChartUI.css'
+import InfoTooltip          from '../components/InfoTooltip';
 
 import { STATUS_COLORS_SHORT } from '../utils/billStatus'
 
 
-export default function StatusBarChart ({ barData, title, onSliceClick }) {
+export default function StatusBarChart ({ barData, title, onSliceClick, infoText}) {
     return (
         <div className="chart-container">
-            <h2 className="title-content"> {title} </h2>
+            <h2 className="title-content"> {title} <InfoTooltip text={infoText} /></h2>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />

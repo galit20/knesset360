@@ -7,6 +7,8 @@ import {
     Tooltip 
 } from 'recharts';
 
+import InfoTooltip          from '../components/InfoTooltip';
+
 import './ChartUI.css'
 
 // Custom Recharts Legend for Hebrew (RTL) alignment
@@ -38,10 +40,10 @@ const renderHebrewLegend = (props) => {
 };
 
 
-export default function StatusPieChart ({ pieData, total, title, onSliceClick }) {
+export default function StatusPieChart ({ pieData, total, title, onSliceClick, infoText }) {
     return (
         <div className="chart-container">
-            <h2 className="title-content"> {title} </h2>
+            <h2 className="title-content"> {title} <InfoTooltip text={infoText} /></h2>
             <div style={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>

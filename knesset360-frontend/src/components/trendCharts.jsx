@@ -9,13 +9,15 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+import InfoTooltip   from '../components/InfoTooltip';
+
 import './ChartUI.css'
 
 
-export default function trendCharts ({ quotesData, title }) {
+export default function trendCharts ({ quotesData, title, infoText }) {
     return (
         <div className="chart-container">
-            <h2>{title}</h2>
+            <h2>{title} <InfoTooltip text={infoText} /></h2>
             <ResponsiveContainer width="100%" height="90%">
                 <LineChart data={quotesData} margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
                 <XAxis dataKey="name" stroke="#666" />
