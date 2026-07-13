@@ -56,25 +56,15 @@ async def get_subject_timeline(subject: str = "road-safety"):
                     DATE_TRUNC('day', B.lastupdateddate)
                 ) AS publishdate,
                 B.lastupdateddate,
-                
                 COALESCE(
-                    (
-                        SELECT json_agg(
-                            json_build_object(
-                                'id', unique_people.id,
-                                'name', unique_people.firstname || ' ' || unique_people.lastname
-                            )
+                    json_agg(
+                        json_build_object(
+                            'id', P.id,
+                            'name', P.firstname || ' ' || P.lastname
                         )
-                        FROM (
-                            SELECT DISTINCT P.id, P.firstname, P.lastname
-                            FROM kns_billinitiator AS BI2
-                            JOIN kns_person AS P ON P.id = BI2.personid
-                            WHERE BI2.billid = B.id
-                        ) unique_people
-                    ),
+                    ) FILTER (WHERE P.id IS NOT NULL),
                     '[]'::json
                 ) AS initiators_info,
-                
                 ROW_NUMBER() OVER (
                     PARTITION BY B.knessetnum
                     ORDER BY B.lastupdateddate ASC
@@ -82,11 +72,12 @@ async def get_subject_timeline(subject: str = "road-safety"):
             FROM kns_bill AS B
             LEFT JOIN kns_billinitiator AS BI 
                 ON BI.billid = B.id
+            LEFT JOIN kns_person AS P 
+                ON P.id = BI.personid
+            JOIN kns_status AS S 
+                ON S.id = B.statusid
             WHERE B.name LIKE ANY (%s)
             AND B.knessetnum > 19
-            AND EXISTS (
-                SELECT 1 FROM kns_status AS S WHERE S.id = B.statusid
-            )
             GROUP BY
                 B.id,
                 B.knessetnum,
