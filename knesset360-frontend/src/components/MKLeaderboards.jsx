@@ -1,4 +1,6 @@
 import './InitiatorCard.css';
+import InfoTooltip  from '../components/InfoTooltip';
+
 import userSvg from '../assets/user.svg';
 
 import { getMkNameByID } from '../utils/mkId';
@@ -7,7 +9,7 @@ const handleError = (e) => {
     e.target.src = userSvg;
 };
 
-export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect, title, countText}) {
+export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect, title, countText, infoText}) {
     // Dynamically calculate the maximum count to calibrate the 100% chart width bar
     const maxCount = mks.length > 0 ? Math.max(...mks.map(m => m.count)) : 1;
 
@@ -25,6 +27,7 @@ export default function MKLeaderboardChart({ mks = [], selectedMkId, onMkSelect,
         }}>
             <h3 style={{ marginBottom: '20px', color: '#2c3e50', fontSize: '18px', fontWeight: 'bold' }}>
                 {title}
+                <InfoTooltip text={infoText}/>
             </h3>
 
             {/* Injecting scrollbar styles directly so you don't need a separate CSS file */}

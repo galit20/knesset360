@@ -317,11 +317,30 @@ export default function TimelinePage() {
                     <>
                         <TimelineImpactChart billsData={filteredBillsData} scoreData={filteredScores} knessetNumber={selectedKnesset}/>
                         <AnalysisCards analysis={textAnalysis} />
-
+                        
                         <div className="box-chart-container">
-                            <StatusPieChart pieData={statusPieData} total={totalBills} title="התפלגות סטטוס הצעות חוק" />
-                            <StatusBarChart barData={barData} title="התפלגות הצעות חוק על פי כנסות" />
-                            <StatusPieChart pieData={stoppedPieData} total={stoppedPieData.reduce((acc, curr) => acc + curr.value, 0)} title="התפלגות סיבות הצעות חוק שנעצרו" />
+                            <StatusPieChart
+                                pieData={statusPieData}
+                                total={totalBills}
+                                title="התפלגות סטטוס הצעות חוק"
+                                infoText={`מוצגת התפלגות כללית של הצעות החוק מהכנסת ה־20 ועד היום.
+                                            עבר – הצעות חוק שהתקבלו בקריאה שנייה ושלישית והפכו לחוק.
+                                            נעצר – הצעות חוק שהליך החקיקה שלהן הופסק מסיבות שונות, או הצעות חוק מכנסות קודמות שלא הושלמו ולא קודמו.
+                                            בתהליך – הצעות חוק הנמצאות כיום בהליך חקיקה בכנסת הנוכחית.`}
+                            />
+
+                            <StatusBarChart
+                                barData={barData}
+                                title="התפלגות הצעות חוק על פי כנסות"
+                                infoText="מוצגת התפלגות הצעות החוק לפי כנסת. הצעות חוק שהיו בתהליך בכנסות קודמות ולא קודמו עד לסיום כהונת הכנסת מסווגות כהצעות חוק שנעצרו."
+                            />
+
+                            <StatusPieChart
+                                pieData={stoppedPieData}
+                                total={stoppedPieData.reduce((acc, curr) => acc + curr.value, 0)}
+                                title="התפלגות סיבות הצעות חוק שנעצרו"
+                                infoText="מוצגת התפלגות הסיבות לעצירת הצעות חוק. הגרף כולל רק הצעות חוק שנעצרו עקב אחת מהסיבות המוצגות, ואינו כולל הצעות חוק שלא קודמו משום שהיו עדיין בתהליך חקיקה."
+                            />
                         </div>
                     </>
                 )}
@@ -337,8 +356,8 @@ export default function TimelinePage() {
                     />
                 ) : (
                     <div className="box-chart-container">
-                        <TrendsChart quotesData={filteredCommitteeData} title={"מדד עיסוק מרכזי בוועדות"}/>
-                        <TrendsChart quotesData={filteredPlenumData} title={"מדד עיסוק מרכזי במליאות"}/>
+                        <TrendsChart quotesData={filteredCommitteeData} title={"מדד עיסוק מרכזי בוועדות"} infoText="גרף זה מציג את מדד העיסוק המרכזי בוועדות על הנושא לאורך השנים. ערך גבוה יותר מעיד על עיסוק מוגבר של חברי הכנסת בנושא, המבוסס על דיבורים, אזכורים והתבטאויות."/>
+                        <TrendsChart quotesData={filteredPlenumData} title={"מדד עיסוק מרכזי במליאות"} infoText="גרף זה מציג את מדד העיסוק המרכזי במליאות על הנושא לאורך השנים. ערך גבוה יותר מעיד על עיסוק מוגבר של חברי הכנסת בנושא, המבוסס על דיבורים, אזכורים והתבטאויות."/>
                     </div>
                 )}
 
@@ -355,13 +374,13 @@ export default function TimelinePage() {
                     ) : (
                         <>
                             <div style={{ flex: 1, minWidth: '320px' }}>
-                                <MKLeaderboards mks={topInitiators} title="חברי הכנסת המובילים לפי הצעות חוק" countText="הצעות חוק" />
+                                <MKLeaderboards mks={topInitiators} title="חברי הכנסת המובילים לפי הצעות חוק" countText="הצעות חוק" infoText="רשימה זו מציגה את חברי הכנסת שהגישו את המספר הרב ביותר של הצעות חוק בנושא."/>
                             </div>
                             <div style={{ flex: 1, minWidth: '320px' }}>
-                                <MKLeaderboards mks={topMksCommittee} title="חברי הכנסת המובילים באזכורים בוועדות" countText="אזכורים" />
+                                <MKLeaderboards mks={topMksCommittee} title="חברי הכנסת המובילים באזכורים בוועדות" countText="אזכורים" infoText="רשימה זו מציגה את חברי הכנסת שדיברו ו/או הזכירו את הנושא מספר רב של פעמים בוועדות הכנסת."/>
                             </div>
                             <div style={{ flex: 1, minWidth: '320px' }}>
-                                <MKLeaderboards mks={topMksPlenum} title="חברי הכנסת המובילים באזכורים במליאות" countText="אזכורים" />
+                                <MKLeaderboards mks={topMksPlenum} title="חברי הכנסת המובילים באזכורים במליאות" countText="אזכורים" infoText="רשימה זו מציגה את חברי הכנסת שדיברו ו/או הזכירו את הנושא מספר רב של פעמים במליאות הכנסת."/>
                             </div>
                         </>
                     )}
