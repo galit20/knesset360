@@ -181,7 +181,7 @@ export default function About() {
       </section>
 
       {/* ── Open Source & GitHub ── */}
-      <section className="about-section light-section cta-section">
+      {/* <section className="about-section light-section cta-section">
         <div className="section-container center-text">
           <h2 className="section-title">קוד פתוח ושיתופי פעולה</h2>
           <p className="section-body mx-auto">
@@ -196,11 +196,11 @@ export default function About() {
           </a>
         </div>
       </section>
-      
-      <section className="about-section dark-section cta-section">
+       */}
+      <section className="about-section light-section cta-section">
         <div className="section-container center-text" >
-          <h2 className="section-title" style={{color: '#fff'}}>תודות</h2>
-          <p className="section-body mx-auto" style={{color: '#fff'}}>
+          <h2 className="section-title">תודות</h2>
+          <p className="section-body mx-auto">
             אנו מודות לאוניברסיטת בן גוריון ובפרט למנחה שלנו, פרופסור ניב גלבוע, על הנחיה צמודה ושוטפת לאורך שנת פרויקט הגמר.
           </p>
           
@@ -208,7 +208,7 @@ export default function About() {
             <img src={uniLogo} alt="Ben Gurion University Logo" style={{ height: '70px', objectFit: 'contain' }} />
           </div>
 
-          <div className="data-disclaimer-box" style={{ marginTop: '50px', padding: '24px', backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <div className="data-disclaimer-box" style={{ marginTop: '50px', padding: '24px', backgroundColor: '#0f172ae0', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
             <h4 style={{ margin: '0 0 12px 0', color: '#fff', fontWeight: '700', fontSize: '1.2rem' }}>⚠️ הבהרה לגבי מקורות המידע והנתונים</h4>
             <p style={{ margin: 0, fontSize: '0.95rem', color: '#cbd5e1', lineHeight: '1.7', textAlign: 'justify' }}>
               הנתונים והמדדים המוצגים בפלטפורמה זו נאספים, מתורגמים ומסוכמים באופן אוטומטי מתוך מאגרי מידע ממשלתיים ופרלמנטריים פתוחים (צד שלישי). הפרויקט משמש ככלי להנגשה ויזואלית וסטטיסטית בלבד, ואינו מפעיל תהליכי אימות, ביקורת או וולידציה עצמאיים על נכונותם או שלמותם של נתוני המקור הגולמיים. לפיכך, מנהלי הפרויקט אינם נושאים באחריות לכל שגיאה, השמטה, אי-דיוק או שינוי שבוצעו במאגרים הרשמיים המקוריים.
